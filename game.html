@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flight School – The 4 Forces Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F8F5EC; --paper-2:#EFEADB; --ink:#1D2B44; --pencil:#6B7385; --grid:rgba(29,43,68,.07);
+  --lift:#2A72D4;   --lift-t:#DCE9FB;   --lift-on:#fff;
+  --weight:#CF3F32; --weight-t:#F8DCD8; --weight-on:#fff;
+  --thrust:#23894F; --thrust-t:#D6EEDF; --thrust-on:#fff;
+  --drag:#E39100;   --drag-t:#FBEBC8;   --drag-on:#1D2B44;
+  --hand:'Patrick Hand','Segoe Print','Bradley Hand','Comic Sans MS',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--hand);font-size:20px;line-height:1.3;color:var(--ink);min-height:100vh;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.frame{border:3px solid var(--ink);border-radius:14px 6px 12px 8px/8px 12px 6px 14px;background:#FFFDF6}
+.f1{--c:var(--lift);--t:var(--lift-t);--on:var(--lift-on)}
+.f2{--c:var(--weight);--t:var(--weight-t);--on:var(--weight-on)}
+.f3{--c:var(--thrust);--t:var(--thrust-t);--on:var(--thrust-on)}
+.f4{--c:var(--drag);--t:var(--drag-t);--on:var(--drag-on)}
+.dot{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);font-size:15px;background:var(--c);color:var(--on);flex:none}
+.btn{font:inherit;font-size:22px;letter-spacing:1px;cursor:pointer;padding:8px 20px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--ink);color:#fff;box-shadow:3px 3px 0 rgba(29,43,68,.25)}
+.btn:hover:not(:disabled){transform:translate(-1px,-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:#FFFDF6;color:var(--ink)}
+button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--lift);outline-offset:3px}
+a.home{font-family:var(--hand);font-size:20px;letter-spacing:1px;text-decoration:none;color:var(--ink);display:inline-block;padding:3px 14px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:#FFFDF6;box-shadow:3px 3px 0 rgba(29,43,68,.25)}
+a.home:hover{background:var(--lift-t)}
+a.home:focus-visible{outline:3px solid var(--lift);outline-offset:3px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 18px;border-bottom:3px solid var(--ink);background:var(--paper)}
+.logo{font-size:28px;letter-spacing:4px;border-bottom:4px dashed var(--lift);line-height:1.1}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:19px}
+.legend span{display:flex;gap:6px;align-items:center}
+
+.app{max-width:1220px;margin:14px auto 30px;padding:0 14px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.stepsbar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:10px}
+.steps{list-style:none;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.steps li{padding:3px 12px;border:3px solid var(--ink);border-radius:20px;background:#FFFDF6;font-size:19px;color:var(--pencil)}
+.steps li.on{background:var(--ink);color:#fff}
+.steps li.done{background:var(--thrust-t);color:var(--ink)}
+.lvlsel{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:19px}
+.lvlsel select{font:inherit;font-size:19px;padding:2px 8px;border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;color:var(--ink);cursor:pointer}
+.restart{font-size:18px;padding:2px 12px}
+canvas{display:block;width:100%;height:auto;border:3px solid var(--ink);border-radius:12px 6px 10px 6px/6px 10px 6px 12px;background:#DCEBFA;touch-action:none}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;padding:12px 16px}
+.ctl label{display:flex;justify-content:space-between;font-size:21px;margin-bottom:4px}
+.ctl b{font-weight:400}
+input[type=range]{width:100%;height:30px;accent-color:var(--c);cursor:pointer}
+.keys{grid-column:1/-1;color:var(--pencil);font-size:17px}
+kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;background:var(--paper);color:var(--ink)}
+
+.panel{padding:12px 14px}
+.panel h2{font-weight:400;font-size:22px;letter-spacing:3px;color:var(--pencil);margin-bottom:6px}
+.meter{margin-bottom:9px}
+.meter .row{display:flex;align-items:center;gap:8px;font-size:20px}
+.meter .row em{margin-left:auto;font-style:normal;font-variant-numeric:tabular-nums}
+.bar{position:relative;height:16px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;margin-top:3px;overflow:visible}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--c);border-radius:5px}
+.bar u{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px dashed var(--ink)}
+.hint{font-size:15px;color:var(--pencil);margin:-4px 0 8px}
+.tele{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.tele div{border:2.5px solid var(--ink);border-radius:8px;text-align:center;padding:2px 0;background:var(--paper)}
+.tele small{display:block;font-size:14px;color:var(--pencil);letter-spacing:1px}
+.tele b{font-weight:400;font-size:22px;font-variant-numeric:tabular-nums}
+.coach{border:3px solid var(--ink);border-radius:10px;background:var(--paper);padding:8px 12px;font-size:19px;min-height:150px}
+.coach p+p{margin-top:5px}
+.coach .v{color:var(--lift)} .coach .h{color:var(--thrust)} .coach .warn{color:var(--weight);font-weight:700}
+.coach .tip{color:var(--pencil)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(29,43,68,.6);display:none;align-items:center;justify-content:center;padding:14px;overflow:auto}
+.modal.show{display:flex}
+.card{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border:4px solid var(--ink);border-radius:16px 8px 14px 10px/10px 14px 8px 16px;max-width:720px;width:100%;max-height:calc(100vh - 28px);overflow:auto;padding:22px 24px}
+.card h2{font-weight:400;font-size:34px;letter-spacing:3px;line-height:1.1;margin-bottom:10px}
+.card h2 span{border-bottom:4px dashed var(--lift)}
+.card h3{font-weight:400;font-size:22px;letter-spacing:2px;margin:10px 0 2px}
+.card p{margin-bottom:8px}
+.card ul{list-style:none;margin:8px 0 12px}
+.card li{position:relative;padding-left:22px;margin-top:6px}
+.card li::before{content:"";position:absolute;left:3px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
+.mini{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+.mini div{border:3px solid var(--ink);border-radius:10px;padding:6px 10px;background:#FFFDF6;border-left:10px solid var(--c)}
+
+/* difficulty picker */
+.lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:6px 0}
+.lvl{font:inherit;font-size:19px;cursor:pointer;padding:6px 4px;border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;color:var(--ink);text-align:center;line-height:1.1}
+.lvl small{display:block;font-size:14px;color:var(--pencil)}
+.lvl[aria-checked=true]{background:var(--ink);color:#fff}
+.lvl[aria-checked=true] small{color:#cfd6e4}
+.lvldesc{border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;padding:8px 12px;margin:2px 0 6px;min-height:92px}
+.lvldesc small{color:var(--pencil);font-size:17px}
+
+/* result */
+.stars{font-size:36px;letter-spacing:5px;margin-bottom:2px}
+.gname{font-size:30px;letter-spacing:2px;line-height:1.1;margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.stats div{border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;text-align:center;padding:4px}
+.stats small{display:block;font-size:15px;color:var(--pencil);letter-spacing:1px}
+.stats b{font-weight:400;font-size:24px}
+
+/* matching warm-up */
+.pgrid{display:grid;grid-template-columns:96px 1fr 96px;grid-template-rows:74px auto 74px;grid-template-areas:". up ." "back plane fwd" ". down .";gap:8px;margin:10px 0;align-items:center;justify-items:center}
+.slot{font:inherit;cursor:pointer;width:100%;height:100%;min-height:60px;border:3px dashed var(--ink);border-radius:12px;background:#FFFDF6;font-size:40px;color:var(--pencil);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.slot:hover:not(.ok){background:var(--paper-2)}
+.slot.ok{border-style:solid;background:var(--c);color:var(--on);font-size:18px;cursor:default}
+.slot.ok b{font-weight:400;font-size:20px}
+.slot.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.up{grid-area:up}.back{grid-area:back}.fwd{grid-area:fwd}.down{grid-area:down}
+.planebox{grid-area:plane;width:100%;text-align:center}
+.planebox svg{width:100%;max-width:300px;height:auto}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip{display:flex;gap:10px;align-items:center;padding:8px 10px;border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;cursor:grab;user-select:none;font-size:18px;line-height:1.15}
+.chip b{font-weight:400;font-size:20px;display:block;letter-spacing:1px}
+.chip.sel{background:var(--t);box-shadow:0 0 0 3px var(--c)}
+.chip.used{opacity:.35;pointer-events:none}
+.fb{min-height:28px;margin-top:8px;font-size:20px}
+.fb.bad{color:var(--weight)} .fb.good{color:var(--thrust)}
+
+@media (max-width:940px){.app{grid-template-columns:1fr}.panel .coach{min-height:0}}
+@media (max-width:560px){
+  body{font-size:18px}.controls{grid-template-columns:1fr}.chips{grid-template-columns:1fr}.mini{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:70px 1fr 70px;grid-template-rows:62px auto 62px}.card{padding:16px}.card h2{font-size:28px}
+  .lvls{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:1fr}.lvlsel{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){.slot.shake{animation:none}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="plane" viewBox="0 0 440 140">
+    <g stroke="#1D2B44" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M22,50 L6,6 L58,6 L96,42 Z" fill="#DCE9FB"/>
+      <path d="M30,82 L6,104 L50,104 L84,86 Z" fill="#EFEADB"/>
+      <path d="M12,70 C16,48 60,40 130,40 L326,40 C384,40 420,58 428,72 C420,86 384,100 326,100 L130,100 C60,100 16,92 12,70 Z" fill="#FFFDF6"/>
+      <path d="M176,78 L112,132 L176,132 L270,84 Z" fill="#DCE9FB"/>
+      <path d="M334,52 L378,52 C396,56 408,62 414,70 L334,70 Z" fill="#BFD8F5"/>
+      <path d="M435,44 L435,98" stroke-width="6"/>
+      <circle cx="150" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
+      <circle cx="184" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
+      <circle cx="218" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
+      <circle cx="252" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
+      <circle cx="286" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
+    </g>
+  </symbol>
+</svg>
+
+<header class="top">
+  <div class="logo">FLIGHT SCHOOL</div>
+  <a class="home" href="index.html">← Home</a>
+  <div class="legend" aria-label="The four forces">
+    <span class="f1"><b class="dot">F1</b>Lift</span><span class="f2"><b class="dot">F2</b>Weight</span>
+    <span class="f3"><b class="dot">F3</b>Thrust</span><span class="f4"><b class="dot">F4</b>Drag</span>
+  </div>
+</header>
+
+<div class="app">
+  <section>
+    <div class="stepsbar">
+      <ol class="steps" id="steps">
+        <li data-s="1">1 · Take off</li><li data-s="2">2 · Climb</li><li data-s="3">3 · Land softly</li>
+      </ol>
+      <label class="lvlsel" for="lvl">Level <select id="lvl"></select></label>
+      <button class="btn ghost restart" id="restart" type="button">↺ Restart</button>
+    </div>
+    <canvas id="cv" aria-label="Flight view: your airplane with arrows for the four forces"></canvas>
+    <div class="controls frame">
+      <div class="ctl f3"><label for="thr"><span>THRUST (engine)</span><b id="thrV">0%</b></label><input id="thr" type="range" min="0" max="100" step="any" value="0"></div>
+      <div class="ctl f1"><label for="ang"><span>TRIM (nose up ↑ / down ↓)</span><b id="angV">5°</b></label><input id="ang" type="range" min="-5" max="20" step="any" value="5"></div>
+      <p class="keys">Keys: <kbd>←</kbd> <kbd>→</kbd> (or <kbd>A</kbd> <kbd>D</kbd>) change thrust · <kbd>↑</kbd> <kbd>↓</kbd> (or <kbd>W</kbd> <kbd>S</kbd>) change trim.</p>
+    </div>
+  </section>
+
+  <aside class="panel frame">
+    <h2>FORCE METERS</h2>
+    <div class="meter f1"><div class="row"><b class="dot">F1</b>Lift ↑<em id="vL">0</em></div><div class="bar"><i id="bL"></i><u style="left:50%"></u></div></div>
+    <div class="meter f2"><div class="row"><b class="dot">F2</b>Weight ↓<em id="vW">100</em></div><div class="bar"><i id="bW" style="width:50%"></i></div></div>
+    <p class="hint">Dashed line on the Lift bar = the weight to beat.</p>
+    <div class="meter f3"><div class="row"><b class="dot">F3</b>Thrust →<em id="vT">0</em></div><div class="bar"><i id="bT"></i></div></div>
+    <div class="meter f4"><div class="row"><b class="dot">F4</b>Drag ←<em id="vD">0</em></div><div class="bar"><i id="bD"></i><u id="mT" style="left:0"></u></div></div>
+    <p class="hint">Dashed line on the Drag bar = your thrust.</p>
+    <div class="tele">
+      <div><small>SPEED kt</small><b id="tS">0</b></div><div><small>ALT ft</small><b id="tA">0</b></div><div><small>V/S fpm</small><b id="tC">0</b></div>
+    </div>
+    <div class="coach" id="coach" aria-live="off"></div>
+  </aside>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="card" id="card"></div></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s);};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function nf(n){return Math.round(n).toLocaleString('en-US');}
+function randn(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------------- constants ----------------
+   Forces use arbitrary units ("u"). Display units are converted to what pilots use:
+   altitude in feet, speed in knots, vertical speed in feet per minute (fpm). */
+var W=960,H=540,GROUND=470,PXM=0.85,PX=300;
+var WEIGHT=100, M_H=14, M_V=5, TMAX=150, KL=0.0476, KD0=0.012, KDI=0.0002, ROLL=14, BRAKE=40, GE_H=15;
+var KT=2.7, FT=3.281, FPM=196.85;                 /* sim speed -> knots, metres -> feet, m/s -> ft/min */
+var INK='#1D2B44';
+var NAMES=['BUTTER LANDING!','SMOOTH LANDING','FIRM LANDING','HARD LANDING','CRASH'];
+var GCOL=['#23894F','#2A72D4','#B87400','#CF3F32','#CF3F32'];
+
+/* grade = touchdown rates in fpm: [butter, smooth, firm, hard]; faster than "hard" = crash */
+var LEVELS={
+  beginner:    {label:'Beginner',     target:1000, turb:0,    ge:.28, maxTrim:13, grade:[300,600,1000,2400],
+    desc:'Stall protection, smooth air and a strong "ground cushion" near the runway. Very forgiving landings.'},
+  easy:        {label:'Easy',         target:1500, turb:0,    ge:.20, maxTrim:14, grade:[250,500,800,1800],
+    desc:'Stall protection, smooth air and a good ground cushion. A relaxed climb.'},
+  intermediate:{label:'Intermediate', target:2500, turb:.25,  ge:.12, maxTrim:20, grade:[200,400,650,1500],
+    desc:'Stalls are possible and there is light turbulence. A proper flare is needed for a soft landing.'},
+  hard:        {label:'Hard',         target:3500, turb:.5,   ge:.06, maxTrim:20, grade:[150,300,500,1200],
+    desc:'Medium turbulence, hardly any ground cushion and a long climb. Tight landing limits.'},
+  expert:      {label:'Expert',       target:5000, turb:.9,   ge:0,   maxTrim:20, grade:[120,250,400,900],
+    desc:'Strong turbulence, no ground cushion and a 5,000 ft climb. Only a truly buttery landing counts.'}
+};
+var LKEYS=Object.keys(LEVELS);
+var FORCES={
+  lift:{n:'F1',name:'Lift',color:'#2A72D4',tint:'#DCE9FB',on:'#fff',dir:'up',clue:'Made by the wings. It holds the plane UP.',hint:'Lift fights gravity, so it points the opposite way to gravity.'},
+  weight:{n:'F2',name:'Weight',color:'#CF3F32',tint:'#F8DCD8',on:'#fff',dir:'down',clue:'Gravity pulls the plane toward the Earth.',hint:'Gravity always pulls toward the ground.'},
+  thrust:{n:'F3',name:'Thrust',color:'#23894F',tint:'#D6EEDF',on:'#fff',dir:'forward',clue:'Engines or propellers push the plane forward.',hint:'Thrust pushes the plane the way it is heading.'},
+  drag:{n:'F4',name:'Drag',color:'#E39100',tint:'#FBEBC8',on:'#1D2B44',dir:'back',clue:'Air resistance pushes against the motion.',hint:'Drag works against motion, so it points the opposite way to thrust.'}
+};
+
+/* ---------------- state ---------------- */
+var cvs=$('#cv'), ctx=cvs.getContext('2d');
+var dpr=Math.min(window.devicePixelRatio||1,2);
+cvs.width=W*dpr; cvs.height=H*dpr;
+var thr=$('#thr'), ang=$('#ang'), lvlSel=$('#lvl');
+var thrust=0, angle=5, S, mode='modal', frame=0, prop=0;
+var keys={};
+var levelKey='beginner', LV=LEVELS.beginner, TARGET_M=LV.target/FT;
+
+LKEYS.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=LEVELS[k].label;lvlSel.appendChild(o);});
+
+function setLevel(key){
+  if(!LEVELS[key]) key='beginner';
+  levelKey=key; LV=LEVELS[key]; TARGET_M=LV.target/FT;
+  ang.max=LV.maxTrim; angle=Math.min(angle,LV.maxTrim);
+  lvlSel.value=key;
+  $('#steps li[data-s="2"]').textContent='2 · Climb to '+nf(LV.target)+' ft';
+  try{localStorage.setItem('flightSchoolLevel',key);}catch(e){}
+  if(S) syncSliders();
+}
+try{var saved=localStorage.getItem('flightSchoolLevel'); if(saved&&LEVELS[saved]) levelKey=saved;}catch(e){}
+
+function reset(){
+  S={x:0,alt:0,v:0,vy:0,phase:'takeoff',airborne:false,reached:false,time:0,L:0,D:0,T:0,stall:false,boom:0,
+     gust:0,grade:0,fpm:0,bad:null,msg:'',msg2:'',msgT:0,msgCol:INK,shake:0,crashFpm:0};
+  thrust=0; angle=Math.min(5,LV.maxTrim); syncSliders();
+}
+function syncSliders(){
+  thr.value=thrust; ang.value=angle;
+  $('#thrV').textContent=Math.round(thrust)+'%';
+  var a=Math.round(angle*10)/10;
+  $('#angV').textContent=(a>0?'+':'')+a.toFixed(1)+'°';
+}
+thr.addEventListener('input',function(){thrust=+thr.value;syncSliders();});
+ang.addEventListener('input',function(){angle=+ang.value;syncSliders();});
+window.addEventListener('keydown',function(e){
+  var k=e.key.toLowerCase();
+  if(mode==='fly' && ['arrowup','arrowdown','arrowleft','arrowright'].indexOf(k)>-1 && document.activeElement.type!=='range') e.preventDefault();
+  keys[k]=true;
+});
+window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
+window.addEventListener('blur',function(){keys={};});
+
+/* ---------------- physics ---------------- */
+function liftCoeff(a){
+  var cl = a<=15 ? (a+2)/12 : Math.max(0.25,17/12-(a-15)*0.18);   /* above 15° the air stops following the wing: stall */
+  return Math.max(cl,-0.4);
+}
+function gradeOf(fpm){var g=LV.grade;return fpm<=g[0]?0:fpm<=g[1]?1:fpm<=g[2]?2:fpm<=g[3]?3:4;}
+
+function step(dt){
+  var a=angle, v=S.v;
+  S.stall=a>15;
+  var ge=1+LV.ge*clamp(1-S.alt/GE_H,0,1);              /* ground effect: extra lift very close to the runway */
+  var L=KL*v*v*liftCoeff(a)*ge;
+  var D=(KD0+KDI*a*a)*v*v;
+  var T=thrust/100*TMAX;
+  S.L=L; S.D=D; S.T=T;
+
+  var onGround=S.alt<=0 && S.vy<=0;
+  var braking=(S.phase==='rollout' && thrust<=5);
+  var dv;
+  if(onGround) dv=(T-D-(v>0.3?ROLL:0)-(braking&&v>0.3?BRAKE:0))/M_H;
+  else dv=(T-D-WEIGHT*(S.vy/Math.max(v,25)))/M_H;     /* climbing costs speed, diving gains it */
+  S.v=Math.max(0,v+dv*dt);
+
+  if(S.alt>1 && LV.turb>0) S.gust+=(-S.gust/1.5)*dt+LV.turb*Math.sqrt(2*dt/1.5)*randn();   /* turbulence */
+  else S.gust=0;
+
+  var ay=(L-WEIGHT)/M_V-1.0*S.vy+S.gust;
+  if(onGround && ay<0){ay=0;S.vy=0;}
+  S.vy+=ay*dt;
+  S.alt+=S.vy*dt;
+  S.x+=S.v*dt;
+  S.time+=dt;
+
+  if(S.alt<=0){
+    S.alt=0;
+    if(S.airborne) touchdown(-S.vy);
+    if(mode!=='fly') return;
+    S.vy=0; S.airborne=false;
+  } else {
+    S.airborne=true;
+    if(S.phase==='takeoff' && S.alt>3) S.phase='climb';
+    if(S.phase==='climb' && S.alt>=TARGET_M){S.phase='landing';S.reached=true;}
+  }
+  if(S.phase==='rollout' && S.v<2) win();
+}
+function touchdown(sink){                 /* sink in m/s, positive = downward */
+  var fpm=Math.max(0,sink*FPM), g=gradeOf(fpm);
+  if(g>=4) return crash(fpm);
+  var bad=null;
+  if(sink>1.5 && angle<-2) bad='nose';
+  else if(sink>1.5 && angle>12) bad='tail';
+  if(bad && g<3) g=3;                      /* bad attitude = at least a hard landing, not a crash */
+  if(S.phase==='landing' || S.phase==='rollout'){
+    if(g>=S.grade){S.grade=g; S.fpm=fpm; S.bad=bad||S.bad;}
+    if(S.phase==='landing') S.phase='rollout';
+    S.msg=NAMES[g]; S.msg2=nf(fpm)+' fpm'; S.msgCol=GCOL[g]; S.msgT=3.5;
+  } else if(S.phase==='climb'){
+    S.phase='takeoff';
+    if(g>=2){S.msg=NAMES[g]; S.msg2=nf(fpm)+' fpm'; S.msgCol=GCOL[g]; S.msgT=2.5;}
+  }
+  if(g>=3) S.shake=0.5; else if(g===2) S.shake=0.2;
+}
+function crash(fpm){
+  mode='crashed'; S.boom=0; S.crashFpm=fpm; S.shake=0.8;
+  setTimeout(function(){showEnd(false);},900);
+}
+function win(){
+  mode='won';
+  setTimeout(function(){showEnd(true);},500);
+}
+
+/* ---------------- drawing ---------------- */
+var clouds=[]; for(var i=0;i<9;i++) clouds.push({x:i*150+Math.random()*80,y:30+Math.random()*230,s:.6+Math.random()*.8});
+var planeParts=[
+  ['M22,50 L6,6 L58,6 L96,42 Z','#DCE9FB'],
+  ['M30,82 L6,104 L50,104 L84,86 Z','#EFEADB'],
+  ['M12,70 C16,48 60,40 130,40 L326,40 C384,40 420,58 428,72 C420,86 384,100 326,100 L130,100 C60,100 16,92 12,70 Z','#FFFDF6'],
+  ['M176,78 L112,132 L176,132 L270,84 Z','#DCE9FB'],
+  ['M334,52 L378,52 C396,56 408,62 414,70 L334,70 Z','#BFD8F5']
+].map(function(p){return [new Path2D(p[0]),p[1]];});
+var FONTF='"Patrick Hand","Segoe Print","Comic Sans MS",cursive';
+
+function cloud(x,y,s){
+  var c=[[-26,0,18],[0,-10,24],[28,0,17],[0,6,20]],i;
+  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=5;
+  for(i=0;i<c.length;i++){ctx.beginPath();ctx.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);ctx.stroke();}
+  for(i=0;i<c.length;i++){ctx.beginPath();ctx.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);ctx.fill();}
+}
+function drawPlane(x,y,pitch,sc){
+  ctx.save();
+  ctx.translate(x,y); ctx.rotate(-pitch*Math.PI/180*0.8); ctx.scale(sc,sc); ctx.translate(-220,-70);
+  ctx.lineWidth=3.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=INK;
+  planeParts.forEach(function(p){ctx.fillStyle=p[1];ctx.fill(p[0]);ctx.stroke(p[0]);});
+  ctx.fillStyle='#BFD8F5';
+  for(var i=0;i<5;i++){ctx.beginPath();ctx.arc(150+i*34,62,7,0,7);ctx.fill();ctx.lineWidth=2.4/sc;ctx.stroke();}
+  var bl=26*Math.abs(Math.cos(prop));                      /* spinning propeller */
+  ctx.lineWidth=6/sc; ctx.beginPath(); ctx.moveTo(435,70-bl-4); ctx.lineTo(435,70+bl+4); ctx.stroke();
+  ctx.restore();
+}
+function arrow(x,y,ang,len,color,t,h,hw){
+  if(len<6) return;
+  h=Math.min(h,len*0.7);
+  ctx.save(); ctx.translate(x,y); ctx.rotate(ang);
+  var b=len-h;
+  ctx.beginPath(); ctx.moveTo(0,-t/2); ctx.lineTo(b,-t/2); ctx.lineTo(b,-hw); ctx.lineTo(len,0); ctx.lineTo(b,hw); ctx.lineTo(b,t/2); ctx.lineTo(0,t/2); ctx.closePath();
+  ctx.fillStyle=color; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=INK; ctx.lineJoin='round'; ctx.stroke();
+  ctx.restore();
+}
+function tag(txt,x,y,color){
+  ctx.font='20px '+FONTF; ctx.textAlign='center'; ctx.fillStyle=color; ctx.fillText(txt,x,y);
+}
+function banner(txt,sub,color,y){
+  ctx.textAlign='center'; ctx.lineJoin='round'; ctx.strokeStyle='#fff';
+  ctx.font='52px '+FONTF; ctx.lineWidth=8; ctx.strokeText(txt,W/2,y); ctx.fillStyle=color; ctx.fillText(txt,W/2,y);
+  if(sub){ctx.font='30px '+FONTF; ctx.lineWidth=6; ctx.strokeText(sub,W/2,y+36); ctx.fillStyle=INK; ctx.fillText(sub,W/2,y+36);}
+}
+
+function draw(t){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  if(S.shake>0) ctx.translate((Math.random()-.5)*16*S.shake,(Math.random()-.5)*16*S.shake);
+  var rawY=GROUND-27-S.alt*PXM;
+  var cam=rawY<170?170-rawY:0;
+  var py=rawY+cam, gy=GROUND+cam;
+  var scroll=S.x*3;
+
+  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#BFD8F5'); g.addColorStop(1,'#F4F8FC');
+  ctx.fillStyle=g; ctx.fillRect(-20,-20,W+40,H+40);
+
+  for(var i=0;i<clouds.length;i++){
+    var c=clouds[i], cx=((c.x-scroll*0.25)%(W+300)+(W+300))%(W+300)-150;
+    cloud(cx,c.y+cam*0.5,c.s);
+  }
+
+  /* target height line */
+  if(!S.reached){
+    var ty=gy-TARGET_M*PXM;
+    if(ty>-20 && ty<H+20){
+      ctx.save(); ctx.setLineDash([14,10]); ctx.lineWidth=3; ctx.strokeStyle='#2A72D4';
+      ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(W,ty); ctx.stroke(); ctx.restore();
+      ctx.font='24px '+FONTF; ctx.textAlign='right'; ctx.fillStyle='#2A72D4';
+      ctx.fillText('TARGET: '+nf(LV.target)+' ft',W-12,ty-8);
+    }
+  }
+
+  /* ground + runway */
+  if(gy<H+40){
+    ctx.fillStyle='#D6EEDF'; ctx.fillRect(-20,gy,W+40,H-gy+60);
+    ctx.fillStyle='#4B566B'; ctx.fillRect(-20,gy,W+40,20);
+    ctx.strokeStyle=INK; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-20,gy);ctx.lineTo(W+20,gy);ctx.moveTo(-20,gy+20);ctx.lineTo(W+20,gy+20);ctx.stroke();
+    ctx.fillStyle='#fff'; var off=scroll%90;
+    for(var x=-off;x<W;x+=90) ctx.fillRect(x,gy+8,46,4);
+    ctx.strokeStyle='#23894F'; ctx.lineWidth=2.5;
+    var off2=(scroll*1.0)%140;
+    for(var x2=-off2;x2<W;x2+=140){ctx.beginPath();ctx.moveTo(x2,gy+60);ctx.lineTo(x2-4,gy+50);ctx.moveTo(x2,gy+60);ctx.lineTo(x2+4,gy+50);ctx.stroke();}
+  }
+
+  /* airplane */
+  if(mode==='crashed'){ S.boom+=1; }
+  drawPlane(PX,py,angle,0.42);
+
+  /* force arrows (drawn in screen directions) */
+  var U=0.6, Lv=Math.max(0,S.L)*U, Wv=WEIGHT*U, Tv=S.T*U, Dv=S.D*U;
+  var Lc=Math.min(Lv,130), Dc=Math.min(Dv,130);
+  arrow(PX,py-30,-Math.PI/2,Lc,'#2A72D4',9,18,14);
+  arrow(PX,py+28,Math.PI/2,Wv,'#CF3F32',9,18,14);
+  arrow(PX+96,py,0,Tv,'#23894F',9,18,14);
+  arrow(PX-96,py,Math.PI,Dc,'#E39100',9,18,14);
+  if(Lc>14) tag('F1',PX+22,py-30-Lc+6,'#2A72D4');
+  tag('F2',PX+24,py+28+Wv+4,'#CF3F32');
+  if(Tv>14) tag('F3',PX+96+Tv-8,py-14,'#23894F');
+  if(Dc>14) tag('F4',PX-96-Dc+8,py-14,'#B87400');
+
+  if(S.stall && mode==='fly' && Math.floor(t*4)%2===0){
+    ctx.font='34px '+FONTF; ctx.textAlign='center'; ctx.fillStyle='#CF3F32';
+    ctx.fillText('STALL! Lower the trim',PX+30,py-110);
+  }
+  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,S.msgCol,110);
+  if(mode==='crashed'){
+    ctx.font='60px '+FONTF; ctx.textAlign='center'; ctx.fillStyle='#CF3F32'; ctx.strokeStyle='#fff'; ctx.lineWidth=6;
+    ctx.strokeText('CRASH!',PX+20,py-70); ctx.fillText('CRASH!',PX+20,py-70);
+  }
+}
+
+/* ---------------- side panel ---------------- */
+function setBar(id,val){$(id).style.width=clamp(val/200*100,0,100)+'%';}
+function cmp(a,b){var r=a/Math.max(b,0.001); return r>1.03?1:r<0.97?-1:0;}
+function updatePanel(){
+  $('#vL').textContent=Math.round(Math.max(0,S.L)); $('#vW').textContent=WEIGHT;
+  $('#vT').textContent=Math.round(S.T); $('#vD').textContent=Math.round(S.D);
+  setBar('#bL',Math.max(0,S.L)); setBar('#bT',S.T); setBar('#bD',S.D);
+  $('#mT').style.left=clamp(S.T/200*100,0,100)+'%';
+  $('#tS').textContent=nf(S.v*KT); $('#tA').textContent=nf(S.alt*FT);
+  var vs=Math.round(S.vy*FPM/10)*10; $('#tC').textContent=(vs>0?'+':'')+nf(vs);
+
+  var steps=document.querySelectorAll('#steps li[data-s]');
+  var p=S.phase, cur=(p==='takeoff')?1:(p==='climb')?2:3;
+  steps.forEach(function(li,i){li.className=(i+1<cur||mode==='won')?'done':(i+1===cur?'on':'');});
+
+  var h='', gl=LV.grade;
+  var onG=!S.airborne && S.alt<=0;
+  if(S.stall){
+    h+='<p class="warn">STALL! The wing is tilted too far (past 15°). Air can\'t flow smoothly over it, so lift drops. Lower the trim.</p>';
+  } else if(onG){
+    if(p==='rollout'){
+      h+='<p class="h">Touchdown at '+nf(S.fpm)+' fpm: '+NAMES[S.grade]+'</p><p class="h">Set THRUST to 0. The brakes and drag will stop you.</p>';
+    } else if(S.T<=S.D+ROLL){
+      h+='<p class="h">Thrust must beat drag (and rolling friction) to speed up. Push THRUST higher.</p>';
+    } else {
+      h+='<p class="h">Thrust &gt; Drag → you speed up along the runway.</p>';
+      h+='<p class="v">Lift grows with speed. When Lift &gt; Weight (the dashed line) you lift off, usually at about 125 to 160 knots.</p>';
+    }
+  } else {
+    var cv=cmp(S.L,WEIGHT), ch=cmp(S.T,S.D);
+    h+='<p class="v">'+(cv>0?'▲ Lift &gt; Weight → you are climbing.':cv<0?'▼ Lift &lt; Weight → you are sinking.':'= Lift ≈ Weight → level flight.')+'</p>';
+    h+='<p class="h">'+(ch>0?'▶ Thrust &gt; Drag → you speed up.':ch<0?'◀ Thrust &lt; Drag → you slow down.':'= Thrust ≈ Drag → steady speed.')+'</p>';
+  }
+  if(p==='climb') h+='<p class="tip">Goal: climb to '+nf(LV.target)+' ft. More speed or more trim gives more lift, but more trim also adds drag.</p>';
+  if(p==='landing') h+='<p class="tip">Now land! Cut thrust so you descend, then raise the trim a little just before the runway (the flare). Butter = under '+nf(gl[0])+' fpm. Over '+nf(gl[3])+' fpm is a crash.</p>';
+  if(p==='takeoff' && onG && S.v<1 && thrust<5) h='<p class="tip">Slide the THRUST slider up (or press →) to start rolling.</p>'+h;
+  $('#coach').innerHTML=h;
+}
+
+/* ---------------- modal screens ---------------- */
+var modal=$('#modal'), card=$('#card');
+function openModal(html){mode='modal';card.innerHTML=html;modal.classList.add('show');card.scrollTop=0;}
+function closeModal(){modal.classList.remove('show');}
+
+function levelDesc(){
+  var g=LV.grade;
+  return '<b>'+LV.label+'</b> · '+LV.desc+'<br><small>Climb to '+nf(LV.target)+' ft. Landing: butter up to '+nf(g[0])+' fpm · smooth '+nf(g[1])+' · firm '+nf(g[2])+' · hard '+nf(g[3])+' · faster = crash.</small>';
+}
+function levelPicker(){
+  return '<div class="lvls" role="radiogroup" aria-label="Difficulty">'+LKEYS.map(function(k){var l=LEVELS[k];
+    return '<button type="button" class="lvl" role="radio" aria-checked="'+(k===levelKey)+'" data-k="'+k+'">'+l.label+'<small>'+nf(l.target)+' ft</small></button>';}).join('')+
+    '</div><div class="lvldesc" id="lvldesc" aria-live="polite">'+levelDesc()+'</div>';
+}
+function refreshPicker(){
+  [].forEach.call(card.querySelectorAll('.lvl'),function(b){b.setAttribute('aria-checked',b.dataset.k===levelKey);});
+  var d=$('#lvldesc'); if(d) d.innerHTML=levelDesc();
+}
+function bindPicker(){
+  [].forEach.call(card.querySelectorAll('.lvl'),function(b){b.addEventListener('click',function(){setLevel(b.dataset.k);refreshPicker();});});
+}
+lvlSel.addEventListener('change',function(){
+  setLevel(lvlSel.value);
+  if(mode==='modal') refreshPicker(); else startFlight();
+});
+
+function showIntro(){
+  openModal(
+    '<h2><span>FLIGHT SCHOOL</span></h2>'+
+    '<p>Four forces act on every plane. Your job: take off, climb to the target altitude, then land as softly as you can, and watch the forces change as you fly.</p>'+
+    '<div class="mini"><div class="f1"><b>F1 Lift ↑</b><br>Pushes the plane up.</div><div class="f2"><b>F2 Weight ↓</b><br>Gravity pulls it down.</div>'+
+    '<div class="f3"><b>F3 Thrust →</b><br>Engine pushes it forward.</div><div class="f4"><b>F4 Drag ←</b><br>Air resistance holds it back.</div></div>'+
+    '<h3>CHOOSE YOUR LEVEL</h3>'+levelPicker()+
+    '<ul><li><b>Thrust slider</b>: more thrust beats drag, so you speed up.</li>'+
+    '<li><b>Trim slider</b>: trim sets the nose angle (the wing\'s angle of attack). Nose up = more lift, but also more drag. Past 15° the wing stalls!</li>'+
+    '<li>You lift off when <b>Lift &gt; Weight</b>. Lift grows the faster you go: speed is in <b>knots</b>, height in <b>feet</b> and climb rate in <b>feet per minute (fpm)</b>.</li>'+
+    '<li>To land, cut thrust and descend, then <b>flare</b>: raise the trim just before touchdown. Very close to the runway the air under the wings gives extra lift (ground effect).</li>'+
+    '<li>Touchdown grades: <b>butter</b>, <b>smooth</b>, <b>firm</b>, <b>hard landing</b>. Only a really violent arrival is a crash.</li></ul>'+
+    '<div class="row"><button class="btn ghost" id="skip" type="button">Skip warm-up</button><button class="btn" id="go" type="button">Start → Warm-up</button></div>'
+  );
+  bindPicker();
+  $('#go').onclick=showMatch; $('#skip').onclick=startFlight; $('#go').focus();
+}
+
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function showMatch(){
+  var order=shuffle(Object.keys(FORCES));
+  openModal(
+    '<h2><span>WARM-UP</span> · PUT THE FORCES IN THE RIGHT PLACES</h2>'+
+    '<p>Pick a force label below, then tap the arrow where it belongs. (You can also drag it.)</p>'+
+    '<div class="pgrid">'+
+      '<button class="slot up" data-dir="up" type="button" aria-label="Arrow pointing up">↑</button>'+
+      '<button class="slot back" data-dir="back" type="button" aria-label="Arrow pointing backward">←</button>'+
+      '<div class="planebox"><svg viewBox="0 0 440 140" aria-label="Airplane flying to the right"><use href="#plane"/></svg><div>The plane flies this way →</div></div>'+
+      '<button class="slot fwd" data-dir="forward" type="button" aria-label="Arrow pointing forward">→</button>'+
+      '<button class="slot down" data-dir="down" type="button" aria-label="Arrow pointing down">↓</button>'+
+    '</div>'+
+    '<div class="chips">'+order.map(function(k){var f=FORCES[k];
+      return '<div class="chip" role="button" tabindex="0" draggable="true" data-k="'+k+'" style="--c:'+f.color+';--t:'+f.tint+'"><span class="dot" style="background:'+f.color+';color:'+f.on+'">'+f.n+'</span><span><b>'+f.name.toUpperCase()+'</b>'+f.clue+'</span></div>';}).join('')+
+    '</div>'+
+    '<p class="fb" id="fb" aria-live="polite"></p><p id="score">0 / 4 correct</p>'+
+    '<div class="row"><button class="btn ghost" id="skip" type="button">Skip</button><button class="btn" id="go" type="button" disabled>✈ Start flying</button></div>'
+  );
+  var chips=[].slice.call(card.querySelectorAll('.chip')), slots=[].slice.call(card.querySelectorAll('.slot')), sel=null, done=0, fb=$('#fb');
+  function pick(c){ if(c.classList.contains('used'))return; chips.forEach(function(x){x.classList.remove('sel');}); c.classList.add('sel'); sel=c; }
+  function place(s){
+    if(!sel){fb.className='fb bad';fb.textContent='Pick a force label first!';return;}
+    if(s.dataset.done) return;
+    var f=FORCES[sel.dataset.k];
+    if(f.dir===s.dataset.dir){
+      s.dataset.done='1'; s.classList.add('ok'); s.style.setProperty('--c',f.color); s.style.setProperty('--on',f.on);
+      s.innerHTML='<b>'+f.n+'</b>'+f.name; sel.classList.remove('sel'); sel.classList.add('used'); sel=null; done++;
+      fb.className='fb good'; fb.textContent='Correct! '+f.name+': '+f.clue;
+      $('#score').textContent=done+' / 4 correct';
+      if(done===4){ $('#go').disabled=false; fb.textContent='All four placed! Ready for take-off.'; $('#go').focus(); }
+    } else {
+      s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake');
+      fb.className='fb bad'; fb.textContent='Not quite. '+f.hint;
+    }
+  }
+  chips.forEach(function(c){
+    c.addEventListener('click',function(){pick(c);});
+    c.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(c);}});
+    c.addEventListener('dragstart',function(e){e.dataTransfer.setData('text/plain',c.dataset.k);pick(c);});
+  });
+  slots.forEach(function(s){
+    s.addEventListener('click',function(){place(s);});
+    s.addEventListener('dragover',function(e){e.preventDefault();});
+    s.addEventListener('drop',function(e){e.preventDefault();var k=e.dataTransfer.getData('text/plain');var c=chips.filter(function(x){return x.dataset.k===k;})[0];if(c){pick(c);place(s);}});
+  });
+  $('#go').onclick=startFlight; $('#skip').onclick=startFlight;
+}
+
+function showEnd(won){
+  var gl=LV.grade;
+  if(won){
+    var g=S.grade, stars=['★★★★★','★★★★☆','★★★☆☆','★★☆☆☆'][g];
+    var say=[
+      'Butter! You touched down at '+nf(S.fpm)+' fpm. Pilots dream of landings like that.',
+      'A smooth landing at '+nf(S.fpm)+' fpm. Nicely done.',
+      'A firm landing at '+nf(S.fpm)+' fpm. The passengers felt that one. Try flaring a little more next time.',
+      'A hard landing at '+nf(S.fpm)+' fpm. The plane survived, but it would need an inspection. Raise the trim a little just before touchdown (the flare) to soften it.'
+    ][g];
+    if(S.bad==='nose') say+=' Your nose was pointing down when the wheels touched.';
+    if(S.bad==='tail') say+=' Your nose was too high, so the tail could have scraped the runway.';
+    var next=LKEYS[LKEYS.indexOf(levelKey)+1];
+    openModal(
+      '<h2><span>'+(g===3?'HARD LANDING':'MISSION COMPLETE!')+'</span> ✈</h2>'+
+      '<p class="stars" aria-label="'+(5-g)+' out of 5 stars">'+stars+'</p>'+
+      '<p class="gname" style="color:'+GCOL[g]+'">'+NAMES[g]+'</p>'+
+      '<p>'+say+'</p>'+
+      '<div class="stats"><div><small>LEVEL</small><b>'+LV.label+'</b></div><div><small>TOUCHDOWN</small><b>'+nf(S.fpm)+' fpm</b></div><div><small>FLIGHT TIME</small><b>'+Math.round(S.time)+' s</b></div></div>'+
+      '<ul><li>To <b>climb</b> you made <b>Lift bigger than Weight</b>.</li>'+
+      '<li>To <b>speed up</b> you made <b>Thrust bigger than Drag</b>.</li>'+
+      '<li>To <b>land softly</b> you cut the thrust so you descended, then flared with trim so lift almost matched weight at touchdown.</li></ul>'+
+      '<div class="row"><button class="btn ghost" id="again2" type="button">Warm-up again</button>'+
+      (next?'<button class="btn ghost" id="nextlv" type="button">Next level: '+LEVELS[next].label+' →</button>':'')+
+      '<button class="btn" id="again" type="button">Fly again</button></div>');
+    $('#again').onclick=startFlight; $('#again2').onclick=showMatch; $('#again').focus();
+    if(next) $('#nextlv').onclick=function(){setLevel(next);startFlight();};
+  } else {
+    openModal('<h2><span>CRASH!</span></h2>'+
+      '<p>You hit the ground at '+nf(S.crashFpm)+' fpm. On the '+LV.label+' level anything faster than '+nf(gl[3])+' fpm destroys the plane.</p>'+
+      '<p>Hard landings are survivable, but this was far too fast: the weight was much bigger than the lift. Next time cut thrust gradually, keep descending slowly, and raise the trim just before touchdown (the flare) so lift almost matches weight.</p>'+
+      '<div class="row"><button class="btn ghost" id="intro" type="button">How to play</button><button class="btn" id="again" type="button">Try again</button></div>');
+    $('#again').onclick=startFlight; $('#intro').onclick=showIntro; $('#again').focus();
+  }
+}
+
+function startFlight(){ reset(); closeModal(); mode='fly'; updatePanel(); }
+$('#restart').addEventListener('click',function(){ if(mode!=='modal') startFlight(); });
+
+/* ---------------- main loop ---------------- */
+var last=performance.now(), acc=0;
+function loop(now){
+  var dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(mode==='fly'){
+    var dA=((keys.arrowup||keys.w)?1:0)-((keys.arrowdown||keys.s)?1:0);
+    var dT=((keys.arrowright||keys.d)?1:0)-((keys.arrowleft||keys.a)?1:0);
+    if(dA||dT){ angle=clamp(angle+dA*14*dt,-5,LV.maxTrim); thrust=clamp(thrust+dT*45*dt,0,100); syncSliders(); }
+    acc+=dt;
+    while(acc>=1/60 && mode==='fly'){ step(1/60); acc-=1/60; }
+    prop+=dt*(6+thrust*0.35);
+  } else acc=0;
+  if(S.msgT>0) S.msgT-=dt;
+  if(S.shake>0) S.shake=Math.max(0,S.shake-dt);
+  draw(now/1000);
+  if(frame++%5===0) updatePanel();
+  requestAnimationFrame(loop);
+}
+setLevel(levelKey); reset(); updatePanel(); showIntro();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

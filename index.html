@@ -6,136 +6,307 @@
 <title>Flight School – The 4 Forces Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F8F5EC; --paper-2:#EFEADB; --ink:#1D2B44; --pencil:#6B7385; --grid:rgba(29,43,68,.07);
+  --paper:#F8F5EC; --paper-2:#EFEADB; --card:#FFFDF6; --ink:#1D2B44; --pencil:#6B7385; --grid:rgba(29,43,68,.07); --hair:#DAD5C5; --skybg:#DCEBFA;
   --lift:#2A72D4;   --lift-t:#DCE9FB;   --lift-on:#fff;
   --weight:#CF3F32; --weight-t:#F8DCD8; --weight-on:#fff;
   --thrust:#23894F; --thrust-t:#D6EEDF; --thrust-on:#fff;
   --drag:#E39100;   --drag-t:#FBEBC8;   --drag-on:#1D2B44;
   --hand:'Patrick Hand','Segoe Print','Bradley Hand','Comic Sans MS',cursive;
+  --ts:1; --panelw:330px; --tbtn:52px;
 }
+:root[data-theme="dark"]{
+  --paper:#141B2D; --paper-2:#1D2744; --card:#1B2542; --ink:#E9EDF6; --pencil:#A3AFC8; --grid:rgba(233,237,246,.06); --hair:#3A476B; --skybg:#0F1A33;
+  --lift:#5B9BFF; --lift-t:#1E3560; --lift-on:#0E1424;
+  --weight:#FF7468; --weight-t:#5A2623; --weight-on:#0E1424;
+  --thrust:#43C37D; --thrust-t:#1B4A31; --thrust-on:#0E1424;
+  --drag:#FFB32B; --drag-t:#5A4210; --drag-on:#0E1424;
+}
+:root[data-theme="hc"]{
+  --paper:#000; --paper-2:#151515; --card:#000; --ink:#fff; --pencil:#e8e8e8; --grid:transparent; --hair:#fff; --skybg:#000;
+  --lift:#4DB8FF; --lift-t:#00334d; --lift-on:#000;
+  --weight:#FF6A5C; --weight-t:#4d0f0a; --weight-on:#000;
+  --thrust:#3DDC84; --thrust-t:#0d3d22; --thrust-on:#000;
+  --drag:#FFD21F; --drag-t:#4d3d00; --drag-on:#000;
+}
+/* colour-blind friendly force colours (Okabe-Ito based). Patterns and labels stay. */
+:root[data-cb="1"]{
+  --lift:#0072B2; --lift-t:#D4E8F5; --lift-on:#fff;
+  --weight:#D55E00; --weight-t:#F7DFCC; --weight-on:#fff;
+  --thrust:#009E73; --thrust-t:#CDEEE3; --thrust-on:#1D2B44;
+  --drag:#CC79A7; --drag-t:#F3DDE9; --drag-on:#1D2B44;
+}
+:root[data-cb="1"][data-theme="dark"],:root[data-cb="1"][data-theme="hc"]{
+  --lift:#56B4E9; --lift-t:#17304A; --lift-on:#000;
+  --weight:#FF8C42; --weight-t:#4E2A12; --weight-on:#000;
+  --thrust:#33C9A0; --thrust-t:#10443A; --thrust-on:#000;
+  --drag:#E58BC0; --drag-t:#4A2340; --drag-on:#000;
+}
+:root[data-font="readable"]{--hand:'Atkinson Hyperlegible','Verdana','Trebuchet MS',system-ui,sans-serif}
+:root[data-font="readable"] .logo,:root[data-font="readable"] .card h2,:root[data-font="readable"] .panel h2{letter-spacing:1px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:var(--hand);font-size:20px;line-height:1.3;color:var(--ink);min-height:100vh;
+  font-family:var(--hand);font-size:calc(20px*var(--ts));line-height:1.3;color:var(--ink);min-height:100vh;
   background-color:var(--paper);
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:28px 28px;
 }
-.frame{border:3px solid var(--ink);border-radius:14px 6px 12px 8px/8px 12px 6px 14px;background:#FFFDF6}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+.frame{border:3px solid var(--ink);border-radius:14px 6px 12px 8px/8px 12px 6px 14px;background:var(--card)}
 .f1{--c:var(--lift);--t:var(--lift-t);--on:var(--lift-on)}
 .f2{--c:var(--weight);--t:var(--weight-t);--on:var(--weight-on)}
 .f3{--c:var(--thrust);--t:var(--thrust-t);--on:var(--thrust-on)}
 .f4{--c:var(--drag);--t:var(--drag-t);--on:var(--drag-on)}
-.dot{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);font-size:15px;background:var(--c);color:var(--on);flex:none}
-.btn{font:inherit;font-size:22px;letter-spacing:1px;cursor:pointer;padding:8px 20px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--ink);color:#fff;box-shadow:3px 3px 0 rgba(29,43,68,.25)}
+.dot{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);font-size:calc(15px*var(--ts));background:var(--c);color:var(--on);flex:none}
+.btn{font:inherit;font-size:calc(22px*var(--ts));letter-spacing:1px;cursor:pointer;padding:8px 20px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--ink);color:var(--paper);box-shadow:3px 3px 0 rgba(0,0,0,.22)}
 .btn:hover:not(:disabled){transform:translate(-1px,-1px)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn.ghost{background:#FFFDF6;color:var(--ink)}
-button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--lift);outline-offset:3px}
-a.home{font-family:var(--hand);font-size:20px;letter-spacing:1px;text-decoration:none;color:var(--ink);display:inline-block;padding:3px 14px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:#FFFDF6;box-shadow:3px 3px 0 rgba(29,43,68,.25)}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.btn.small{font-size:calc(17px*var(--ts));padding:2px 10px;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.btn.arrow{font-size:calc(26px*var(--ts));padding:4px 18px;line-height:1.1}
+button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,svg:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--lift);outline-offset:3px}
+:root[data-focus="strong"] :focus-visible{outline:6px solid #FF00C8!important;outline-offset:3px!important;box-shadow:0 0 0 3px #000 !important}
+a.home{font-family:var(--hand);font-size:calc(20px*var(--ts));letter-spacing:1px;text-decoration:none;color:var(--ink);display:inline-block;padding:3px 14px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);box-shadow:3px 3px 0 rgba(0,0,0,.22)}
 a.home:hover{background:var(--lift-t)}
-a.home:focus-visible{outline:3px solid var(--lift);outline-offset:3px}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 18px;border-bottom:3px solid var(--ink);background:var(--paper)}
-.logo{font-size:28px;letter-spacing:4px;border-bottom:4px dashed var(--lift);line-height:1.1}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:19px}
+.logo{font-size:calc(28px*var(--ts));letter-spacing:4px;border-bottom:4px dashed var(--lift);line-height:1.1}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:calc(19px*var(--ts))}
 .legend span{display:flex;gap:6px;align-items:center}
 
-.app{max-width:1220px;margin:14px auto 30px;padding:0 14px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+/* ----- main layout (side, density and size come from settings) ----- */
+.app{max-width:1280px;margin:14px auto 30px;padding:0 14px;display:grid;grid-template-columns:minmax(0,1fr) var(--panelw);gap:16px;align-items:start}
+.app[data-side="left"]{grid-template-columns:var(--panelw) minmax(0,1fr)}
+.app[data-side="left"] .panel{order:-1}
 .stepsbar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:10px}
-.steps{list-style:none;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.steps li{padding:3px 12px;border:3px solid var(--ink);border-radius:20px;background:#FFFDF6;font-size:19px;color:var(--pencil)}
-.steps li.on{background:var(--ink);color:#fff}
+.steps{list-style:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.steps li{padding:2px 11px;border:3px solid var(--ink);border-radius:20px;background:var(--card);font-size:calc(18px*var(--ts));color:var(--pencil)}
+.steps li.on{background:var(--ink);color:var(--paper)}
 .steps li.done{background:var(--thrust-t);color:var(--ink)}
-.lvlsel{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:19px}
-.lvlsel select{font:inherit;font-size:19px;padding:2px 8px;border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;color:var(--ink);cursor:pointer}
-.restart{font-size:18px;padding:2px 12px}
-canvas{display:block;width:100%;height:auto;border:3px solid var(--ink);border-radius:12px 6px 10px 6px/6px 10px 6px 12px;background:#DCEBFA;touch-action:none}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;padding:12px 16px}
-.ctl label{display:flex;justify-content:space-between;font-size:21px;margin-bottom:4px}
+.steps li.done::before{content:"\2713\00a0";font-weight:700}
+.tools{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lvlsel{display:flex;align-items:center;gap:6px;font-size:calc(18px*var(--ts))}
+.lvlsel select{font:inherit;font-size:calc(18px*var(--ts));padding:2px 8px;border:3px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer;max-width:210px}
+.view{position:relative}
+canvas{display:block;width:100%;height:auto;border:3px solid var(--ink);border-radius:12px 6px 10px 6px/6px 10px 6px 12px;background:var(--skybg);touch-action:none;margin:0 auto}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:12px;padding:12px 16px}
+.ctl label{display:flex;justify-content:space-between;font-size:calc(21px*var(--ts));margin-bottom:4px}
 .ctl b{font-weight:400}
-input[type=range]{width:100%;height:30px;accent-color:var(--c);cursor:pointer}
-.keys{grid-column:1/-1;color:var(--pencil);font-size:17px}
-kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;background:var(--paper);color:var(--ink)}
+input[type=range]{width:100%;height:30px;accent-color:var(--c,var(--lift));cursor:pointer}
+input[type=range]:disabled{opacity:.4;cursor:not-allowed}
+.touch{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.tgrp{display:flex;align-items:center;gap:8px}
+.tgrp>span{font-size:calc(18px*var(--ts));color:var(--pencil);letter-spacing:1px;min-width:68px}
+.hold{flex:1;min-height:var(--tbtn);font:inherit;font-size:calc(26px*var(--ts));line-height:1;cursor:pointer;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);color:var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.hold:active,.hold.down{background:var(--t);transform:translate(1px,1px)}
+.keys{grid-column:1/-1;color:var(--pencil);font-size:calc(16px*var(--ts))}
+kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;background:var(--paper);color:var(--ink);white-space:nowrap}
 
 .panel{padding:12px 14px}
-.panel h2{font-weight:400;font-size:22px;letter-spacing:3px;color:var(--pencil);margin-bottom:6px}
-.meter{margin-bottom:9px}
-.meter .row{display:flex;align-items:center;gap:8px;font-size:20px}
+.panel h2{font-weight:400;font-size:calc(22px*var(--ts));letter-spacing:3px;color:var(--pencil);margin-bottom:2px}
+.panel .sub{font-size:calc(15px*var(--ts));color:var(--pencil);margin-bottom:8px}
+.grp.hide{display:none}
+.meter{margin-bottom:8px}
+.meter .row{display:flex;align-items:center;gap:8px;font-size:calc(20px*var(--ts))}
 .meter .row em{margin-left:auto;font-style:normal;font-variant-numeric:tabular-nums}
-.bar{position:relative;height:16px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;margin-top:3px;overflow:visible}
+.bar{position:relative;height:16px;border:2.5px solid var(--ink);border-radius:8px;background:var(--card);margin-top:3px;overflow:visible}
 .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--c);border-radius:5px}
+.f2 .bar i{background:repeating-linear-gradient(45deg,var(--c) 0 6px,rgba(255,255,255,.6) 6px 9px)}
+.f3 .bar i{background:radial-gradient(circle at 3px 3px,rgba(255,255,255,.75) 1.3px,transparent 1.7px) 0 0/7px 7px,var(--c)}
+.f4 .bar i{background:repeating-linear-gradient(0deg,var(--c) 0 4px,rgba(255,255,255,.6) 4px 6px)}
+:root[data-pat="0"] .bar i{background:var(--c)!important}
 .bar u{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px dashed var(--ink)}
-.hint{font-size:15px;color:var(--pencil);margin:-4px 0 8px}
-.tele{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
-.tele div{border:2.5px solid var(--ink);border-radius:8px;text-align:center;padding:2px 0;background:var(--paper)}
-.tele small{display:block;font-size:14px;color:var(--pencil);letter-spacing:1px}
-.tele b{font-weight:400;font-size:22px;font-variant-numeric:tabular-nums}
-.coach{border:3px solid var(--ink);border-radius:10px;background:var(--paper);padding:8px 12px;font-size:19px;min-height:150px}
-.coach p+p{margin-top:5px}
-.coach .v{color:var(--lift)} .coach .h{color:var(--thrust)} .coach .warn{color:var(--weight);font-weight:700}
-.coach .tip{color:var(--pencil)}
+.hint{font-size:calc(15px*var(--ts));color:var(--pencil);margin:-2px 0 8px}
+.tele{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0}
+.tele div{border:2.5px solid var(--ink);border-radius:8px;text-align:center;padding:1px 0;background:var(--paper)}
+.tele small{display:block;font-size:calc(14px*var(--ts));color:var(--pencil);letter-spacing:1px}
+.tele b{font-weight:400;font-size:calc(22px*var(--ts));font-variant-numeric:tabular-nums}
+.pchart{border:2.5px solid var(--ink);border-radius:8px;background:var(--paper);margin:8px 0;padding:2px 4px 0}
+.pchart svg{display:block;width:100%;height:auto}
+[data-adv="0"] .advonly{display:none!important}
+.lvlname{font-size:calc(18px*var(--ts));padding:2px 12px;border:3px solid var(--ink);border-radius:20px;background:var(--card)}
+.dots .dotb{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);background:var(--card);cursor:pointer;padding:0}
+.dots .dotb.on{background:var(--ink)}
+.smore{margin-top:10px;border:3px solid var(--ink);border-radius:10px;padding:4px 12px;background:var(--card)}
+.smore>summary{cursor:pointer;font-size:calc(20px*var(--ts));padding:4px 0}
+.smore[open]>summary{margin-bottom:4px}
+.steps2,.kpanel{display:none}
+.kpanel{margin-top:8px;border-top:2px dashed var(--hair);padding-top:6px}
+.kpanel h2{font-size:calc(18px*var(--ts))}
+.kpanel .keygrid{grid-template-columns:1fr;font-size:calc(16px*var(--ts));gap:2px}
 
-/* modal */
-.modal{position:fixed;inset:0;z-index:50;background:rgba(29,43,68,.6);display:none;align-items:center;justify-content:center;padding:14px;overflow:auto}
+/* density */
+.app[data-density="compact"] .panel{padding:8px 10px}
+.app[data-density="compact"] .meter{margin-bottom:3px}
+.app[data-density="compact"] .meter .row{font-size:calc(18px*var(--ts))}
+.app[data-density="compact"] .bar{height:12px}
+.app[data-density="compact"] .hint,.app[data-density="compact"] .sub{display:none}
+.app[data-density="compact"] .tele{gap:4px;margin:4px 0}
+.app[data-density="compact"] .tele b{font-size:calc(19px*var(--ts))}
+.app[data-density="compact"] .controls{padding:6px 12px;margin-top:6px;gap:4px 12px}
+.app[data-density="compact"] .stepsbar{margin-bottom:5px}
+.app[data-density="spacious"] .meter{margin-bottom:12px}
+.app[data-density="spacious"] .bar{height:20px}
+.app[data-density="spacious"] .tele{gap:10px;margin:12px 0}
+
+/* ----- coaching message ----- */
+.coachbar{display:flex;gap:12px;align-items:center;padding:10px 16px;border:4px solid var(--ink);border-radius:14px 8px 12px 10px/10px 12px 8px 14px;background:var(--card);color:var(--ink);font-size:calc(24px*var(--ts));line-height:1.2;box-shadow:4px 4px 0 rgba(0,0,0,.25);transition:opacity .25s}
+.view .coachbar{position:absolute;left:14px;right:14px;z-index:4;pointer-events:none}
+.view .coachbar.pos-top{top:12px}
+.view .coachbar.pos-bottom{bottom:12px}
+.coachbar.inpanel{position:static;font-size:calc(19px*var(--ts));min-height:64px;padding:8px 12px;box-shadow:none;margin-top:8px}
+.coachbar.idle{opacity:0}
+.coachbar.inpanel.idle{opacity:.35}
+.coachbar .ci{flex:none;width:1.8em;height:1.8em;border-radius:50%;border:3px solid currentColor;display:grid;place-items:center;font-size:.8em;font-weight:700;background:transparent}
+.coachbar.cue{background:var(--lift-t);border-color:var(--lift)}
+.coachbar.cue .ci{background:var(--lift);color:var(--lift-on);border-color:var(--ink)}
+.coachbar.caution{background:var(--drag);color:var(--drag-on)}
+.coachbar.warn{background:var(--weight);color:var(--weight-on);font-size:calc(32px*var(--ts));font-weight:700;animation:wpulse 1s ease-in-out infinite}
+.coachbar.inpanel.warn{font-size:calc(22px*var(--ts))}
+.coachbar.flash{animation:cflash 1.2s ease-out}
+.coachbar.warn.flash{animation:cflash 1.2s ease-out,wpulse 1s 1.2s ease-in-out infinite}
+@keyframes cflash{0%{transform:scale(1.06);box-shadow:0 0 0 0 var(--ink),4px 4px 0 rgba(0,0,0,.25)}40%{box-shadow:0 0 0 14px rgba(255,255,255,.0),0 0 0 8px var(--ink)}100%{transform:scale(1)}}
+@keyframes wpulse{0%,100%{box-shadow:4px 4px 0 rgba(0,0,0,.25)}50%{box-shadow:0 0 0 6px var(--ink),4px 4px 0 rgba(0,0,0,.25)}}
+:root[data-motion="reduce"] .coachbar{animation:none!important;transition:none}
+:root[data-motion="reduce"] .coachbar.flash{outline:6px solid var(--ink);outline-offset:3px}
+
+/* ----- fullscreen: only the airplane view + the flight-info panel ----- */
+.is-fs,.is-fs body{overflow:hidden;height:100%}
+.is-fs header.top,.is-fs .controls,.is-fs .steps:not(.steps2),.is-fs .lvlname{display:none}
+.is-fs .app{max-width:none;margin:0;padding:8px;height:100vh;gap:10px;align-items:stretch}
+.is-fs .app>section{display:flex;flex-direction:column;justify-content:center;min-height:0}
+.is-fs .stepsbar{margin-bottom:6px;justify-content:flex-end}
+.is-fs .tools{margin-left:0}
+.is-fs canvas{width:min(100%,calc((100vh - 70px)*960/540));height:auto}
+.is-fs .panel{overflow:auto;max-height:calc(100vh - 16px);padding:10px 12px}
+.is-fs .panel .hint,.is-fs .panel .sub{display:none}
+.is-fs .steps2{display:flex;margin-bottom:8px}
+.is-fs .kpanel{display:block}
+@media (pointer:coarse){
+  .is-fs .controls{display:grid;margin-top:6px;padding:6px 10px}
+  .is-fs .controls .ctl,.is-fs .controls .keys{display:none}
+  .is-fs canvas{width:min(100%,calc((100vh - 150px)*960/540))}
+}
+.keygrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:calc(18px*var(--ts))}
+.keygrid div{display:flex;gap:8px;align-items:center}
+.keygrid kbd{font-size:calc(16px*var(--ts))}
+
+/* ----- modals ----- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,16,30,.62);display:none;align-items:center;justify-content:center;padding:14px;overflow:auto}
 .modal.show{display:flex}
-.card{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border:4px solid var(--ink);border-radius:16px 8px 14px 10px/10px 14px 8px 16px;max-width:720px;width:100%;max-height:calc(100vh - 28px);overflow:auto;padding:22px 24px}
-.card h2{font-weight:400;font-size:34px;letter-spacing:3px;line-height:1.1;margin-bottom:10px}
+#settings{z-index:70}
+.card{position:relative;background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border:4px solid var(--ink);border-radius:16px 8px 14px 10px/10px 14px 8px 16px;max-width:760px;width:100%;max-height:calc(100vh - 28px);overflow:auto;padding:22px 24px;color:var(--ink)}
+.card.wide{max-width:880px}
+.card h2{font-weight:400;font-size:calc(34px*var(--ts));letter-spacing:3px;line-height:1.1;margin-bottom:10px;padding-right:50px}
 .card h2 span{border-bottom:4px dashed var(--lift)}
-.card h3{font-weight:400;font-size:22px;letter-spacing:2px;margin:10px 0 2px}
+.card h3{font-weight:400;font-size:calc(22px*var(--ts));letter-spacing:2px;margin:12px 0 2px}
 .card p{margin-bottom:8px}
 .card ul{list-style:none;margin:8px 0 12px}
 .card li{position:relative;padding-left:22px;margin-top:6px}
 .card li::before{content:"";position:absolute;left:3px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.xbtn{position:absolute;top:10px;right:12px;width:44px;height:44px;font:inherit;font-size:calc(24px*var(--ts));line-height:1;cursor:pointer;border:3px solid var(--ink);border-radius:50%;background:var(--card);color:var(--ink);z-index:2}
+.xbtn:hover{background:var(--weight-t)}
 .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
 .mini{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
-.mini div{border:3px solid var(--ink);border-radius:10px;padding:6px 10px;background:#FFFDF6;border-left:10px solid var(--c)}
+.mini div{border:3px solid var(--ink);border-radius:10px;padding:6px 10px;background:var(--card);border-left:10px solid var(--c)}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.pager .r{display:flex;gap:10px;flex-wrap:wrap}
+.dots{display:flex;gap:8px}
+.dots i{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--ink);background:var(--card)}
+.dots i.on{background:var(--ink)}
 
 /* difficulty picker */
 .lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:6px 0}
-.lvl{font:inherit;font-size:19px;cursor:pointer;padding:6px 4px;border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;color:var(--ink);text-align:center;line-height:1.1}
-.lvl small{display:block;font-size:14px;color:var(--pencil)}
-.lvl[aria-checked=true]{background:var(--ink);color:#fff}
-.lvl[aria-checked=true] small{color:#cfd6e4}
-.lvldesc{border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;padding:8px 12px;margin:2px 0 6px;min-height:92px}
-.lvldesc small{color:var(--pencil);font-size:17px}
+.lvl{font:inherit;font-size:calc(19px*var(--ts));cursor:pointer;padding:6px 4px;border:3px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);text-align:center;line-height:1.1}
+.lvl small{display:block;font-size:calc(14px*var(--ts));color:var(--pencil)}
+.lvl[aria-checked=true]{background:var(--ink);color:var(--paper)}
+.lvl[aria-checked=true] small{color:var(--paper-2)}
+.lvldesc{border:3px solid var(--ink);border-radius:10px;background:var(--card);padding:8px 12px;margin:2px 0 6px;min-height:118px}
+.lvldesc small{color:var(--pencil);font-size:calc(17px*var(--ts))}
+.lvldesc .learn{display:block;margin-top:4px}
 
 /* result */
-.stars{font-size:36px;letter-spacing:5px;margin-bottom:2px}
-.gname{font-size:30px;letter-spacing:2px;line-height:1.1;margin-bottom:6px}
+.stars{font-size:calc(36px*var(--ts));letter-spacing:5px;margin-bottom:2px}
+.gname{font-size:calc(30px*var(--ts));letter-spacing:2px;line-height:1.1;margin-bottom:6px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
-.stats div{border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;text-align:center;padding:4px}
-.stats small{display:block;font-size:15px;color:var(--pencil);letter-spacing:1px}
-.stats b{font-weight:400;font-size:24px}
+.stats div{border:3px solid var(--ink);border-radius:10px;background:var(--card);text-align:center;padding:4px}
+.stats small{display:block;font-size:calc(15px*var(--ts));color:var(--pencil);letter-spacing:1px}
+.stats b{font-weight:400;font-size:calc(24px*var(--ts))}
+.score li{padding-left:30px}
+.score li::before{display:none}
+.score li i{position:absolute;left:0;top:0;font-style:normal;font-weight:700;width:24px;text-align:center}
+.score li.yes i{color:var(--thrust)} .score li.no i{color:var(--weight)}
+.cwrap{position:relative;border:3px solid var(--ink);border-radius:10px;background:var(--card);padding:6px 8px 4px;margin:6px 0 4px}
+.cwrap svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.ctitle{font-size:calc(20px*var(--ts));letter-spacing:1px;margin-bottom:2px}
+.clegend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:calc(16px*var(--ts));color:var(--ink);margin-bottom:2px}
+.clegend span{display:flex;align-items:center;gap:6px}
+.clegend i{display:inline-block;width:18px;height:10px;border-radius:2px}
+.ctip{position:absolute;pointer-events:none;display:none;background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:3px 8px;font-size:calc(16px*var(--ts));line-height:1.25;white-space:nowrap;z-index:3;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.ctip b{font-weight:400;font-size:calc(17px*var(--ts))}
+.ctip .k{display:inline-block;width:14px;height:0;border-top:3px solid;vertical-align:middle;margin-right:5px}
+.cnote{font-size:calc(17px*var(--ts));color:var(--ink)}
+.ctable{margin:6px 0 4px;font-size:calc(17px*var(--ts))}
+.ctable summary{cursor:pointer}
+.ctable table{border-collapse:collapse;margin-top:6px;width:100%;font-variant-numeric:tabular-nums}
+.ctable th,.ctable td{border:2px solid var(--hair);padding:1px 8px;text-align:right}
+.ctable th{background:var(--paper-2);font-weight:400}
 
 /* matching warm-up */
 .pgrid{display:grid;grid-template-columns:96px 1fr 96px;grid-template-rows:74px auto 74px;grid-template-areas:". up ." "back plane fwd" ". down .";gap:8px;margin:10px 0;align-items:center;justify-items:center}
-.slot{font:inherit;cursor:pointer;width:100%;height:100%;min-height:60px;border:3px dashed var(--ink);border-radius:12px;background:#FFFDF6;font-size:40px;color:var(--pencil);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.slot{font:inherit;cursor:pointer;width:100%;height:100%;min-height:60px;border:3px dashed var(--ink);border-radius:12px;background:var(--card);font-size:calc(40px*var(--ts));color:var(--pencil);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
 .slot:hover:not(.ok){background:var(--paper-2)}
-.slot.ok{border-style:solid;background:var(--c);color:var(--on);font-size:18px;cursor:default}
-.slot.ok b{font-weight:400;font-size:20px}
+.slot.ok{border-style:solid;background:var(--c);color:var(--on);font-size:calc(18px*var(--ts));cursor:default}
+.slot.ok b{font-weight:400;font-size:calc(20px*var(--ts))}
 .slot.shake{animation:shake .35s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .up{grid-area:up}.back{grid-area:back}.fwd{grid-area:fwd}.down{grid-area:down}
 .planebox{grid-area:plane;width:100%;text-align:center}
 .planebox svg{width:100%;max-width:300px;height:auto}
 .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.chip{display:flex;gap:10px;align-items:center;padding:8px 10px;border:3px solid var(--ink);border-radius:10px;background:#FFFDF6;cursor:grab;user-select:none;font-size:18px;line-height:1.15}
-.chip b{font-weight:400;font-size:20px;display:block;letter-spacing:1px}
+.chip{display:flex;gap:10px;align-items:center;padding:8px 10px;border:3px solid var(--ink);border-radius:10px;background:var(--card);cursor:grab;user-select:none;font-size:calc(18px*var(--ts));line-height:1.15}
+.chip b{font-weight:400;font-size:calc(20px*var(--ts));display:block;letter-spacing:1px}
 .chip.sel{background:var(--t);box-shadow:0 0 0 3px var(--c)}
 .chip.used{opacity:.35;pointer-events:none}
-.fb{min-height:28px;margin-top:8px;font-size:20px}
+.fb{min-height:28px;margin-top:8px;font-size:calc(20px*var(--ts))}
 .fb.bad{color:var(--weight)} .fb.good{color:var(--thrust)}
 
-@media (max-width:940px){.app{grid-template-columns:1fr}.panel .coach{min-height:0}}
-@media (max-width:560px){
-  body{font-size:18px}.controls{grid-template-columns:1fr}.chips{grid-template-columns:1fr}.mini{grid-template-columns:1fr}
-  .pgrid{grid-template-columns:70px 1fr 70px;grid-template-rows:62px auto 62px}.card{padding:16px}.card h2{font-size:28px}
-  .lvls{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:1fr}.lvlsel{margin-left:0}
+/* ----- settings ----- */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px;border-bottom:3px solid var(--ink);padding-bottom:8px}
+.tab{font:inherit;font-size:calc(19px*var(--ts));cursor:pointer;padding:3px 14px;border:3px solid var(--ink);border-radius:10px 10px 4px 4px;background:var(--card);color:var(--ink)}
+.tab[aria-selected=true]{background:var(--ink);color:var(--paper)}
+.tabpanel{min-height:300px;max-height:calc(100vh - 330px);overflow:auto;padding:2px 4px 2px 0}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:7px 2px;border-bottom:2px dashed var(--hair);font-size:calc(19px*var(--ts));cursor:pointer}
+.srow .sl{flex:1}
+.srow small{display:block;font-size:calc(15px*var(--ts));color:var(--pencil);line-height:1.2}
+.srow select{font:inherit;font-size:calc(18px*var(--ts));padding:2px 8px;border:3px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);min-width:150px}
+.srow input[type=range]{width:200px;max-width:45%}
+.srow output{min-width:48px;text-align:right;font-variant-numeric:tabular-nums}
+.sw{width:28px;height:28px;accent-color:var(--lift);cursor:pointer;flex:none}
+.rtag{font-size:calc(14px*var(--ts));border:2px solid var(--ink);border-radius:10px;padding:0 6px;margin-left:6px;white-space:nowrap;color:var(--ink);background:var(--drag-t)}
+.sgroup{font-size:calc(20px*var(--ts));letter-spacing:2px;color:var(--pencil);margin:12px 0 2px}
+.sbtns{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.krow{display:flex;align-items:center;gap:8px;padding:4px 2px;border-bottom:2px dashed var(--hair);font-size:calc(18px*var(--ts))}
+.krow .kl{flex:1}
+.kbtn{font:inherit;font-size:calc(17px*var(--ts));min-width:86px;padding:1px 8px;border:3px solid var(--ink);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+.kbtn.cap{background:var(--drag);color:var(--drag-on)}
+.srestart{margin-top:8px;border:3px solid var(--ink);border-radius:10px;background:var(--drag-t);padding:6px 12px;font-size:calc(18px*var(--ts));display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.srestart[hidden]{display:none}
+.note{font-size:calc(17px*var(--ts));color:var(--pencil);margin:6px 0}
+
+@media (max-width:940px){.app,.app[data-side="left"]{grid-template-columns:1fr}.app[data-side="left"] .panel{order:0}.tools{margin-left:0}}
+@media (max-width:640px){
+  body{font-size:calc(18px*var(--ts))}.controls{grid-template-columns:1fr}.touch{grid-template-columns:1fr}.chips{grid-template-columns:1fr}.mini{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:70px 1fr 70px;grid-template-rows:62px auto 62px}.card{padding:16px}.card h2{font-size:calc(28px*var(--ts))}
+  .lvls{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:1fr}.keygrid{grid-template-columns:1fr}
+  .srow{flex-wrap:wrap}.srow input[type=range]{width:100%;max-width:100%}.view .coachbar{font-size:calc(18px*var(--ts));padding:6px 10px}.view .coachbar.warn{font-size:calc(21px*var(--ts))}
 }
 @media (prefers-reduced-motion:reduce){.slot.shake{animation:none}}
+:root[data-motion="reduce"] .slot.shake{animation:none}
 </style>
 </head>
 <body>
@@ -167,39 +338,76 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
   </div>
 </header>
 
-<div class="app">
+<div class="app" id="app" data-side="right" data-density="spacious">
   <section>
     <div class="stepsbar">
-      <ol class="steps" id="steps">
-        <li data-s="1">1 · Take off</li><li data-s="2">2 · Climb</li><li data-s="3">3 · Land softly</li>
+      <ol class="steps" id="steps" aria-label="Mission checklist">
+        <li data-s="1">Take off</li><li data-s="2">Climb</li><li data-s="3">Land softly</li><li data-s="4">Brake to a stop</li>
       </ol>
-      <label class="lvlsel" for="lvl">Level <select id="lvl"></select></label>
-      <button class="btn ghost restart" id="restart" type="button">↺ Restart</button>
+      <div class="tools" role="toolbar" aria-label="Game tools">
+        <span class="lvlname" id="lvlname"></span>
+        <button class="btn ghost small" id="pause" type="button" aria-pressed="false">❚❚ Pause</button>
+        <button class="btn ghost small" id="restart" type="button">↺ Restart</button>
+        <button class="btn ghost small" id="fs" type="button" aria-pressed="false">⤢ Fullscreen</button>
+        <button class="btn ghost small" id="gear" type="button" aria-label="Settings" aria-haspopup="dialog">⚙ Settings</button>
+      </div>
     </div>
-    <canvas id="cv" aria-label="Flight view: your airplane with arrows for the four forces"></canvas>
-    <div class="controls frame">
+    <div class="view" id="view">
+      <canvas id="cv" role="img" aria-label="Flight view: your airplane with arrows for the four forces"></canvas>
+      <div class="coachbar pos-top idle" id="coachBox" aria-hidden="true"><span class="ci" id="coachIcon"></span><span class="ct" id="coachText"></span></div>
+    </div>
+    <div class="controls frame" id="controls">
       <div class="ctl f3"><label for="thr"><span>THRUST (engine)</span><b id="thrV">0%</b></label><input id="thr" type="range" min="0" max="100" step="any" value="0"></div>
-      <div class="ctl f1"><label for="ang"><span>TRIM (nose up ↑ / down ↓)</span><b id="angV">5°</b></label><input id="ang" type="range" min="-5" max="20" step="any" value="5"></div>
-      <p class="keys">Keys: <kbd>←</kbd> <kbd>→</kbd> (or <kbd>A</kbd> <kbd>D</kbd>) change thrust · <kbd>↑</kbd> <kbd>↓</kbd> (or <kbd>W</kbd> <kbd>S</kbd>) change trim.</p>
+      <div class="ctl f1"><label for="ang"><span>PITCH (nose up ↑ / down ↓)</span><b id="angV">5°</b></label><input id="ang" type="range" min="-5" max="20" step="any" value="5"></div>
+      <div class="touch" id="touch" role="group" aria-label="On-screen controls: press and hold">
+        <div class="tgrp f3"><span>THRUST</span><button class="hold" type="button" data-h="thr" data-d="-1" aria-label="Less thrust (press and hold)">−</button><button class="hold" type="button" data-h="thr" data-d="1" aria-label="More thrust (press and hold)">+</button></div>
+        <div class="tgrp f1"><span>PITCH</span><button class="hold" type="button" data-h="pit" data-d="-1" aria-label="Nose down (press and hold)">▼</button><button class="hold" type="button" data-h="pit" data-d="1" aria-label="Nose up (press and hold)">▲</button></div>
+      </div>
     </div>
   </section>
 
-  <aside class="panel frame">
-    <h2>FORCE METERS</h2>
-    <div class="meter f1"><div class="row"><b class="dot">F1</b>Lift ↑<em id="vL">0</em></div><div class="bar"><i id="bL"></i><u style="left:50%"></u></div></div>
-    <div class="meter f2"><div class="row"><b class="dot">F2</b>Weight ↓<em id="vW">100</em></div><div class="bar"><i id="bW" style="width:50%"></i></div></div>
-    <p class="hint">Dashed line on the Lift bar = the weight to beat.</p>
-    <div class="meter f3"><div class="row"><b class="dot">F3</b>Thrust →<em id="vT">0</em></div><div class="bar"><i id="bT"></i></div></div>
-    <div class="meter f4"><div class="row"><b class="dot">F4</b>Drag ←<em id="vD">0</em></div><div class="bar"><i id="bD"></i><u id="mT" style="left:0"></u></div></div>
-    <p class="hint">Dashed line on the Drag bar = your thrust.</p>
-    <div class="tele">
-      <div><small>SPEED kt</small><b id="tS">0</b></div><div><small>ALT ft</small><b id="tA">0</b></div><div><small>V/S fpm</small><b id="tC">0</b></div>
+  <aside class="panel frame" id="panel" aria-label="Flight information">
+    <ol class="steps steps2" id="steps2" aria-label="Mission checklist (fullscreen)">
+      <li data-s="1">Take off</li><li data-s="2">Climb</li><li data-s="3">Land softly</li><li data-s="4">Stop</li>
+    </ol>
+    <div class="grp" id="gMeters">
+      <h2>FORCE METERS</h2>
+      <p class="sub" id="subScale">100% = the normal weight of the plane</p>
+      <div class="meter f1"><div class="row"><b class="dot">F1</b>Lift ↑<em id="vL">0%</em></div><div class="bar" id="barL" role="meter" aria-label="Lift" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i id="bL"></i><u class="advonly" id="mW" style="left:50%"></u></div></div>
+      <div class="meter f2"><div class="row"><b class="dot">F2</b>Weight ↓<em id="vW">100%</em></div><div class="bar" id="barW" role="meter" aria-label="Weight" aria-valuemin="0" aria-valuemax="200" aria-valuenow="100"><i id="bW" style="width:50%"></i></div></div>
+      <p class="hint">Lift grows with speed²: twice as fast = 4× the lift.</p>
+      <p class="hint advonly">Dashed line on Lift = the weight it has to beat.</p>
+      <div class="meter f3"><div class="row"><b class="dot">F3</b>Thrust →<em id="vT">0%</em></div><div class="bar" id="barT" role="meter" aria-label="Thrust" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i id="bT"></i></div></div>
+      <div class="meter f4"><div class="row"><b class="dot">F4</b>Drag ←<em id="vD">0%</em></div><div class="bar" id="barD" role="meter" aria-label="Drag" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i id="bD"></i><u class="advonly" id="mT" style="left:0"></u></div></div>
+      <p class="hint advonly">Dashed line on Drag = your thrust. Thrust has to beat drag to speed up.</p>
     </div>
-    <div class="coach" id="coach" aria-live="off"></div>
+    <div class="grp" id="gData">
+      <div class="tele">
+        <div><small id="lAir">AIRSPEED kt</small><b id="tS">0</b></div>
+        <div class="advonly"><small id="lGnd">GROUND SPD kt</small><b id="tG">0</b></div>
+        <div><small id="lAlt">ALTITUDE ft</small><b id="tA">0</b></div>
+        <div class="advonly"><small id="lVs">V/S fpm</small><b id="tC">0</b></div>
+      </div>
+    </div>
+    <div class="grp" id="gChart"><div class="pchart"><svg id="pchart" viewBox="0 0 300 112" role="img" aria-label="Chart: lift against pitch. Lift rises until 15 degrees, then collapses in a stall."></svg></div></div>
+    <div class="grp" id="gCoach"></div>
   </aside>
 </div>
+<div class="sr" id="srLive" aria-live="polite" role="status"></div>
 
-<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="card" id="card"></div></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Flight School"><div class="card" id="card"></div></div>
+
+<div class="modal" id="settings" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+  <div class="card wide" id="sCard">
+    <button class="xbtn" id="sClose" type="button" aria-label="Close settings">✕</button>
+    <h2 id="sTitle"><span>SETTINGS</span></h2>
+    <div class="tabs" id="sTabs" role="tablist" aria-label="Settings groups"></div>
+    <div class="tabpanel" id="sBody" role="tabpanel" tabindex="0"></div>
+    <div class="srestart" id="sRestart" hidden></div>
+    <p class="note">Changes apply straight away and are saved in this browser. The game is paused while settings are open.</p>
+    <div class="row"><button class="btn" id="sDone" type="button">Done</button></div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -208,65 +416,152 @@ var $=function(s,r){return (r||document).querySelector(s);};
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function nf(n){return Math.round(n).toLocaleString('en-US');}
 function randn(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 /* ---------------- constants ----------------
-   Forces use arbitrary units ("u"). Display units are converted to what pilots use:
-   altitude in feet, speed in knots, vertical speed in feet per minute (fpm). */
+   Forces use arbitrary units, shown as "% of the plane's normal weight" (100% = normal weight).
+   Display units are converted to what pilots use. */
 var W=960,H=540,GROUND=470,PXM=0.85,PX=300;
-var WEIGHT=100, M_H=14, M_V=5, TMAX=150, KL=0.0476, KD0=0.012, KDI=0.0002, ROLL=14, BRAKE=40, GE_H=15;
-var KT=2.7, FT=3.281, FPM=196.85;                 /* sim speed -> knots, metres -> feet, m/s -> ft/min */
-var INK='#1D2B44';
+var M_H=14, M_V=5, TMAX=150, KL=0.0476, KD0=0.012, KDI=0.0002, ROLL=14, BRAKE=40, GE_H=15;
+var AOA_WARN=13, AOA_CRIT=15, AOA_REC=12, AOA_PROT=14.5, CL_ST=0.5, STALL_DRAG=2.5;
+var BURN=0.05, OVERRUN_ZONE=600, FTPERU=4.557;
+var KT=2.7, FT=3.281, FPM=196.85;
+var PO='#1D2B44';   /* plane outline colour */
 var NAMES=['BUTTER LANDING!','SMOOTH LANDING','FIRM LANDING','HARD LANDING','CRASH'];
-var GCOL=['#23894F','#2A72D4','#B87400','#CF3F32','#CF3F32'];
+var TURBF={off:0,light:0.5,normal:1,strong:1.6};
+var TSCALE={small:0.9,medium:1,large:1.2,xlarge:1.4};
+var PANELW={wide:'280px',balanced:'330px',panel:'420px'};
+var ARROWK={small:0.45,normal:0.6,large:0.8};
+var TBTN={small:'40px',medium:'52px',large:'72px'};
+var REPEAT={slow:0.6,normal:1,fast:1.7};
 
-/* grade = touchdown rates in fpm: [butter, smooth, firm, hard]; faster than "hard" = crash */
 var LEVELS={
-  beginner:    {label:'Beginner',     target:1000, turb:0,    ge:.28, maxTrim:13, grade:[300,600,1000,2400],
-    desc:'Stall protection, smooth air and a strong "ground cushion" near the runway. Very forgiving landings.'},
-  easy:        {label:'Easy',         target:1500, turb:0,    ge:.20, maxTrim:14, grade:[250,500,800,1800],
-    desc:'Stall protection, smooth air and a good ground cushion. A relaxed climb.'},
-  intermediate:{label:'Intermediate', target:2500, turb:.25,  ge:.12, maxTrim:20, grade:[200,400,650,1500],
-    desc:'Stalls are possible and there is light turbulence. A proper flare is needed for a soft landing.'},
-  hard:        {label:'Hard',         target:3500, turb:.5,   ge:.06, maxTrim:20, grade:[150,300,500,1200],
-    desc:'Medium turbulence, hardly any ground cushion and a long climb. Tight landing limits.'},
-  expert:      {label:'Expert',       target:5000, turb:.9,   ge:0,   maxTrim:20, grade:[120,250,400,900],
-    desc:'Strong turbulence, no ground cushion and a 5,000 ft climb. Only a truly buttery landing counts.'}
+  calm:    {num:1,label:'Calm air',    target:1000,wind:0, turb:0,  ge:.28,weight:100,runway:0,  grade:[300,600,1000,2400],par:150,
+    learn:'How the four forces decide whether you climb, cruise or sink.',
+    desc:function(){return 'No wind, no gusts and a strong cushion of extra lift near the runway (ground effect).';}},
+  headwind:{num:2,label:'Headwind',    target:1500,wind:20,turb:0,  ge:.20,weight:100,runway:0,  grade:[250,500,800,1800], par:180,
+    learn:'Lift depends on airspeed, not ground speed.',
+    desc:function(){return 'A steady '+spdStrKt(20)+' headwind. Your airspeed is '+spdStrKt(20)+' higher than your ground speed, so you lift off sooner.';}},
+  gusts:   {num:3,label:'Gusts',       target:2000,wind:20,turb:.5, ge:.15,weight:100,runway:0,  grade:[200,400,650,1500], par:220,
+    learn:'Gusts change lift suddenly. Small pitch corrections keep you steady.',
+    desc:function(){return 'The same headwind, plus bumpy air that pushes the plane up and down.';}},
+  cargo:   {num:4,label:'Heavy cargo', target:2500,wind:15,turb:.4, ge:.10,weight:125,runway:0,  grade:[180,350,550,1300], par:270,
+    learn:'More weight needs more lift. Burning fuel makes you lighter.',
+    desc:function(){return 'The plane starts 25% heavier, so it lifts off later and faster. Watch the Weight bar shrink as fuel burns.';}},
+  runway:  {num:5,label:'Short runway',target:2500,wind:10,turb:.4, ge:.06,weight:115,runway:290,grade:[150,300,500,1200], par:270,
+    learn:'Use full thrust and raise the nose (rotate) at the right speed.',
+    desc:function(){return 'About '+altStrFt(Math.round(290*FTPERU/100)*100)+' of runway. If you are not airborne before it ends, you overrun. Rotating with too little pitch makes the take-off run too long.';}}
 };
 var LKEYS=Object.keys(LEVELS);
 var FORCES={
-  lift:{n:'F1',name:'Lift',color:'#2A72D4',tint:'#DCE9FB',on:'#fff',dir:'up',clue:'Made by the wings. It holds the plane UP.',hint:'Lift fights gravity, so it points the opposite way to gravity.'},
-  weight:{n:'F2',name:'Weight',color:'#CF3F32',tint:'#F8DCD8',on:'#fff',dir:'down',clue:'Gravity pulls the plane toward the Earth.',hint:'Gravity always pulls toward the ground.'},
-  thrust:{n:'F3',name:'Thrust',color:'#23894F',tint:'#D6EEDF',on:'#fff',dir:'forward',clue:'Engines or propellers push the plane forward.',hint:'Thrust pushes the plane the way it is heading.'},
-  drag:{n:'F4',name:'Drag',color:'#E39100',tint:'#FBEBC8',on:'#1D2B44',dir:'back',clue:'Air resistance pushes against the motion.',hint:'Drag works against motion, so it points the opposite way to thrust.'}
+  lift:{n:'F1',name:'Lift',dir:'up',clue:'Made by the wings. It holds the plane UP.',hint:'Lift fights gravity, so it points the opposite way to gravity.'},
+  weight:{n:'F2',name:'Weight',dir:'down',clue:'Gravity pulls the plane toward the Earth.',hint:'Gravity always pulls toward the ground.'},
+  thrust:{n:'F3',name:'Thrust',dir:'forward',clue:'Engines or propellers push the plane forward.',hint:'Thrust pushes the plane the way it is heading.'},
+  drag:{n:'F4',name:'Drag',dir:'back',clue:'Air resistance pushes against the motion.',hint:'Drag works against motion, so it points the opposite way to thrust.'}
 };
+
+/* ---------------- keyboard actions (all rebindable) ---------------- */
+var ACTIONS=[
+  {id:'thrustDown',l:'Thrust less',d:['arrowleft','a'],hold:1},
+  {id:'thrustUp',l:'Thrust more',d:['arrowright','d'],hold:1},
+  {id:'pitchUp',l:'Pitch nose up',d:['arrowup','w'],hold:1},
+  {id:'pitchDown',l:'Pitch nose down',d:['arrowdown','s'],hold:1},
+  {id:'thrustIdle',l:'Thrust to idle (0%)',d:['z','']},
+  {id:'thrustFull',l:'Thrust to full (100%)',d:['x','']},
+  {id:'pause',l:'Pause / resume',d:['p',' ']},
+  {id:'slow',l:'Slow motion',d:['m','']},
+  {id:'fullscreen',l:'Fullscreen',d:['f','']},
+  {id:'restart',l:'Restart / replay',d:['r','']},
+  {id:'advanced',l:'Advanced info on / off',d:['v','']},
+  {id:'settings',l:'Settings',d:['o','']},
+  {id:'shortcuts',l:'Show keyboard shortcuts',d:['h','?']},
+  {id:'intro',l:'Show intro again',d:['i','']},
+  {id:'level1',l:'Level 1',d:['1','']},{id:'level2',l:'Level 2',d:['2','']},{id:'level3',l:'Level 3',d:['3','']},
+  {id:'level4',l:'Level 4',d:['4','']},{id:'level5',l:'Level 5',d:['5','']}
+];
+function defKeys(){var o={};ACTIONS.forEach(function(a){o[a.id]=a.d.slice();});return o;}
+
+/* ---------------- settings (saved in the browser) ---------------- */
+var DEF={
+  adv:false,
+  theme:'light', text:'medium', arrows:true, arrowSize:'normal', labels:true, showTarget:true, showRunway:true, forceUnits:'pct',
+  altU:'ft', spdU:'kt', vsU:'fpm',
+  panels:{meters:true,data:true,steps:true,chart:true,coach:true}, side:'right', density:'spacious', viewSize:'balanced', coachPos:'top',
+  thrSens:1, pitchSens:1, invert:false, touchSize:'medium', repeat:'normal', keys:defKeys(),
+  gameSpeed:'normal', turb:'normal', stallProt:false, fuel:true, tips:'all', autoPause:false, autoCharts:true,
+  master:0.7, sfxVol:0.8, warnVol:1, stallSound:true,
+  cb:false, reduceMotion:false, font:'default', focus:'normal', announce:true
+};
+var SKEY='flightSchoolSettings3', PKEY='flightSchoolProgress';
+function merge(def,sv){
+  var r=clone(def); if(!sv||typeof sv!=='object') return r;
+  Object.keys(def).forEach(function(k){
+    var d=def[k], v=sv[k]; if(v===undefined) return;
+    if(Array.isArray(d)){ if(Array.isArray(v)) r[k]=v.map(function(x){return typeof x==='string'?x:'';}).slice(0,2); }
+    else if(d&&typeof d==='object') r[k]=merge(d,v);
+    else if(typeof v===typeof d) r[k]=v;
+  });
+  return r;
+}
+function loadSettings(){
+  var sv=null; try{ sv=JSON.parse(localStorage.getItem(SKEY)); }catch(e){}
+  var st=merge(DEF,sv);
+  if(!sv){ try{ st.reduceMotion=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){} }
+  ACTIONS.forEach(function(a){ while(st.keys[a.id].length<2) st.keys[a.id].push(''); });
+  return st;
+}
+var ST=loadSettings();
+function saveSettings(){ try{localStorage.setItem(SKEY,JSON.stringify(ST));}catch(e){} }
+var PR={}; try{ PR=JSON.parse(localStorage.getItem(PKEY))||{}; }catch(e){ PR={}; }
+function saveProgress(){ try{localStorage.setItem(PKEY,JSON.stringify(PR));}catch(e){} }
+function getPath(k){var p=k.split('.'),o=ST,i;for(i=0;i<p.length;i++) o=o[p[i]];return o;}
+function setPath(k,v){var p=k.split('.'),o=ST,i;for(i=0;i<p.length-1;i++) o=o[p[i]];o[p[p.length-1]]=v;}
+
+/* ---------------- units ---------------- */
+function altUnit(){return ST.altU==='m'?'m':'ft';}
+function spdUnit(){return ST.spdU==='kmh'?'km/h':ST.spdU==='mph'?'mph':'kt';}
+function vsUnit(){return ST.vsU==='ms'?'m/s':'fpm';}
+function altFromM(m){return ST.altU==='m'?m:m*FT;}
+function spdFromU(u){var kt=u*KT;return ST.spdU==='kmh'?kt*1.852:ST.spdU==='mph'?kt*1.15078:kt;}
+function spdFromKt(kt){return ST.spdU==='kmh'?kt*1.852:ST.spdU==='mph'?kt*1.15078:kt;}
+function altStrFt(ft){return ST.altU==='m'?nf(ft/FT)+' m':nf(ft)+' ft';}
+function spdStrKt(kt){return nf(spdFromKt(kt))+' '+spdUnit();}
+function vsStr(fpm){return ST.vsU==='ms'?(fpm/FPM).toFixed(1)+' m/s':nf(fpm)+' fpm';}
+function fForce(v){return nf(v)+(ST.forceUnits==='pct'?'%':'');}
 
 /* ---------------- state ---------------- */
 var cvs=$('#cv'), ctx=cvs.getContext('2d');
 var dpr=Math.min(window.devicePixelRatio||1,2);
 cvs.width=W*dpr; cvs.height=H*dpr;
-var thr=$('#thr'), ang=$('#ang'), lvlSel=$('#lvl');
-var thrust=0, angle=5, S, mode='modal', frame=0, prop=0;
-var keys={};
-var levelKey='beginner', LV=LEVELS.beginner, TARGET_M=LV.target/FT;
+var thr=$('#thr'), ang=$('#ang'), rootEl=document.documentElement;
+var thrust=0, angle=5, S, mode='modal', frame=0, prop=0, paused=false, slow=false;
+var pressed={}, hold={thr:0,pit:0};
+var settingsOpen=false, overlay='', introOpen=false, introPage=1, introFrom=false, capturing=null, endCtx=null, endOpen=false, endPage=1;
+var levelKey='calm', LV=LEVELS.calm, TARGET_M=LV.target/FT, WIND=0;
+try{var saved=localStorage.getItem('flightSchoolLevel2'); if(saved&&LEVELS[saved]) levelKey=saved;}catch(e){}
 
-LKEYS.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=LEVELS[k].label;lvlSel.appendChild(o);});
-
+function starsOf(k){var n=PR[k]?PR[k].stars:0,s='';for(var i=0;i<5;i++) s+=i<n?'★':'☆';return s;}
+function fillLevelSelect(){ var n=$('#lvlname'); if(n) n.textContent='Level '+LV.num+' · '+LV.label+(PR[levelKey]?'  '+starsOf(levelKey):''); }
 function setLevel(key){
-  if(!LEVELS[key]) key='beginner';
-  levelKey=key; LV=LEVELS[key]; TARGET_M=LV.target/FT;
-  ang.max=LV.maxTrim; angle=Math.min(angle,LV.maxTrim);
-  lvlSel.value=key;
-  $('#steps li[data-s="2"]').textContent='2 · Climb to '+nf(LV.target)+' ft';
-  try{localStorage.setItem('flightSchoolLevel',key);}catch(e){}
-  if(S) syncSliders();
+  if(!LEVELS[key]) key='calm';
+  levelKey=key; LV=LEVELS[key]; TARGET_M=LV.target/FT; WIND=LV.wind/KT;
+  fillLevelSelect(); updateStepLabels();
+  try{localStorage.setItem('flightSchoolLevel2',key);}catch(e){}
 }
-try{var saved=localStorage.getItem('flightSchoolLevel'); if(saved&&LEVELS[saved]) levelKey=saved;}catch(e){}
+function updateStepLabels(){
+  [].forEach.call(document.querySelectorAll('.steps li[data-s="2"]'),function(li){li.textContent='Climb to '+altStrFt(LV.target);});
+}
 
 function reset(){
-  S={x:0,alt:0,v:0,vy:0,phase:'takeoff',airborne:false,reached:false,time:0,L:0,D:0,T:0,stall:false,boom:0,
-     gust:0,grade:0,fpm:0,bad:null,msg:'',msg2:'',msgT:0,msgCol:INK,shake:0,crashFpm:0};
-  thrust=0; angle=Math.min(5,LV.maxTrim); syncSliders();
+  S={x:0,alt:0,v:0,vy:0,phase:'takeoff',airborne:false,reached:false,time:0,L:0,D:0,T:0,W:LV.weight,
+     stalled:false,warn:false,stallCount:0,stallEvt:false,autoPaused:false,boom:0,gust:0,grade:0,fpm:0,bad:null,msg:'',msg2:'',msgT:0,msgCol:'#000',shake:0,crashFpm:0,crashWhy:'',
+     cfg:{turb:ST.turb,fuel:ST.fuel,stallProt:ST.stallProt},
+     hist:[],nextHist:0,ev:{liftoff:null,target:null,touch:null,flare:null,stalls:[]}};
+  thrust=0; angle=5; applyAngRange(); syncSliders();
 }
+function maxAngle(){return (S&&S.cfg&&S.cfg.stallProt)?AOA_PROT:20;}
+function applyAngRange(){ang.max=maxAngle();}
 function syncSliders(){
   thr.value=thrust; ang.value=angle;
   $('#thrV').textContent=Math.round(thrust)+'%';
@@ -274,47 +569,246 @@ function syncSliders(){
   $('#angV').textContent=(a>0?'+':'')+a.toFixed(1)+'°';
 }
 thr.addEventListener('input',function(){thrust=+thr.value;syncSliders();});
-ang.addEventListener('input',function(){angle=+ang.value;syncSliders();});
+ang.addEventListener('input',function(){angle=Math.min(+ang.value,maxAngle());syncSliders();});
+
+/* ---------------- audio (Web Audio, created after the first click or key) ---------------- */
+var AC=null, mg=null, eng=null, warnT=0;
+function audioInit(){
+  if(AC){ if(AC.state==='suspended'){try{AC.resume();}catch(e){}} return; }
+  try{
+    var C=window.AudioContext||window.webkitAudioContext; if(!C) return;
+    AC=new C(); mg=AC.createGain(); mg.gain.value=1; mg.connect(AC.destination);
+    var o=AC.createOscillator(); o.type='sawtooth'; o.frequency.value=60;
+    var f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=240;
+    var g=AC.createGain(); g.gain.value=0; o.connect(f); f.connect(g); g.connect(mg); o.start();
+    eng={o:o,g:g};
+  }catch(e){AC=null;}
+}
+function gainFor(kind){return ST.master*(kind==='warn'?ST.warnVol:ST.sfxVol);}
+function tone(freq,dur,kind,type,vol,delay){
+  if(!AC) return; var g0=gainFor(kind)*(vol||0.3); if(g0<0.002) return;
+  var o=AC.createOscillator(), g=AC.createGain(), t=AC.currentTime+(delay||0);
+  o.type=type||'sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(g0,t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(mg); o.start(t); o.stop(t+dur+0.03);
+}
+function thump(strength){
+  if(!AC) return; var g0=gainFor('sfx')*strength; if(g0<0.002) return;
+  var n=Math.floor(AC.sampleRate*0.3), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
+  for(var i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  var src=AC.createBufferSource(); src.buffer=buf;
+  var f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=260; var g=AC.createGain(); g.gain.value=g0;
+  src.connect(f); f.connect(g); g.connect(mg); src.start();
+}
+function sfxTouch(g){ thump(g>=3?0.9:g===2?0.55:0.3); if(g<=1) tone(g===0?660:520,0.18,'sfx','sine',0.12,0.05); }
+function sfxCrash(){ thump(1); tone(90,0.5,'sfx','sawtooth',0.3); }
+function sfxWin(n){ [523,659,784,1047].slice(0,Math.max(2,Math.min(4,n))).forEach(function(f,i){tone(f,0.22,'sfx','triangle',0.25,i*0.13);}); }
+function audioTick(dt,running){
+  if(!AC) return;
+  if(eng){
+    var on=running&&mode==='fly';
+    eng.g.gain.setTargetAtTime(on?gainFor('sfx')*0.14*(0.25+thrust/100*0.75):0,AC.currentTime,0.12);
+    eng.o.frequency.setTargetAtTime(55+thrust*1.1,AC.currentTime,0.2);
+  }
+  warnT-=dt;
+  if(running&&mode==='fly'&&ST.stallSound&&S){
+    if(S.stalled){ if(warnT<=0){tone(880,0.11,'warn','square',0.22);warnT=0.24;} }
+    else if(S.warn){ if(warnT<=0){tone(640,0.14,'warn','square',0.18);warnT=0.6;} }
+  }
+}
+function unlockAudio(){audioInit();}
+document.addEventListener('pointerdown',unlockAudio,true);
+document.addEventListener('keydown',unlockAudio,true);
+
+/* ---------------- key bindings ---------------- */
+function normKey(e){var k=e.key; if(k==='Spacebar') k=' '; return k.length===1?k.toLowerCase():k.toLowerCase();}
+function keyName(k){
+  if(!k) return '—';
+  var m={arrowleft:'←',arrowright:'→',arrowup:'↑',arrowdown:'↓',' ':'Space',escape:'Esc',enter:'Enter',backspace:'⌫'};
+  return m[k]||(k.length===1?k.toUpperCase():k.charAt(0).toUpperCase()+k.slice(1));
+}
+function actionOf(k){
+  for(var i=0;i<ACTIONS.length;i++){ if(ST.keys[ACTIONS[i].id].indexOf(k)>-1) return ACTIONS[i].id; }
+  return null;
+}
+function isDown(act){return ST.keys[act].some(function(k){return k&&pressed[k];});}
+function keyFirst(act){var ks=ST.keys[act].filter(Boolean);return ks.length?keyName(ks[0]):'—';}
+function keysAll(act){var ks=ST.keys[act].filter(Boolean);return ks.length?ks.map(keyName).join(' or '):'—';}
+function assignKey(act,slot,k){
+  ACTIONS.forEach(function(a){ST.keys[a.id]=ST.keys[a.id].map(function(x){return (k&&x===k)?'':x;});});
+  ST.keys[act][slot]=k;
+}
+function shortcutRows(){
+  var lv=[1,2,3,4,5].map(function(n){return keyFirst('level'+n);});
+  var lvTxt=(lv.join('')==='12345')?'1 – 5':lv.join(' ');
+  return [
+    [keyFirst('thrustDown')+' '+keyFirst('thrustUp'),'Thrust less / more'],
+    [keyFirst('pitchUp')+' '+keyFirst('pitchDown'),'Pitch up / down'],
+    [keyFirst('thrustIdle')+' / '+keyFirst('thrustFull'),'Thrust idle / full'],
+    [keysAll('pause'),'Pause'],[keyFirst('slow'),'Slow motion'],[keyFirst('fullscreen'),'Fullscreen'],
+    [keyFirst('advanced'),'Advanced info'],[keyFirst('settings'),'Settings'],
+    [keyFirst('restart'),'Restart / replay'],[lvTxt,'Choose level'],
+    [keyFirst('intro'),'Intro again'],[keyFirst('shortcuts'),'This list']
+  ];
+}
+function keyGridHTML(){return shortcutRows().map(function(r){return '<div><kbd>'+esc(r[0])+'</kbd><span>'+esc(r[1])+'</span></div>';}).join('');}
+function renderKeyLists(){[].forEach.call(document.querySelectorAll('[data-keys]'),function(el){el.innerHTML=keyGridHTML();});}
+
+/* ---------------- pause, slow-mo, advanced ---------------- */
+function updatePauseUI(){var b=$('#pause'); b.setAttribute('aria-pressed',paused); b.textContent=paused?'▶ Resume':'❚❚ Pause';}
+function setPaused(v){paused=v; if(!v&&S) S.autoPaused=false; updatePauseUI();}
+function togglePause(){ if(mode!=='fly'||overlay) return; setPaused(!paused); }
+function toggleSlow(){slow=!slow; var c=$('#s_slow'); if(c) c.checked=slow;}
+function toggleAdv(){ST.adv=!ST.adv;saveSettings();applySettings();}
+function halted(){return paused||settingsOpen||overlay!=='';}
+
+/* ---------------- fullscreen (falls back to a full-window layout when the browser refuses) ---------------- */
+var fsBtn=$('#fs'), pseudoFs=false;
+var fsSupported=!!(rootEl.requestFullscreen||rootEl.webkitRequestFullscreen);
+function fsElement(){return document.fullscreenElement||document.webkitFullscreenElement||null;}
+function setFsUI(on){
+  rootEl.classList.toggle('is-fs',on);
+  fsBtn.setAttribute('aria-pressed',on); fsBtn.textContent=on?'⤡ Exit fullscreen':'⤢ Fullscreen';
+}
+function toggleFullscreen(){
+  if(fsElement()){ try{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}catch(e){} return; }
+  if(pseudoFs){pseudoFs=false;setFsUI(false);return;}
+  var fallback=function(){pseudoFs=true;setFsUI(true);};
+  if(!fsSupported){fallback();return;}
+  try{ var p=(rootEl.requestFullscreen||rootEl.webkitRequestFullscreen).call(rootEl); if(p&&p.catch) p.catch(fallback); }
+  catch(e){fallback();}
+}
+function fsChanged(){ if(fsElement()) pseudoFs=false; setFsUI(!!fsElement()||pseudoFs); }
+fsBtn.addEventListener('click',toggleFullscreen);
+document.addEventListener('fullscreenchange',fsChanged);
+document.addEventListener('webkitfullscreenchange',fsChanged);
+$('#pause').addEventListener('click',togglePause);
+$('#gear').addEventListener('click',function(){toggleSettings();});
+
+/* ---------------- keyboard handling ---------------- */
+function doAction(act){
+  switch(act){
+    case 'pause': togglePause(); break;
+    case 'slow': toggleSlow(); break;
+    case 'fullscreen': toggleFullscreen(); break;
+    case 'advanced': toggleAdv(); break;
+    case 'settings': toggleSettings(); break;
+    case 'shortcuts': showKeys(); break;
+    case 'intro': if(mode==='fly'&&!overlay) showIntro(1,true); break;
+    case 'thrustIdle': if(mode==='fly'&&!halted()){thrust=0;syncSliders();} break;
+    case 'thrustFull': if(mode==='fly'&&!halted()){thrust=100;syncSliders();} break;
+    case 'restart':
+      if(mode==='fly') startFlight();
+      else if(modal.classList.contains('show')&&$('#again')) $('#again').click();
+      break;
+    default:
+      if(act.indexOf('level')===0){
+        var key=LKEYS[+act.slice(5)-1];
+        if(mode==='fly'&&!overlay){setLevel(key);startFlight();}
+        else if(introOpen&&introPage===3){setLevel(key);refreshPicker();}
+      }
+  }
+}
+function handleEsc(){
+  if(capturing){cancelCapture();return;}
+  if(settingsOpen){closeSettings();return;}
+  if(introOpen){closeIntro();return;}
+  if(pseudoFs){toggleFullscreen();}
+}
 window.addEventListener('keydown',function(e){
-  var k=e.key.toLowerCase();
-  if(mode==='fly' && ['arrowup','arrowdown','arrowleft','arrowright'].indexOf(k)>-1 && document.activeElement.type!=='range') e.preventDefault();
-  keys[k]=true;
+  var k=normKey(e);
+  if(capturing){
+    e.preventDefault(); e.stopPropagation();
+    if(k==='escape'){cancelCapture();return;}
+    if(['tab','enter','shift','control','alt','meta','capslock'].indexOf(k)>-1) return;
+    if(k==='backspace'||k==='delete'){finishCapture('');return;}
+    finishCapture(k); return;
+  }
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(k==='escape'){handleEsc();return;}
+  var ae=document.activeElement, tag=ae?ae.tagName:'';
+  if(tag==='SELECT'||tag==='TEXTAREA') return;
+  if(settingsOpen){
+    if(k==='tab') trapTab(e);
+    else if(actionOf(k)==='settings'&&tag!=='INPUT'){e.preventDefault();closeSettings();}
+    return;
+  }
+  if(((introOpen&&introPage>0)||endOpen)&&(k==='arrowright'||k==='arrowleft')&&!(ae&&ae.closest&&ae.closest('.cwrap'))){
+    e.preventDefault(); var dd=(k==='arrowright'?1:-1);
+    if(introOpen) showIntro(introPage+dd); else renderEnd(endPage+dd);
+    return;
+  }
+  var act=actionOf(k); if(!act) return;
+  if(ae&&ae.type==='range'&&k.indexOf('arrow')===0) return;
+  if((tag==='BUTTON'||tag==='SUMMARY'||tag==='A')&&(k===' '||k==='enter')) return;
+  if(k.indexOf('arrow')===0||k===' ') e.preventDefault();
+  if(e.repeat) return;
+  pressed[k]=true;
+  doAction(act);
 });
-window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
-window.addEventListener('blur',function(){keys={};});
+window.addEventListener('keyup',function(e){pressed[normKey(e)]=false;});
+window.addEventListener('blur',function(){pressed={};hold.thr=0;hold.pit=0;});
+[].forEach.call(document.querySelectorAll('.hold'),function(b){
+  var h=b.dataset.h, d=+b.dataset.d;
+  function on(e){e.preventDefault(); hold[h]=d; b.classList.add('down'); try{b.setPointerCapture(e.pointerId);}catch(x){}}
+  function off(){ if(hold[h]===d) hold[h]=0; b.classList.remove('down'); }
+  b.addEventListener('pointerdown',on);
+  b.addEventListener('pointerup',off); b.addEventListener('pointercancel',off); b.addEventListener('lostpointercapture',off);
+  b.addEventListener('contextmenu',function(e){e.preventDefault();});
+  b.addEventListener('click',function(e){            /* keyboard activation (Enter / Space): one small step */
+    if(e.detail!==0) return;
+    if(h==='thr') thrust=clamp(thrust+d*5,0,100); else angle=clamp(angle+d*1,-5,maxAngle());
+    syncSliders();
+  });
+});
 
 /* ---------------- physics ---------------- */
-function liftCoeff(a){
-  var cl = a<=15 ? (a+2)/12 : Math.max(0.25,17/12-(a-15)*0.18);   /* above 15° the air stops following the wing: stall */
-  return Math.max(cl,-0.4);
+function liftCoeff(a,stalled){
+  return stalled ? CL_ST : Math.min((a+2)/12,17/12);   /* lift rises with pitch up to 15°, then collapses (stall) */
 }
 function gradeOf(fpm){var g=LV.grade;return fpm<=g[0]?0:fpm<=g[1]?1:fpm<=g[2]?2:fpm<=g[3]?3:4;}
 
 function step(dt){
-  var a=angle, v=S.v;
-  S.stall=a>15;
-  var ge=1+LV.ge*clamp(1-S.alt/GE_H,0,1);              /* ground effect: extra lift very close to the runway */
-  var L=KL*v*v*liftCoeff(a)*ge;
-  var D=(KD0+KDI*a*a)*v*v;
+  if(S.cfg.stallProt && angle>AOA_PROT){angle=AOA_PROT;syncSliders();}
+  var a=angle;
+  if(S.alt>1){
+    if(!S.stalled && a>AOA_CRIT){S.stalled=true;S.stallCount++;S.stallEvt=true;S.ev.stalls.push(S.time);}
+    else if(S.stalled && a<=AOA_REC) S.stalled=false;
+  } else S.stalled=false;
+  S.warn=(!S.stalled && a>=AOA_WARN && S.alt>1);
+
+  var v=S.v, va=v+WIND;
+  var ge=1+LV.ge*clamp(1-S.alt/GE_H,0,1);
+  var L=KL*va*va*liftCoeff(a,S.stalled)*ge;
+  var D=(KD0+KDI*a*a)*va*va*(S.stalled?STALL_DRAG:1);
   var T=thrust/100*TMAX;
   S.L=L; S.D=D; S.T=T;
+  if(S.cfg.fuel) S.W=Math.max(LV.weight*0.9,S.W-BURN*(thrust/100)*dt);
 
   var onGround=S.alt<=0 && S.vy<=0;
   var braking=(S.phase==='rollout' && thrust<=5);
   var dv;
   if(onGround) dv=(T-D-(v>0.3?ROLL:0)-(braking&&v>0.3?BRAKE:0))/M_H;
-  else dv=(T-D-WEIGHT*(S.vy/Math.max(v,25)))/M_H;     /* climbing costs speed, diving gains it */
+  else dv=(T-D-S.W*(S.vy/Math.max(va,25)))/M_H;
   S.v=Math.max(0,v+dv*dt);
 
-  if(S.alt>1 && LV.turb>0) S.gust+=(-S.gust/1.5)*dt+LV.turb*Math.sqrt(2*dt/1.5)*randn();   /* turbulence */
+  var tb=LV.turb*TURBF[S.cfg.turb];
+  if(S.alt>1 && tb>0) S.gust+=(-S.gust/1.5)*dt+tb*Math.sqrt(2*dt/1.5)*randn();
   else S.gust=0;
 
-  var ay=(L-WEIGHT)/M_V-1.0*S.vy+S.gust;
+  var ay=(L-S.W)/M_V-1.0*S.vy+S.gust;
   if(onGround && ay<0){ay=0;S.vy=0;}
   S.vy+=ay*dt;
   S.alt+=S.vy*dt;
   S.x+=S.v*dt;
   S.time+=dt;
+
+  if(S.time>=S.nextHist){
+    S.hist.push({t:S.time,L:L,W:S.W,T:T,D:D,alt:S.alt*FT,p:angle});
+    S.nextHist+=0.25;
+  }
+
+  if(LV.runway && S.phase==='takeoff' && S.x>LV.runway && S.x<LV.runway+OVERRUN_ZONE){ return crash(0,'overrun'); }
 
   if(S.alt<=0){
     S.alt=0;
@@ -323,30 +817,32 @@ function step(dt){
     S.vy=0; S.airborne=false;
   } else {
     S.airborne=true;
-    if(S.phase==='takeoff' && S.alt>3) S.phase='climb';
-    if(S.phase==='climb' && S.alt>=TARGET_M){S.phase='landing';S.reached=true;}
+    if(S.phase==='takeoff' && S.alt>3){S.phase='climb'; if(S.ev.liftoff===null) S.ev.liftoff=S.time;}
+    if(S.phase==='climb' && S.alt>=TARGET_M){S.phase='landing';S.reached=true;S.ev.target=S.time;}
   }
   if(S.phase==='rollout' && S.v<2) win();
 }
-function touchdown(sink){                 /* sink in m/s, positive = downward */
+function touchdown(sink){
   var fpm=Math.max(0,sink*FPM), g=gradeOf(fpm);
-  if(g>=4) return crash(fpm);
+  if(g>=4) return crash(fpm,'hard');
   var bad=null;
   if(sink>1.5 && angle<-2) bad='nose';
   else if(sink>1.5 && angle>12) bad='tail';
-  if(bad && g<3) g=3;                      /* bad attitude = at least a hard landing, not a crash */
+  if(bad && g<3) g=3;
   if(S.phase==='landing' || S.phase==='rollout'){
     if(g>=S.grade){S.grade=g; S.fpm=fpm; S.bad=bad||S.bad;}
-    if(S.phase==='landing') S.phase='rollout';
-    S.msg=NAMES[g]; S.msg2=nf(fpm)+' fpm'; S.msgCol=GCOL[g]; S.msgT=3.5;
+    if(S.phase==='landing'){S.phase='rollout'; S.ev.touch=S.time;}
+    S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['#23894F','#2A72D4','#B87400','#CF3F32','#CF3F32'][g]; S.msgT=3.5;
   } else if(S.phase==='climb'){
     S.phase='takeoff';
-    if(g>=2){S.msg=NAMES[g]; S.msg2=nf(fpm)+' fpm'; S.msgCol=GCOL[g]; S.msgT=2.5;}
+    if(g>=2){S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['#23894F','#2A72D4','#B87400','#CF3F32','#CF3F32'][g]; S.msgT=2.5;}
   }
+  sfxTouch(g);
   if(g>=3) S.shake=0.5; else if(g===2) S.shake=0.2;
 }
-function crash(fpm){
-  mode='crashed'; S.boom=0; S.crashFpm=fpm; S.shake=0.8;
+function crash(fpm,why){
+  if(mode!=='fly') return;
+  mode='crashed'; S.boom=0; S.crashFpm=fpm; S.crashWhy=why; S.shake=0.8; sfxCrash();
   setTimeout(function(){showEnd(false);},900);
 }
 function win(){
@@ -354,8 +850,34 @@ function win(){
   setTimeout(function(){showEnd(true);},500);
 }
 
-/* ---------------- drawing ---------------- */
-var clouds=[]; for(var i=0;i<9;i++) clouds.push({x:i*150+Math.random()*80,y:30+Math.random()*230,s:.6+Math.random()*.8});
+/* ---------------- colours + drawing ---------------- */
+var FC={lift:'#2A72D4',weight:'#CF3F32',thrust:'#23894F',drag:'#E39100',ink:'#1D2B44',card:'#FFFDF6',paper:'#F8F5EC',pencil:'#6B7385',hair:'#DAD5C5'};
+var TH_ALL={
+  light:{sky0:'#BFD8F5',sky1:'#F4F8FC',cloud:'#fff',halo:'rgba(255,255,255,.85)',grass:'#D6EEDF',run:'#4B566B',dash:'#fff',streak:'rgba(29,43,68,.28)',blade:'#1D2B44'},
+  dark:{sky0:'#0B1430',sky1:'#2B3F6A',cloud:'#3C4F78',halo:'rgba(11,20,48,.85)',grass:'#1D3B2D',run:'#3A4361',dash:'#E9EDF6',streak:'rgba(233,237,246,.3)',blade:'#E9EDF6'},
+  hc:{sky0:'#000',sky1:'#0A1630',cloud:'#262626',halo:'rgba(0,0,0,.92)',grass:'#003B00',run:'#5A5A5A',dash:'#fff',streak:'rgba(255,255,255,.45)',blade:'#fff'}
+};
+var TH=TH_ALL.light, PAT={}, TSF=1;
+function readColors(){
+  var cs=getComputedStyle(rootEl);
+  function g(n){return cs.getPropertyValue(n).trim();}
+  FC={lift:g('--lift'),weight:g('--weight'),thrust:g('--thrust'),drag:g('--drag'),ink:g('--ink'),card:g('--card'),paper:g('--paper'),pencil:g('--pencil'),hair:g('--hair')};
+}
+function mkPat(color,kind){
+  var c=document.createElement('canvas'); c.width=c.height=10; var g=c.getContext('2d');
+  g.fillStyle=color; g.fillRect(0,0,10,10);
+  g.strokeStyle='rgba(255,255,255,.7)'; g.fillStyle='rgba(255,255,255,.7)'; g.lineWidth=2;
+  if(kind==='diag'){g.beginPath();g.moveTo(-2,2);g.lineTo(2,-2);g.moveTo(0,10);g.lineTo(10,0);g.moveTo(8,12);g.lineTo(12,8);g.stroke();}
+  else if(kind==='dots'){g.beginPath();g.arc(5,5,1.7,0,7);g.fill();}
+  else if(kind==='hstripe'){g.beginPath();g.moveTo(0,5);g.lineTo(10,5);g.stroke();}
+  return ctx.createPattern(c,'repeat');
+}
+function rebuildPatterns(){
+  if(ST.labels) PAT={lift:FC.lift,weight:mkPat(FC.weight,'diag'),thrust:mkPat(FC.thrust,'dots'),drag:mkPat(FC.drag,'hstripe')};
+  else PAT={lift:FC.lift,weight:FC.weight,thrust:FC.thrust,drag:FC.drag};
+}
+
+var clouds=[]; for(var ci=0;ci<9;ci++) clouds.push({x:ci*150+Math.random()*80,y:30+Math.random()*230,s:.6+Math.random()*.8});
 var planeParts=[
   ['M22,50 L6,6 L58,6 L96,42 Z','#DCE9FB'],
   ['M30,82 L6,104 L50,104 L84,86 Z','#EFEADB'],
@@ -363,52 +885,61 @@ var planeParts=[
   ['M176,78 L112,132 L176,132 L270,84 Z','#DCE9FB'],
   ['M334,52 L378,52 C396,56 408,62 414,70 L334,70 Z','#BFD8F5']
 ].map(function(p){return [new Path2D(p[0]),p[1]];});
-var FONTF='"Patrick Hand","Segoe Print","Comic Sans MS",cursive';
+function fontf(){return ST.font==='readable'?'"Atkinson Hyperlegible",Verdana,"Trebuchet MS",sans-serif':'"Patrick Hand","Segoe Print","Comic Sans MS",cursive';}
+function fsz(n){return Math.round(n*Math.min(TSF,1.35))+'px ';}
 
 function cloud(x,y,s){
   var c=[[-26,0,18],[0,-10,24],[28,0,17],[0,6,20]],i;
-  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=5;
+  ctx.fillStyle=TH.cloud;ctx.strokeStyle=FC.ink;ctx.lineWidth=5;
   for(i=0;i<c.length;i++){ctx.beginPath();ctx.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);ctx.stroke();}
   for(i=0;i<c.length;i++){ctx.beginPath();ctx.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);ctx.fill();}
 }
 function drawPlane(x,y,pitch,sc){
   ctx.save();
   ctx.translate(x,y); ctx.rotate(-pitch*Math.PI/180*0.8); ctx.scale(sc,sc); ctx.translate(-220,-70);
-  ctx.lineWidth=3.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=INK;
+  ctx.lineWidth=3.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=PO;
   planeParts.forEach(function(p){ctx.fillStyle=p[1];ctx.fill(p[0]);ctx.stroke(p[0]);});
   ctx.fillStyle='#BFD8F5';
   for(var i=0;i<5;i++){ctx.beginPath();ctx.arc(150+i*34,62,7,0,7);ctx.fill();ctx.lineWidth=2.4/sc;ctx.stroke();}
-  var bl=26*Math.abs(Math.cos(prop));                      /* spinning propeller */
-  ctx.lineWidth=6/sc; ctx.beginPath(); ctx.moveTo(435,70-bl-4); ctx.lineTo(435,70+bl+4); ctx.stroke();
+  var bl=26*Math.abs(Math.cos(prop));
+  ctx.strokeStyle=TH.blade; ctx.lineWidth=6/sc; ctx.beginPath(); ctx.moveTo(435,70-bl-4); ctx.lineTo(435,70+bl+4); ctx.stroke();
   ctx.restore();
 }
-function arrow(x,y,ang,len,color,t,h,hw){
+function arrow(x,y,an,len,fill,t,h,hw){
   if(len<6) return;
   h=Math.min(h,len*0.7);
-  ctx.save(); ctx.translate(x,y); ctx.rotate(ang);
+  ctx.save(); ctx.translate(x,y); ctx.rotate(an);
   var b=len-h;
   ctx.beginPath(); ctx.moveTo(0,-t/2); ctx.lineTo(b,-t/2); ctx.lineTo(b,-hw); ctx.lineTo(len,0); ctx.lineTo(b,hw); ctx.lineTo(b,t/2); ctx.lineTo(0,t/2); ctx.closePath();
-  ctx.fillStyle=color; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=INK; ctx.lineJoin='round'; ctx.stroke();
+  ctx.fillStyle=fill; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=FC.ink; ctx.lineJoin='round'; ctx.stroke();
   ctx.restore();
 }
-function tag(txt,x,y,color){
-  ctx.font='20px '+FONTF; ctx.textAlign='center'; ctx.fillStyle=color; ctx.fillText(txt,x,y);
+function tag(txt,x,y,align){
+  ctx.font=fsz(20)+fontf(); ctx.textAlign=align||'center'; ctx.lineWidth=4; ctx.lineJoin='round';
+  var tw=ctx.measureText(txt).width;
+  if(align==='right'&&x-tw<6) x=tw+6; else if(align==='left'&&x+tw>W-6) x=W-6-tw; else if(!align&&(x-tw/2<6||x+tw/2>W-6)) x=clamp(x,tw/2+6,W-6-tw/2);
+  ctx.strokeStyle=TH.halo; ctx.strokeText(txt,x,y); ctx.fillStyle=FC.ink; ctx.fillText(txt,x,y);
 }
 function banner(txt,sub,color,y){
-  ctx.textAlign='center'; ctx.lineJoin='round'; ctx.strokeStyle='#fff';
-  ctx.font='52px '+FONTF; ctx.lineWidth=8; ctx.strokeText(txt,W/2,y); ctx.fillStyle=color; ctx.fillText(txt,W/2,y);
-  if(sub){ctx.font='30px '+FONTF; ctx.lineWidth=6; ctx.strokeText(sub,W/2,y+36); ctx.fillStyle=INK; ctx.fillText(sub,W/2,y+36);}
+  ctx.textAlign='center'; ctx.lineJoin='round'; ctx.strokeStyle=TH.halo;
+  ctx.font=fsz(52)+fontf(); ctx.lineWidth=8; ctx.strokeText(txt,W/2,y); ctx.fillStyle=color; ctx.fillText(txt,W/2,y);
+  if(sub){ctx.font=fsz(30)+fontf(); ctx.lineWidth=6; ctx.strokeText(sub,W/2,y+36); ctx.fillStyle=FC.ink; ctx.fillText(sub,W/2,y+36);}
+}
+function bigText(txt,y,size,color){
+  ctx.font=fsz(size)+fontf(); ctx.textAlign='center'; ctx.lineWidth=8; ctx.lineJoin='round'; ctx.strokeStyle=TH.halo; ctx.fillStyle=color||FC.ink;
+  ctx.strokeText(txt,W/2,y); ctx.fillText(txt,W/2,y);
 }
 
 function draw(t){
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  if(S.shake>0) ctx.translate((Math.random()-.5)*16*S.shake,(Math.random()-.5)*16*S.shake);
+  var sh=ST.reduceMotion?0:S.shake+(S.stalled&&mode==='fly'&&!halted()?0.18:0);
+  if(sh>0) ctx.translate((Math.random()-.5)*16*sh,(Math.random()-.5)*16*sh);
   var rawY=GROUND-27-S.alt*PXM;
   var cam=rawY<170?170-rawY:0;
   var py=rawY+cam, gy=GROUND+cam;
   var scroll=S.x*3;
 
-  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#BFD8F5'); g.addColorStop(1,'#F4F8FC');
+  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,TH.sky0); g.addColorStop(1,TH.sky1);
   ctx.fillStyle=g; ctx.fillRect(-20,-20,W+40,H+40);
 
   for(var i=0;i<clouds.length;i++){
@@ -416,107 +947,465 @@ function draw(t){
     cloud(cx,c.y+cam*0.5,c.s);
   }
 
-  /* target height line */
-  if(!S.reached){
+  if(LV.wind>0){
+    ctx.save(); ctx.strokeStyle=TH.streak; ctx.lineWidth=2.5; ctx.lineCap='round';
+    var mv=ST.reduceMotion?0:t;
+    for(var k=0;k<7;k++){
+      var wx=((k*163+(mv*LV.wind*7))%(W+200)); var sx=W+60-wx, sy=60+((k*97)%330);
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx-46-LV.wind,sy); ctx.stroke();
+    }
+    ctx.restore();
+    tag('◀ HEADWIND '+spdStrKt(LV.wind),16,122,'left');
+  }
+
+  if(!S.reached && ST.showTarget){
     var ty=gy-TARGET_M*PXM;
     if(ty>-20 && ty<H+20){
-      ctx.save(); ctx.setLineDash([14,10]); ctx.lineWidth=3; ctx.strokeStyle='#2A72D4';
+      ctx.save(); ctx.setLineDash([14,10]); ctx.lineWidth=3; ctx.strokeStyle=FC.lift;
       ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(W,ty); ctx.stroke(); ctx.restore();
-      ctx.font='24px '+FONTF; ctx.textAlign='right'; ctx.fillStyle='#2A72D4';
-      ctx.fillText('TARGET: '+nf(LV.target)+' ft',W-12,ty-8);
+      tag('TARGET: '+altStrFt(LV.target),W-12,ty-8,'right');
     }
   }
 
-  /* ground + runway */
   if(gy<H+40){
-    ctx.fillStyle='#D6EEDF'; ctx.fillRect(-20,gy,W+40,H-gy+60);
-    ctx.fillStyle='#4B566B'; ctx.fillRect(-20,gy,W+40,20);
-    ctx.strokeStyle=INK; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-20,gy);ctx.lineTo(W+20,gy);ctx.moveTo(-20,gy+20);ctx.lineTo(W+20,gy+20);ctx.stroke();
-    ctx.fillStyle='#fff'; var off=scroll%90;
-    for(var x=-off;x<W;x+=90) ctx.fillRect(x,gy+8,46,4);
-    ctx.strokeStyle='#23894F'; ctx.lineWidth=2.5;
+    ctx.fillStyle=TH.grass; ctx.fillRect(-20,gy,W+40,H-gy+60);
+    var sxOf=function(xu){return PX+(xu-S.x)*3;};
+    var segs=[[-40,W+40]];
+    if(LV.runway){ segs=[[-40,sxOf(LV.runway)],[sxOf(LV.runway+OVERRUN_ZONE),W+40]]; }
+    ctx.fillStyle=TH.run;
+    segs.forEach(function(s){ if(s[1]>s[0]) ctx.fillRect(s[0],gy,s[1]-s[0],20); });
+    ctx.strokeStyle=FC.ink; ctx.lineWidth=3;
+    segs.forEach(function(s){ if(s[1]>s[0]){ctx.beginPath();ctx.moveTo(s[0],gy);ctx.lineTo(s[1],gy);ctx.moveTo(s[0],gy+20);ctx.lineTo(s[1],gy+20);ctx.stroke();} });
+    ctx.fillStyle=TH.dash; var off=scroll%90;
+    for(var x=-off;x<W;x+=90){ var inside=segs.some(function(s){return x>=s[0]&&x+46<=s[1];}); if(inside) ctx.fillRect(x,gy+8,46,4); }
+    ctx.strokeStyle=FC.thrust; ctx.lineWidth=2.5;
     var off2=(scroll*1.0)%140;
     for(var x2=-off2;x2<W;x2+=140){ctx.beginPath();ctx.moveTo(x2,gy+60);ctx.lineTo(x2-4,gy+50);ctx.moveTo(x2,gy+60);ctx.lineTo(x2+4,gy+50);ctx.stroke();}
+    if(LV.runway && ST.showRunway){
+      var ex=sxOf(LV.runway);
+      if(ex>-60 && ex<W+60){
+        ctx.fillStyle=FC.weight; ctx.fillRect(ex-3,gy-46,6,46);
+        ctx.fillStyle='#fff'; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.beginPath(); ctx.rect(ex-60,gy-86,120,40); ctx.fill(); ctx.stroke();
+        ctx.font=fsz(21)+fontf(); ctx.textAlign='center'; ctx.fillStyle='#CF3F32'; ctx.fillText('RUNWAY END',ex,gy-59);
+      }
+    }
   }
+  if(LV.runway && ST.showRunway && S.phase==='takeoff' && mode==='fly')
+    tag('RUNWAY LEFT: '+altStrFt(Math.max(0,(LV.runway-S.x)*FTPERU)),W-16,150,'right');
 
-  /* airplane */
   if(mode==='crashed'){ S.boom+=1; }
   drawPlane(PX,py,angle,0.42);
 
-  /* force arrows (drawn in screen directions) */
-  var U=0.6, Lv=Math.max(0,S.L)*U, Wv=WEIGHT*U, Tv=S.T*U, Dv=S.D*U;
-  var Lc=Math.min(Lv,130), Dc=Math.min(Dv,130);
-  arrow(PX,py-30,-Math.PI/2,Lc,'#2A72D4',9,18,14);
-  arrow(PX,py+28,Math.PI/2,Wv,'#CF3F32',9,18,14);
-  arrow(PX+96,py,0,Tv,'#23894F',9,18,14);
-  arrow(PX-96,py,Math.PI,Dc,'#E39100',9,18,14);
-  if(Lc>14) tag('F1',PX+22,py-30-Lc+6,'#2A72D4');
-  tag('F2',PX+24,py+28+Wv+4,'#CF3F32');
-  if(Tv>14) tag('F3',PX+96+Tv-8,py-14,'#23894F');
-  if(Dc>14) tag('F4',PX-96-Dc+8,py-14,'#B87400');
+  if(ST.arrows){
+    var U=ARROWK[ST.arrowSize], cap=130*U/0.6;
+    var Lv=Math.max(0,S.L)*U, Wv=S.W*U, Tv=S.T*U, Dv=S.D*U;
+    var Lc=Math.min(Lv,cap), Dc=Math.min(Dv,cap);
+    arrow(PX,py-30,-Math.PI/2,Lc,PAT.lift,9,18,14);
+    arrow(PX,py+28,Math.PI/2,Wv,PAT.weight,9,18,14);
+    arrow(PX+96,py,0,Tv,PAT.thrust,9,18,14);
+    arrow(PX-96,py,Math.PI,Dc,PAT.drag,9,18,14);
+    if(ST.labels){
+      if(Lc>14) tag('F1 LIFT '+fForce(S.L),PX,py-30-Lc-6);
+      var wy=py+28+Wv+22; if(wy>H-8) tag('F2 WEIGHT '+fForce(S.W),PX+18,H-10,'left'); else tag('F2 WEIGHT '+fForce(S.W),PX,wy);
+      if(Tv>14) tag('F3 THRUST '+fForce(S.T),PX+96+Tv+8,py-16,'left');
+      if(Dc>14) tag('F4 DRAG '+fForce(S.D),PX-96-Dc-8,py-16,'right');
+    }
+  }
 
-  if(S.stall && mode==='fly' && Math.floor(t*4)%2===0){
-    ctx.font='34px '+FONTF; ctx.textAlign='center'; ctx.fillStyle='#CF3F32';
-    ctx.fillText('STALL! Lower the trim',PX+30,py-110);
-  }
-  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,S.msgCol,110);
+  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,S.msgCol,200);
   if(mode==='crashed'){
-    ctx.font='60px '+FONTF; ctx.textAlign='center'; ctx.fillStyle='#CF3F32'; ctx.strokeStyle='#fff'; ctx.lineWidth=6;
-    ctx.strokeText('CRASH!',PX+20,py-70); ctx.fillText('CRASH!',PX+20,py-70);
+    bigText(S.crashWhy==='overrun'?'RAN OUT OF RUNWAY!':'CRASH!',py-70,60,FC.weight);
   }
+  if(slow&&mode==='fly') tag('SLOW-MO ×0.25',W-16,H-12,'right');
+  if(paused && mode==='fly'){
+    ctx.fillStyle='rgba(10,16,30,.45)'; ctx.fillRect(-20,-20,W+40,H+40);
+    if(S.autoPaused){
+      bigText('STALL! Paused',H/2-30,60,'#fff');
+      ctx.font=fsz(26)+fontf(); ctx.textAlign='center'; ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.8)'; ctx.fillStyle='#fff';
+      var l1='Pitch went past 15°, so the air tore away from the wing and lift collapsed.', l2='Lower the nose below 12° after you press Resume ('+keyFirst('pause')+').';
+      ctx.strokeText(l1,W/2,H/2+10); ctx.fillText(l1,W/2,H/2+10); ctx.strokeText(l2,W/2,H/2+44); ctx.fillText(l2,W/2,H/2+44);
+    } else {
+      bigText('PAUSED',H/2-6,64,'#fff');
+      ctx.font=fsz(26)+fontf(); ctx.textAlign='center'; ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.8)'; ctx.fillStyle='#fff';
+      var l3='Read the meters, then press Resume ('+keyFirst('pause')+')';
+      ctx.strokeText(l3,W/2,H/2+34); ctx.fillText(l3,W/2,H/2+34);
+    }
+  }
+}
+
+/* ---------------- coaching message (banner near the plane) ---------------- */
+var RANK={tip:0,cue:1,caution:2,warn:3}, ICON={tip:'i',cue:'➜',caution:'!',warn:'⚠'};
+var coachCur={key:'',lvl:'',t:0}, coachFlashT=null;
+var coachBox=$('#coachBox'), coachTextEl=$('#coachText'), coachIconEl=$('#coachIcon'), srLive=$('#srLive');
+
+function computeCoach(){
+  var gl=LV.grade, sinkFpm=-S.vy*FPM, altFt=S.alt*FT, onG=!S.airborne&&S.alt<=0, p=S.phase;
+  var tti=S.vy<-0.5?S.alt/(-S.vy):99;
+  if(S.stalled) return {key:'stall',lvl:'warn',text:'STALL! Lower the nose (pitch below 12°) to get your lift back.'};
+  if(S.airborne&&sinkFpm>gl[3]&&tti<20) return {key:'toofast',lvl:'warn',text:'TOO FAST FOR LANDING! Sinking '+vsStr(sinkFpm)+' (limit '+vsStr(gl[3])+'). Raise the pitch and add a little thrust.'};
+  if(S.warn) return {key:'stallwarn',lvl:'caution',text:'STALL WARNING: pitch is near 15°. Ease the nose down!'};
+  if(onG&&p==='takeoff'&&LV.runway){
+    var left=Math.max(0,(LV.runway-S.x)*FTPERU);
+    if(left<400&&angle<8&&S.v>3) return {key:'runwayend',lvl:'warn',text:'RUNWAY ENDING! Raise the pitch to about 10° now. Runway left: '+altStrFt(left)+'.'};
+  }
+  if(onG&&p==='takeoff'&&S.L>=S.W*0.85&&angle<8&&S.v>5) return {key:'rotate',lvl:'cue',text:'Lift is almost enough! Raise the pitch to about 10° to lift off (rotate).'};
+  if(onG&&p==='rollout'){
+    if(thrust>5) return {key:'brake',lvl:'cue',text:'Set THRUST to 0. The brakes and drag will stop you.'};
+    return {key:'braking',lvl:'tip',text:'Rolling to a stop… keep thrust at 0.'};
+  }
+  if(onG&&p==='takeoff'){
+    if(thrust<5&&S.v<1) return {key:'start',lvl:'tip',text:'Push THRUST up ('+keyFirst('thrustUp')+' or the slider) to start rolling. Full thrust is best.'};
+    if(S.T<=S.D+ROLL) return {key:'pushmore',lvl:'tip',text:'Thrust has to beat drag (and rolling friction) to speed up. Push THRUST higher.'};
+    return {key:'roll',lvl:'tip',text:'Thrust > Drag, so you speed up. You lift off when Lift > Weight (about '+spdStrKt(125)+' to '+spdStrKt(160)+' airspeed).'};
+  }
+  if(S.airborne&&p==='landing'){
+    if(altFt<120&&sinkFpm>gl[1]) return {key:'flare',lvl:'cue',text:'FLARE! Raise the pitch a little to soften the touchdown.'};
+    return {key:'land',lvl:'tip',text:'Land: cut thrust and descend gently, then flare just before touchdown. Butter is under '+vsStr(gl[0])+'.'};
+  }
+  if(S.airborne){
+    var cv=S.L/Math.max(S.W,1);
+    var st=cv>1.03?'climbUp':cv<0.97?'climbDown':'climbLevel';
+    var txt=st==='climbUp'?'Lift > Weight, so you climb.':st==='climbDown'?'Lift < Weight, so you sink. Add speed or pitch.':'Lift ≈ Weight: level flight.';
+    return {key:st,lvl:'tip',text:txt+' Goal: '+altStrFt(LV.target)+'.'+(LV.turb>0&&S.cfg.turb!=='off'?' Gusts push you around: nudge the pitch to stay steady.':'')};
+  }
+  return null;
+}
+function coachContainer(){
+  var wantPanel=(ST.coachPos==='panel');
+  var host=wantPanel?$('#gCoach'):$('#view');
+  if(coachBox.parentNode!==host) host.appendChild(coachBox);
+  coachBox.classList.toggle('inpanel',wantPanel);
+  coachBox.classList.toggle('pos-top',!wantPanel&&ST.coachPos==='top');
+  coachBox.classList.toggle('pos-bottom',!wantPanel&&ST.coachPos==='bottom');
+}
+function setCoachClass(lvl,idle){
+  coachBox.className='coachbar '+(ST.coachPos==='panel'?'inpanel ':'pos-'+ST.coachPos+' ')+(lvl||'tip')+(idle?' idle':'');
+}
+function flashCoach(){
+  clearTimeout(coachFlashT); coachBox.classList.remove('flash'); void coachBox.offsetWidth; coachBox.classList.add('flash');
+  coachFlashT=setTimeout(function(){coachBox.classList.remove('flash');},1300);
+}
+function updateCoach(){
+  var show=ST.panels.coach&&ST.tips!=='off'&&mode==='fly';
+  var c=show?computeCoach():null;
+  if(c&&ST.tips==='important'&&RANK[c.lvl]<1) c=null;
+  var now=performance.now();
+  if(!c){
+    if(coachCur.key&&(now-coachCur.t>1200||!show)){ coachCur={key:'',lvl:'',t:now}; setCoachClass(coachBox.className.match(/(tip|cue|caution|warn)/)?RegExp.$1:'tip',true); coachBox.setAttribute('aria-hidden','true'); }
+    return;
+  }
+  if(c.key!==coachCur.key){
+    var curRank=coachCur.key?RANK[coachCur.lvl]:-1;
+    if(!coachCur.key||RANK[c.lvl]>=curRank||now-coachCur.t>1500){
+      coachCur={key:c.key,lvl:c.lvl,t:now};
+      setCoachClass(c.lvl,false); coachIconEl.textContent=ICON[c.lvl]; coachBox.setAttribute('aria-hidden','false');
+      coachTextEl.textContent=c.text; flashCoach();
+      if(ST.announce){ srLive.setAttribute('aria-live',c.lvl==='warn'?'assertive':'polite'); srLive.textContent=''; setTimeout(function(){srLive.textContent=c.text;},30); }
+      return;
+    }
+    return;
+  }
+  if(coachTextEl.textContent!==c.text) coachTextEl.textContent=c.text;
 }
 
 /* ---------------- side panel ---------------- */
 function setBar(id,val){$(id).style.width=clamp(val/200*100,0,100)+'%';}
-function cmp(a,b){var r=a/Math.max(b,0.001); return r>1.03?1:r<0.97?-1:0;}
-function updatePanel(){
-  $('#vL').textContent=Math.round(Math.max(0,S.L)); $('#vW').textContent=WEIGHT;
-  $('#vT').textContent=Math.round(S.T); $('#vD').textContent=Math.round(S.D);
-  setBar('#bL',Math.max(0,S.L)); setBar('#bT',S.T); setBar('#bD',S.D);
-  $('#mT').style.left=clamp(S.T/200*100,0,100)+'%';
-  $('#tS').textContent=nf(S.v*KT); $('#tA').textContent=nf(S.alt*FT);
-  var vs=Math.round(S.vy*FPM/10)*10; $('#tC').textContent=(vs>0?'+':'')+nf(vs);
-
-  var steps=document.querySelectorAll('#steps li[data-s]');
-  var p=S.phase, cur=(p==='takeoff')?1:(p==='climb')?2:3;
-  steps.forEach(function(li,i){li.className=(i+1<cur||mode==='won')?'done':(i+1===cur?'on':'');});
-
-  var h='', gl=LV.grade;
-  var onG=!S.airborne && S.alt<=0;
-  if(S.stall){
-    h+='<p class="warn">STALL! The wing is tilted too far (past 15°). Air can\'t flow smoothly over it, so lift drops. Lower the trim.</p>';
-  } else if(onG){
-    if(p==='rollout'){
-      h+='<p class="h">Touchdown at '+nf(S.fpm)+' fpm: '+NAMES[S.grade]+'</p><p class="h">Set THRUST to 0. The brakes and drag will stop you.</p>';
-    } else if(S.T<=S.D+ROLL){
-      h+='<p class="h">Thrust must beat drag (and rolling friction) to speed up. Push THRUST higher.</p>';
-    } else {
-      h+='<p class="h">Thrust &gt; Drag → you speed up along the runway.</p>';
-      h+='<p class="v">Lift grows with speed. When Lift &gt; Weight (the dashed line) you lift off, usually at about 125 to 160 knots.</p>';
-    }
-  } else {
-    var cv=cmp(S.L,WEIGHT), ch=cmp(S.T,S.D);
-    h+='<p class="v">'+(cv>0?'▲ Lift &gt; Weight → you are climbing.':cv<0?'▼ Lift &lt; Weight → you are sinking.':'= Lift ≈ Weight → level flight.')+'</p>';
-    h+='<p class="h">'+(ch>0?'▶ Thrust &gt; Drag → you speed up.':ch<0?'◀ Thrust &lt; Drag → you slow down.':'= Thrust ≈ Drag → steady speed.')+'</p>';
-  }
-  if(p==='climb') h+='<p class="tip">Goal: climb to '+nf(LV.target)+' ft. More speed or more trim gives more lift, but more trim also adds drag.</p>';
-  if(p==='landing') h+='<p class="tip">Now land! Cut thrust so you descend, then raise the trim a little just before the runway (the flare). Butter = under '+nf(gl[0])+' fpm. Over '+nf(gl[3])+' fpm is a crash.</p>';
-  if(p==='takeoff' && onG && S.v<1 && thrust<5) h='<p class="tip">Slide the THRUST slider up (or press →) to start rolling.</p>'+h;
-  $('#coach').innerHTML=h;
+var PC={x0:34,x1:290,y0:96,y1:16,amin:-5,amax:20,cmin:-0.4,cmax:1.6};
+function pcx(a){return PC.x0+(a-PC.amin)/(PC.amax-PC.amin)*(PC.x1-PC.x0);}
+function pcy(c){return PC.y0-(c-PC.cmin)/(PC.cmax-PC.cmin)*(PC.y0-PC.y1);}
+function buildPitchChart(){
+  var ink=FC.ink, d='M'+pcx(-5)+','+pcy(liftCoeff(-5,false)), a;
+  for(a=-4;a<=15;a++) d+=' L'+pcx(a)+','+pcy(liftCoeff(a,false));
+  var post='M'+pcx(15)+','+pcy(liftCoeff(15,false))+' L'+pcx(15)+','+pcy(CL_ST)+' L'+pcx(20)+','+pcy(CL_ST);
+  var f='font-family="'+fontf().replace(/"/g,'')+'"';
+  var s='<defs><pattern id="pcw" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="'+FC.drag+'" fill-opacity=".25"/><line x1="0" y1="0" x2="0" y2="6" stroke="'+FC.drag+'" stroke-width="2"/></pattern>'+
+    '<pattern id="pcs" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="6" height="6" fill="'+FC.weight+'" fill-opacity=".25"/><line x1="0" y1="0" x2="0" y2="6" stroke="'+FC.weight+'" stroke-width="2"/></pattern></defs>'+
+    '<text x="4" y="11" '+f+' font-size="14" fill="'+ink+'">LIFT vs PITCH</text>'+
+    '<rect x="'+pcx(AOA_WARN)+'" y="'+PC.y1+'" width="'+(pcx(AOA_CRIT)-pcx(AOA_WARN))+'" height="'+(PC.y0-PC.y1)+'" fill="url(#pcw)"/>'+
+    '<rect x="'+pcx(AOA_CRIT)+'" y="'+PC.y1+'" width="'+(pcx(PC.amax)-pcx(AOA_CRIT))+'" height="'+(PC.y0-PC.y1)+'" fill="url(#pcs)"/>'+
+    '<line x1="'+PC.x0+'" y1="'+PC.y0+'" x2="'+PC.x1+'" y2="'+PC.y0+'" stroke="'+FC.pencil+'" stroke-width="1.5"/>'+
+    '<line x1="'+PC.x0+'" y1="'+PC.y1+'" x2="'+PC.x0+'" y2="'+PC.y0+'" stroke="'+FC.pencil+'" stroke-width="1.5"/>'+
+    '<path d="'+d+'" fill="none" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>'+
+    '<path d="'+post+'" fill="none" stroke="'+ink+'" stroke-width="2.5" stroke-dasharray="5 4"/>'+
+    '<text x="'+(pcx(14)-2)+'" y="'+(PC.y1+11)+'" text-anchor="end" '+f+' font-size="13" fill="'+ink+'">peak at 15°</text>'+
+    '<text x="'+(pcx(17.5))+'" y="'+(pcy(CL_ST)-6)+'" text-anchor="middle" '+f+' font-size="13" fill="'+ink+'">STALL</text>'+
+    '<text x="'+(pcx(14))+'" y="'+(PC.y0-4)+'" text-anchor="middle" '+f+' font-size="11" fill="'+ink+'">warn</text>';
+  [-5,0,5,10,15,20].forEach(function(t){s+='<text x="'+pcx(t)+'" y="'+(PC.y0+13)+'" text-anchor="middle" '+f+' font-size="12" fill="'+FC.pencil+'">'+t+'°</text>';});
+  s+='<text x="'+(PC.x0-4)+'" y="'+(PC.y1+8)+'" text-anchor="end" '+f+' font-size="12" fill="'+FC.pencil+'">lift</text>';
+  s+='<circle id="pcm" cx="'+pcx(5)+'" cy="'+pcy(liftCoeff(5,false))+'" r="6" fill="'+FC.lift+'" stroke="'+ink+'" stroke-width="2.5"/>';
+  $('#pchart').innerHTML=s;
 }
+function updatePitchChart(){
+  var m=$('#pcm'); if(!m) return;
+  var a=clamp(angle,PC.amin,PC.amax), c=liftCoeff(angle,S.stalled);
+  m.setAttribute('cx',pcx(a)); m.setAttribute('cy',pcy(c)); m.setAttribute('fill',S.stalled?FC.weight:FC.lift);
+}
+function setMeter(barId,val){var b=$(barId); b.setAttribute('aria-valuenow',Math.round(val)); b.setAttribute('aria-valuetext',fForce(val)+(ST.forceUnits==='pct'?' of normal weight':''));}
+function updateUnitLabels(){
+  $('#lAir').textContent='AIRSPEED '+spdUnit(); $('#lGnd').textContent='GROUND SPD '+spdUnit();
+  $('#lAlt').textContent='ALTITUDE '+altUnit(); $('#lVs').textContent='V/S '+vsUnit();
+  $('#subScale').textContent=ST.forceUnits==='pct'?'100% = the normal weight of the plane':'100 = the normal weight of the plane (plain force numbers)';
+}
+function updatePanel(){
+  $('#vL').textContent=fForce(Math.max(0,S.L)); $('#vW').textContent=fForce(S.W);
+  $('#vT').textContent=fForce(S.T); $('#vD').textContent=fForce(S.D);
+  setBar('#bL',Math.max(0,S.L)); setBar('#bW',S.W); setBar('#bT',S.T); setBar('#bD',S.D);
+  setMeter('#barL',Math.max(0,S.L)); setMeter('#barW',S.W); setMeter('#barT',S.T); setMeter('#barD',S.D);
+  $('#mW').style.left=clamp(S.W/200*100,0,100)+'%';
+  $('#mT').style.left=clamp(S.T/200*100,0,100)+'%';
+  $('#tS').textContent=nf(spdFromU(S.v+WIND)); $('#tG').textContent=nf(spdFromU(S.v)); $('#tA').textContent=nf(altFromM(S.alt));
+  var vs; if(ST.vsU==='ms'){var m=Math.round(S.vy*10)/10; vs=(m>0?'+':'')+m.toFixed(1);} else {var f=Math.round(S.vy*FPM/10)*10; vs=(f>0?'+':'')+nf(f);}
+  $('#tC').textContent=vs;
+  if(ST.adv&&ST.panels.chart) updatePitchChart();
+
+  var p=S.phase, cur=(p==='takeoff')?1:(p==='climb')?2:(p==='landing')?3:4;
+  [].forEach.call(document.querySelectorAll('.steps li[data-s]'),function(li){var n=+li.dataset.s;li.className=(n<cur||mode==='won')?'done':(n===cur?'on':'');});
+  updateCoach();
+}
+
+/* ---------------- apply settings (live) ---------------- */
+function applySettings(){
+  var r=rootEl;
+  r.setAttribute('data-theme',ST.theme); r.setAttribute('data-cb',ST.cb?'1':'0'); r.setAttribute('data-font',ST.font);
+  r.setAttribute('data-focus',ST.focus==='strong'?'strong':'normal'); r.setAttribute('data-pat',ST.labels?'1':'0');
+  r.setAttribute('data-motion',ST.reduceMotion?'reduce':'normal'); r.setAttribute('data-adv',ST.adv?'1':'0');
+  TSF=TSCALE[ST.text]||1; r.style.setProperty('--ts',TSF);
+  r.style.setProperty('--panelw',PANELW[ST.viewSize]||'330px'); r.style.setProperty('--tbtn',TBTN[ST.touchSize]||'52px');
+  var app=$('#app'); app.setAttribute('data-side',ST.side); app.setAttribute('data-density',ST.density);
+  TH=TH_ALL[ST.theme]||TH_ALL.light; readColors(); rebuildPatterns(); buildPitchChart();
+  var P=ST.panels;
+  $('#gMeters').classList.toggle('hide',!P.meters);
+  $('#gData').classList.toggle('hide',!P.data);
+  $('#gChart').classList.toggle('hide',!(ST.adv&&P.chart));
+  $('#gCoach').classList.toggle('hide',!(P.coach&&ST.coachPos==='panel'));
+  $('#steps').classList.toggle('hide',!P.steps); $('#steps').style.display=P.steps?'':'none';
+  $('#steps2').style.display=P.steps?'':'none';
+  coachContainer();
+  $('#pause').title='Pause ('+keysAll('pause')+')'; fsBtn.title='Fullscreen ('+keyFirst('fullscreen')+')';
+  $('#gear').title='Settings ('+keyFirst('settings')+')'; $('#restart').title='Restart ('+keyFirst('restart')+')';
+  updateUnitLabels(); updateStepLabels(); renderKeyLists(); fillLevelSelect();
+  if(S){ updatePanel(); }
+  if(S&&S.cfg) applyAngRange();
+  if(typeof updateRestartNote==='function') updateRestartNote();
+}
+
+/* ---------------- settings dialog ---------------- */
+var pctF=function(v){return Math.round(v*100)+'%';};
+var SCHEMA=[
+ {id:'game',label:'Game',items:[
+  {t:'lvl'},
+  {t:'slow'},
+  {t:'tog',k:'adv',l:'Advanced info',h:'Adds the lift-vs-pitch chart, ground speed, climb rate and the dashed marks on the meters.'},
+  {t:'sel',k:'tips',l:'Coaching tips',o:[['all','All tips'],['important','Important only'],['off','Off (no messages)']]},
+  {t:'btn',id:'showIntroBtn',l:'Show intro again'},
+  {t:'more'},
+  {t:'sel',k:'gameSpeed',l:'Game speed',o:[['normal','Normal'],['slower','Slower (75%)']],h:'Works together with Slow motion.'},
+  {t:'sel',k:'turb',l:'Turbulence strength',r:true,o:[['off','Off'],['light','Light'],['normal','Normal'],['strong','Strong']]},
+  {t:'tog',k:'stallProt',l:'Stall protection',r:true,h:'Stops the nose going past 14.5° so you cannot stall. The “no stall” star is not awarded while it is on.'},
+  {t:'tog',k:'fuel',l:'Fuel burn',r:true,h:'The plane gets lighter as you use thrust.'},
+  {t:'tog',k:'autoPause',l:'Auto-pause on stall',h:'Pauses the moment you stall so you can read what happened.'},
+  {t:'tog',k:'autoCharts',l:'Show flight charts automatically',h:'When off, the end screen has a “Show flight charts” button.'},
+  {t:'btn',id:'resetSettings',l:'Reset all settings to default',c:true},
+  {t:'btn',id:'resetProgress',l:'Reset level progress and stars',c:true}
+ ]},
+ {id:'display',label:'Display',items:[
+  {t:'sel',k:'theme',l:'Theme',o:[['light','Light'],['dark','Dark'],['hc','High contrast']]},
+  {t:'sel',k:'text',l:'Text size',o:[['small','Small'],['medium','Medium'],['large','Large'],['xlarge','Extra large']]},
+  {t:'sel',k:'forceUnits',l:'Show forces as',o:[['pct','% of weight'],['num','Plain numbers']]},
+  {t:'more'},
+  {t:'tog',k:'arrows',l:'Force arrows on the plane'},
+  {t:'sel',k:'arrowSize',l:'Arrow size',o:[['small','Small'],['normal','Normal'],['large','Large']]},
+  {t:'tog',k:'labels',l:'Force labels and patterns',h:'Keeps the four forces apart without relying on colour. Turn off only if you do not need them.'},
+  {t:'tog',k:'showTarget',l:'Target altitude line'},
+  {t:'tog',k:'showRunway',l:'Runway length marker',h:'The end-of-runway sign and the runway left counter (short runway level).'},
+  {t:'sel',k:'altU',l:'Altitude units',o:[['ft','Feet'],['m','Metres']]},
+  {t:'sel',k:'spdU',l:'Speed units',o:[['kt','Knots'],['kmh','Kilometres per hour'],['mph','Miles per hour']]},
+  {t:'sel',k:'vsU',l:'Climb rate units',o:[['fpm','Feet per minute'],['ms','Metres per second']]}
+ ]},
+ {id:'layout',label:'Layout',items:[
+  {t:'grp',l:'PANELS TO SHOW'},
+  {t:'tog',k:'panels.meters',l:'Force meters'},
+  {t:'tog',k:'panels.data',l:'Flight data (speed, altitude)'},
+  {t:'tog',k:'panels.steps',l:'Mission steps'},
+  {t:'tog',k:'panels.chart',l:'Lift vs pitch chart',h:'Part of Advanced info: it only appears while Advanced info is on.'},
+  {t:'tog',k:'panels.coach',l:'Coaching text'},
+  {t:'sel',k:'side',l:'Side panel',o:[['right','On the right'],['left','On the left']]},
+  {t:'sel',k:'density',l:'Layout',o:[['spacious','Spacious'],['compact','Compact']]},
+  {t:'more'},
+  {t:'sel',k:'viewSize',l:'Airplane view vs side panel',o:[['wide','Bigger airplane view'],['balanced','Balanced'],['panel','Bigger side panel']]},
+  {t:'sel',k:'coachPos',l:'Coaching text position',o:[['top','Top of the flight view'],['bottom','Bottom of the flight view'],['panel','In the side panel']]}
+ ],btn:{id:'resetLayout',l:'Reset layout to default'}},
+ {id:'controls',label:'Controls',items:[
+  {t:'keylist'},
+  {t:'rng',k:'thrSens',l:'Thrust sensitivity',min:0.5,max:1.5,step:0.1,fmt:pctF,h:'How fast keys and buttons change thrust.'},
+  {t:'rng',k:'pitchSens',l:'Pitch sensitivity',min:0.5,max:1.5,step:0.1,fmt:pctF},
+  {t:'tog',k:'invert',l:'Invert pitch keys',h:'Up key = nose down, like pushing a control yoke. The on-screen ▲ ▼ buttons and the slider are not inverted.'},
+  {t:'sel',k:'touchSize',l:'On-screen button size',o:[['small','Small'],['medium','Medium'],['large','Large']]},
+  {t:'more'},
+  {t:'sel',k:'repeat',l:'Hold-to-repeat speed (on-screen buttons)',o:[['slow','Slow'],['normal','Normal'],['fast','Fast']]},
+  {t:'keys'}
+ ]},
+ {id:'access',label:'Sound & access',items:[
+  {t:'rng',k:'master',l:'Master volume',min:0,max:1,step:0.05,fmt:pctF},
+  {t:'tog',k:'stallSound',l:'Stall warning sound'},
+  {t:'tog',k:'cb',l:'Colour-blind friendly force colours',h:'Patterns and labels stay on as well.'},
+  {t:'tog',k:'reduceMotion',l:'Reduce motion',h:'Turns off screen shake, flashing and animated banners.'},
+  {t:'sel',k:'font',l:'Font',o:[['default','Handwriting (default)'],['readable','Easier to read']]},
+  {t:'more'},
+  {t:'rng',k:'sfxVol',l:'Effects volume (engine, touchdown)',min:0,max:1,step:0.05,fmt:pctF},
+  {t:'rng',k:'warnVol',l:'Warnings volume',min:0,max:1,step:0.05,fmt:pctF},
+  {t:'btn',id:'testSound',l:'Play a test sound'},
+  {t:'sel',k:'focus',l:'Keyboard focus outlines',o:[['normal','Standard'],['strong','Extra strong']],h:'Tab moves through every button and slider. The focused one always has an outline.'},
+  {t:'tog',k:'announce',l:'Read coaching messages to screen readers'},
+  {t:'note',l:'Every button, slider and force meter has a label for screen readers.'}
+ ]}
+];
+var sMore={};
+var sTab='game', sPrevFocus=null, sSnapshot=null;
+function sid(k){return 's_'+k.replace(/\./g,'_');}
+function rowHTML(it){
+  var rt=it.r?'<span class="rtag">↻ restart needed</span>':'', hp=it.h?'<small>'+esc(it.h)+'</small>':'';
+  var id=sid(it.k||it.id||'x');
+  if(it.t==='grp') return '<div class="sgroup">'+esc(it.l)+'</div>';
+  if(it.t==='note') return '<p class="note">'+esc(it.l)+'</p>';
+  if(it.t==='lvl') return '<label class="srow" for="s_level"><span class="sl">Level<small>Changing the level restarts the flight.</small></span><select id="s_level">'+LKEYS.map(function(k){return '<option value="'+k+'"'+(k===levelKey?' selected':'')+'>'+LEVELS[k].num+' · '+LEVELS[k].label+(PR[k]?'  '+starsOf(k):'')+'</option>';}).join('')+'</select></label>';
+  if(it.t==='slow') return '<label class="srow" for="s_slow"><span class="sl">Slow motion<small>Runs the flight at a quarter of the speed. Key: '+esc(keyFirst('slow'))+'.</small></span><input class="sw" type="checkbox" id="s_slow"'+(slow?' checked':'')+'></label>';
+  if(it.t==='keylist') return '<div class="sgroup">KEYBOARD SHORTCUTS</div><div class="keygrid">'+keyGridHTML()+'</div><p class="note">You can change every key under “More options”.</p>';
+  if(it.t==='tog') return '<label class="srow" for="'+id+'"><span class="sl">'+esc(it.l)+rt+hp+'</span><input class="sw" type="checkbox" id="'+id+'" data-k="'+it.k+'"'+(getPath(it.k)?' checked':'')+'></label>';
+  if(it.t==='sel') return '<label class="srow" for="'+id+'"><span class="sl">'+esc(it.l)+rt+hp+'</span><select id="'+id+'" data-k="'+it.k+'">'+it.o.map(function(o){return '<option value="'+o[0]+'"'+(getPath(it.k)===o[0]?' selected':'')+'>'+esc(o[1])+'</option>';}).join('')+'</select></label>';
+  if(it.t==='rng') return '<label class="srow" for="'+id+'"><span class="sl">'+esc(it.l)+rt+hp+'</span><input type="range" id="'+id+'" data-k="'+it.k+'" min="'+it.min+'" max="'+it.max+'" step="'+it.step+'" value="'+getPath(it.k)+'"><output id="'+id+'_o">'+it.fmt(getPath(it.k))+'</output></label>';
+  if(it.t==='btn') return '<div class="sbtns"><button class="btn ghost small" type="button" id="'+it.id+'" data-confirm="'+(it.c?1:0)+'">'+esc(it.l)+'</button></div>';
+  if(it.t==='keys'){
+    var h='<div class="sgroup">CHANGE KEYS <small style="font-size:15px">(click a key, then press the new one; Backspace clears; Esc cancels)</small></div>';
+    ACTIONS.forEach(function(a){
+      h+='<div class="krow"><span class="kl">'+esc(a.l)+'</span>'+[0,1].map(function(s){return '<button type="button" class="kbtn" data-act="'+a.id+'" data-slot="'+s+'" aria-label="'+esc(a.l)+', key '+(s+1)+': '+esc(keyName(ST.keys[a.id][s]))+'. Press to change.">'+esc(keyName(ST.keys[a.id][s]))+'</button>';}).join('')+'</div>';
+    });
+    h+='<div class="sbtns"><button class="btn ghost small" type="button" id="resetKeys">Reset keys to default</button></div>';
+    return h;
+  }
+  return '';
+}
+function renderTabs(){
+  $('#sTabs').innerHTML=SCHEMA.map(function(g){return '<button type="button" class="tab" role="tab" id="tab_'+g.id+'" aria-controls="sBody" aria-selected="'+(g.id===sTab)+'" tabindex="'+(g.id===sTab?0:-1)+'" data-tab="'+g.id+'">'+g.label+'</button>';}).join('');
+}
+function renderBody(){
+  var g=SCHEMA.filter(function(x){return x.id===sTab;})[0];
+  var mi=-1; g.items.forEach(function(it,i){if(it.t==='more') mi=i;});
+  var main=(mi<0?g.items:g.items.slice(0,mi)).map(rowHTML).join('');
+  var more=mi<0?'':g.items.slice(mi+1).map(rowHTML).join('');
+  var btn=g.btn?'<div class="sbtns"><button class="btn ghost small" type="button" id="'+g.btn.id+'">'+esc(g.btn.l)+'</button></div>':'';
+  $('#sBody').innerHTML=main+btn+(more?'<details class="smore" data-tab="'+sTab+'"'+(sMore[sTab]?' open':'')+'><summary>More options</summary>'+more+'</details>':'');
+  $('#sBody').setAttribute('aria-labelledby','tab_'+sTab);
+}
+function pendingRestart(){
+  if(!S||!S.cfg||mode==='modal') return [];
+  var out=[]; if(ST.turb!==S.cfg.turb) out.push('turbulence'); if(ST.fuel!==S.cfg.fuel) out.push('fuel burn'); if(ST.stallProt!==S.cfg.stallProt) out.push('stall protection');
+  return out;
+}
+function updateRestartNote(){
+  var box=$('#sRestart'); if(!box) return; var p=pendingRestart();
+  if(!p.length){box.hidden=true;box.innerHTML='';return;}
+  box.hidden=false; box.innerHTML='<span>↻ A restart is needed for: <b>'+p.join(', ')+'</b>. They apply to the next flight.</span><button class="btn small" type="button" id="restartNow">Restart flight now</button>';
+  $('#restartNow').onclick=function(){closeSettings();startFlight();};
+}
+function openSettings(tab){
+  if(settingsOpen){ if(tab){sTab=tab;renderTabs();renderBody();} return; }
+  if(tab) sTab=tab;
+  sPrevFocus=document.activeElement; settingsOpen=true; pressed={}; hold.thr=0; hold.pit=0;
+  renderTabs(); renderBody(); updateRestartNote();
+  $('#settings').classList.add('show'); $('#sCard').scrollTop=0;
+  var t=$('#tab_'+sTab); if(t) t.focus();
+}
+function closeSettings(){
+  if(!settingsOpen) return; cancelCapture(true);
+  settingsOpen=false; $('#settings').classList.remove('show');
+  if(sPrevFocus&&sPrevFocus.focus&&document.body.contains(sPrevFocus)){try{sPrevFocus.focus();}catch(e){}}
+}
+function toggleSettings(){ if(settingsOpen) closeSettings(); else openSettings(); }
+function trapTab(e){
+  var f=[].slice.call($('#sCard').querySelectorAll('button,select,input,[tabindex="0"]')).filter(function(x){return !x.disabled&&x.offsetParent!==null&&x.tabIndex>=0;});
+  if(!f.length) return; var first=f[0], last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
+function beginCapture(btn){
+  cancelCapture(true);
+  capturing={act:btn.dataset.act,slot:+btn.dataset.slot,btn:btn};
+  btn.classList.add('cap'); btn.textContent='Press a key…';
+}
+function cancelCapture(silent){
+  if(!capturing) return; var c=capturing; capturing=null;
+  c.btn.classList.remove('cap'); c.btn.textContent=keyName(ST.keys[c.act][c.slot]);
+}
+function finishCapture(k){
+  var c=capturing; capturing=null;
+  assignKey(c.act,c.slot,k); saveSettings(); applySettings(); renderBody();
+  var b=$('#sBody').querySelector('.kbtn[data-act="'+c.act+'"][data-slot="'+c.slot+'"]'); if(b) b.focus();
+}
+function confirmBtn(b,fn){
+  if(b.dataset.arm){clearTimeout(+b.dataset.arm);delete b.dataset.arm;b.textContent=b.dataset.label;fn();return;}
+  b.dataset.label=b.textContent; b.textContent='Click again to confirm';
+  b.dataset.arm=setTimeout(function(){delete b.dataset.arm;b.textContent=b.dataset.label;},4000);
+}
+(function bindSettings(){
+  var body=$('#sBody');
+  function fromControl(e){
+    var t=e.target;
+    if(t.id==='s_level'&&e.type==='change'){ setLevel(t.value); if(mode==='fly'||overlay){ closeSettings(); startFlight(); } else if(introOpen&&introPage===3) refreshPicker(); return; }
+    if(t.id==='s_slow'&&e.type==='change'){ if(t.checked!==slow) toggleSlow(); return; }
+    var k=t.dataset&&t.dataset.k; if(!k) return;
+    if(t.type==='range'&&e.type!=='input') return;
+    if(t.type!=='range'&&e.type!=='change') return;
+    var v=t.type==='checkbox'?t.checked:t.type==='range'?+t.value:t.value;
+    setPath(k,v);
+    if(t.type==='range'){ var o=$('#'+t.id+'_o'); var it=SCHEMA.reduce(function(a,g){return a.concat(g.items);},[]).filter(function(x){return x.k===k;})[0]; if(o&&it) o.textContent=it.fmt(v); }
+    saveSettings(); applySettings(); updateRestartNote();
+    if(k==='text'||k==='font'||k==='theme') {}
+  }
+  body.addEventListener('input',fromControl); body.addEventListener('change',fromControl);
+  body.addEventListener('toggle',function(e){ if(e.target.classList&&e.target.classList.contains('smore')) sMore[e.target.dataset.tab]=e.target.open; },true);
+  body.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.classList.contains('kbtn')){beginCapture(b);return;}
+    switch(b.id){
+      case 'resetLayout': ST.panels=clone(DEF.panels); ST.side=DEF.side; ST.density=DEF.density; ST.viewSize=DEF.viewSize; ST.coachPos=DEF.coachPos; saveSettings(); applySettings(); renderBody(); break;
+      case 'resetKeys': ST.keys=defKeys(); ACTIONS.forEach(function(a){while(ST.keys[a.id].length<2)ST.keys[a.id].push('');}); saveSettings(); applySettings(); renderBody(); break;
+      case 'testSound': audioInit(); tone(640,0.14,'warn','square',0.2); thump(0.5); tone(523,0.2,'sfx','triangle',0.25,0.3); break;
+      case 'showIntroBtn': closeSettings(); if(mode==='fly') showIntro(1,true); else showIntro(1,false); break;
+      case 'resetSettings': confirmBtn(b,function(){ var keep=ST.adv; ST=merge(DEF,null); try{ST.reduceMotion=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(x){} ACTIONS.forEach(function(a){while(ST.keys[a.id].length<2)ST.keys[a.id].push('');}); saveSettings(); applySettings(); renderBody(); updateRestartNote(); }); break;
+      case 'resetProgress': confirmBtn(b,function(){ PR={}; saveProgress(); fillLevelSelect(); b.textContent='Progress cleared'; }); break;
+    }
+  });
+  $('#sTabs').addEventListener('click',function(e){var b=e.target.closest('.tab'); if(!b) return; sTab=b.dataset.tab; renderTabs(); renderBody(); $('#tab_'+sTab).focus();});
+  $('#sTabs').addEventListener('keydown',function(e){
+    var ids=SCHEMA.map(function(g){return g.id;}), i=ids.indexOf(sTab), n=null;
+    if(e.key==='ArrowRight') n=(i+1)%ids.length; else if(e.key==='ArrowLeft') n=(i+ids.length-1)%ids.length; else if(e.key==='Home') n=0; else if(e.key==='End') n=ids.length-1;
+    if(n===null) return; e.preventDefault(); sTab=ids[n]; renderTabs(); renderBody(); $('#tab_'+sTab).focus();
+  });
+  $('#sClose').addEventListener('click',closeSettings); $('#sDone').addEventListener('click',closeSettings);
+  $('#settings').addEventListener('mousedown',function(e){ if(e.target===$('#settings')) closeSettings(); });
+})();
 
 /* ---------------- modal screens ---------------- */
 var modal=$('#modal'), card=$('#card');
-function openModal(html){mode='modal';card.innerHTML=html;modal.classList.add('show');card.scrollTop=0;}
-function closeModal(){modal.classList.remove('show');}
+function openModal(html,keep){
+  if(!keep) mode='modal';
+  overlay=keep?'intro':''; introOpen=false; endOpen=false;
+  card.innerHTML=html; modal.classList.add('show'); card.scrollTop=0;
+}
+function closeModal(){modal.classList.remove('show');overlay='';introOpen=false;}
+function xBtn(id,label){return '<button class="xbtn" id="'+id+'" type="button" aria-label="'+label+'" title="'+label+'">✕</button>';}
+
+function showKeys(){ openSettings('controls'); }
 
 function levelDesc(){
   var g=LV.grade;
-  return '<b>'+LV.label+'</b> · '+LV.desc+'<br><small>Climb to '+nf(LV.target)+' ft. Landing: butter up to '+nf(g[0])+' fpm · smooth '+nf(g[1])+' · firm '+nf(g[2])+' · hard '+nf(g[3])+' · faster = crash.</small>';
+  return '<b>Level '+LV.num+' · '+LV.label+'</b> · '+esc(LV.desc())+'<span class="learn"><b>You will learn:</b> '+esc(LV.learn)+'</span>'+
+    '<small>Climb to '+altStrFt(LV.target)+'. Landing: butter up to '+vsStr(g[0])+' · smooth '+vsStr(g[1])+' · firm '+vsStr(g[2])+' · hard '+vsStr(g[3])+' · faster = crash.'+(PR[levelKey]?' Best: '+starsOf(levelKey)+'.':'')+'</small>';
 }
 function levelPicker(){
-  return '<div class="lvls" role="radiogroup" aria-label="Difficulty">'+LKEYS.map(function(k){var l=LEVELS[k];
-    return '<button type="button" class="lvl" role="radio" aria-checked="'+(k===levelKey)+'" data-k="'+k+'">'+l.label+'<small>'+nf(l.target)+' ft</small></button>';}).join('')+
+  return '<div class="lvls" role="radiogroup" aria-label="Level">'+LKEYS.map(function(k){var l=LEVELS[k];
+    return '<button type="button" class="lvl" role="radio" aria-checked="'+(k===levelKey)+'" data-k="'+k+'">'+l.num+' · '+l.label+'<small>'+altStrFt(l.target)+(PR[k]?' · '+starsOf(k):'')+'</small></button>';}).join('')+
     '</div><div class="lvldesc" id="lvldesc" aria-live="polite">'+levelDesc()+'</div>';
 }
 function refreshPicker(){
@@ -526,33 +1415,55 @@ function refreshPicker(){
 function bindPicker(){
   [].forEach.call(card.querySelectorAll('.lvl'),function(b){b.addEventListener('click',function(){setLevel(b.dataset.k);refreshPicker();});});
 }
-lvlSel.addEventListener('change',function(){
-  setLevel(lvlSel.value);
-  if(mode==='modal') refreshPicker(); else startFlight();
-});
 
-function showIntro(){
-  openModal(
-    '<h2><span>FLIGHT SCHOOL</span></h2>'+
-    '<p>Four forces act on every plane. Your job: take off, climb to the target altitude, then land as softly as you can, and watch the forces change as you fly.</p>'+
-    '<div class="mini"><div class="f1"><b>F1 Lift ↑</b><br>Pushes the plane up.</div><div class="f2"><b>F2 Weight ↓</b><br>Gravity pulls it down.</div>'+
-    '<div class="f3"><b>F3 Thrust →</b><br>Engine pushes it forward.</div><div class="f4"><b>F4 Drag ←</b><br>Air resistance holds it back.</div></div>'+
-    '<h3>CHOOSE YOUR LEVEL</h3>'+levelPicker()+
-    '<ul><li><b>Thrust slider</b>: more thrust beats drag, so you speed up.</li>'+
-    '<li><b>Trim slider</b>: trim sets the nose angle (the wing\'s angle of attack). Nose up = more lift, but also more drag. Past 15° the wing stalls!</li>'+
-    '<li>You lift off when <b>Lift &gt; Weight</b>. Lift grows the faster you go: speed is in <b>knots</b>, height in <b>feet</b> and climb rate in <b>feet per minute (fpm)</b>.</li>'+
-    '<li>To land, cut thrust and descend, then <b>flare</b>: raise the trim just before touchdown. Very close to the runway the air under the wings gives extra lift (ground effect).</li>'+
-    '<li>Touchdown grades: <b>butter</b>, <b>smooth</b>, <b>firm</b>, <b>hard landing</b>. Only a really violent arrival is a crash.</li></ul>'+
-    '<div class="row"><button class="btn ghost" id="skip" type="button">Skip warm-up</button><button class="btn" id="go" type="button">Start → Warm-up</button></div>'
-  );
-  bindPicker();
-  $('#go').onclick=showMatch; $('#skip').onclick=startFlight; $('#go').focus();
+function closeIntro(){
+  if(introFrom){ closeModal(); } else { startFlight(); }
+}
+function showIntro(pg,from){
+  if(from!==undefined) introFrom=!!from;
+  introPage=Math.max(1,Math.min(3,pg||1));
+  var body='';
+  if(introPage===1){
+    body='<h2><span>FLIGHT SCHOOL</span></h2>'+
+      '<p>Four forces act on every plane. Your mission: <b>take off, climb, land softly and stop on the runway</b>. Watch the forces change as you fly.</p>'+
+      '<div class="mini"><div class="f1"><b>F1 Lift ↑</b><br>Pushes the plane up.</div><div class="f2"><b>F2 Weight ↓</b><br>Gravity pulls it down.</div>'+
+      '<div class="f3"><b>F3 Thrust →</b><br>Engine pushes it forward.</div><div class="f4"><b>F4 Drag ←</b><br>Air resistance holds it back.</div></div>'+
+      '<p>Lift has to beat weight to climb. Thrust has to beat drag to speed up.</p>';
+  } else if(introPage===2){
+    body='<h2><span>HOW TO FLY</span></h2><ul>'+
+      '<li><b>Thrust</b> speeds you up. <b>Lift grows with speed²</b>: twice as fast = 4× the lift.</li>'+
+      '<li><b>Pitch</b> is the nose angle (the wing\'s angle of attack). Nose up = more lift, but more drag too.</li>'+
+      '<li>Past <b>15°</b> the wing <b>stalls</b> and lift collapses. Lower the nose below 12° to recover.</li>'+
+      '<li>Forces are shown as a <b>% of normal weight</b>. Burning fuel makes the plane lighter.</li>'+
+      '<li>To land: cut thrust, descend, then <b>flare</b> (raise the pitch just before touchdown).</li>'+
+      '<li>New to this? Keep <b>Advanced info</b> off. Turn it on in Settings (or press '+esc(keyFirst('advanced'))+') for the lift-vs-pitch chart, ground speed and climb rate.</li></ul>';
+  } else {
+    body='<h2><span>READY?</span> · LEVEL &amp; KEYS</h2><h3>CHOOSE YOUR LEVEL</h3>'+levelPicker()+
+      '<h3>KEYBOARD SHORTCUTS <small style="font-size:16px;color:var(--pencil)">(press '+esc(keyFirst('shortcuts'))+' to see them in Settings)</small></h3><div class="keygrid">'+keyGridHTML()+'</div>';
+  }
+  var dots='<div class="dots" role="img" aria-label="Page '+introPage+' of 3">'+[1,2,3].map(function(n){return '<i class="'+(n===introPage?'on':'')+'"></i>';}).join('')+'</div>';
+  var right;
+  if(introPage<3) right='<button class="btn arrow" id="pnext" type="button" aria-label="Next page">→</button>';
+  else if(introFrom) right='<button class="btn ghost" id="go" type="button">Restart with warm-up</button><button class="btn" id="skip" type="button">Back to flight</button>';
+  else right='<button class="btn ghost" id="skip" type="button">Skip warm-up</button><button class="btn" id="go" type="button">Start → Warm-up</button>';
+  openModal(xBtn('xclose','Close intro (Esc)')+body+'<div class="pager"><button class="btn ghost arrow" id="pprev" type="button" aria-label="Previous page"'+(introPage===1?' disabled':'')+'>←</button>'+dots+'<div class="r">'+right+'</div></div>',introFrom);
+  introOpen=true;
+  $('#xclose').onclick=closeIntro;
+  $('#pprev').onclick=function(){showIntro(introPage-1);};
+  if(introPage<3){ $('#pnext').onclick=function(){showIntro(introPage+1);}; $('#pnext').focus(); }
+  else {
+    bindPicker();
+    $('#go').onclick=showMatch;
+    $('#skip').onclick=introFrom?closeIntro:startFlight;
+    (introFrom?$('#skip'):$('#go')).focus();
+  }
 }
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function showMatch(){
   var order=shuffle(Object.keys(FORCES));
   openModal(
+    xBtn('xclose','Close warm-up and start flying (Esc)')+
     '<h2><span>WARM-UP</span> · PUT THE FORCES IN THE RIGHT PLACES</h2>'+
     '<p>Pick a force label below, then tap the arrow where it belongs. (You can also drag it.)</p>'+
     '<div class="pgrid">'+
@@ -563,19 +1474,20 @@ function showMatch(){
       '<button class="slot down" data-dir="down" type="button" aria-label="Arrow pointing down">↓</button>'+
     '</div>'+
     '<div class="chips">'+order.map(function(k){var f=FORCES[k];
-      return '<div class="chip" role="button" tabindex="0" draggable="true" data-k="'+k+'" style="--c:'+f.color+';--t:'+f.tint+'"><span class="dot" style="background:'+f.color+';color:'+f.on+'">'+f.n+'</span><span><b>'+f.name.toUpperCase()+'</b>'+f.clue+'</span></div>';}).join('')+
+      return '<div class="chip f'+(['lift','weight','thrust','drag'].indexOf(k)+1)+'" role="button" tabindex="0" draggable="true" data-k="'+k+'"><span class="dot">'+f.n+'</span><span><b>'+f.name.toUpperCase()+'</b>'+f.clue+'</span></div>';}).join('')+
     '</div>'+
     '<p class="fb" id="fb" aria-live="polite"></p><p id="score">0 / 4 correct</p>'+
     '<div class="row"><button class="btn ghost" id="skip" type="button">Skip</button><button class="btn" id="go" type="button" disabled>✈ Start flying</button></div>'
   );
+  introOpen=true; introPage=0; introFrom=false;
   var chips=[].slice.call(card.querySelectorAll('.chip')), slots=[].slice.call(card.querySelectorAll('.slot')), sel=null, done=0, fb=$('#fb');
   function pick(c){ if(c.classList.contains('used'))return; chips.forEach(function(x){x.classList.remove('sel');}); c.classList.add('sel'); sel=c; }
   function place(s){
     if(!sel){fb.className='fb bad';fb.textContent='Pick a force label first!';return;}
     if(s.dataset.done) return;
-    var f=FORCES[sel.dataset.k];
+    var f=FORCES[sel.dataset.k], cls='f'+(['lift','weight','thrust','drag'].indexOf(sel.dataset.k)+1);
     if(f.dir===s.dataset.dir){
-      s.dataset.done='1'; s.classList.add('ok'); s.style.setProperty('--c',f.color); s.style.setProperty('--on',f.on);
+      s.dataset.done='1'; s.classList.add('ok',cls);
       s.innerHTML='<b>'+f.n+'</b>'+f.name; sel.classList.remove('sel'); sel.classList.add('used'); sel=null; done++;
       fb.className='fb good'; fb.textContent='Correct! '+f.name+': '+f.clue;
       $('#score').textContent=done+' / 4 correct';
@@ -595,67 +1507,253 @@ function showMatch(){
     s.addEventListener('dragover',function(e){e.preventDefault();});
     s.addEventListener('drop',function(e){e.preventDefault();var k=e.dataTransfer.getData('text/plain');var c=chips.filter(function(x){return x.dataset.k===k;})[0];if(c){pick(c);place(s);}});
   });
-  $('#go').onclick=startFlight; $('#skip').onclick=startFlight;
+  $('#go').onclick=startFlight; $('#skip').onclick=startFlight; $('#xclose').onclick=startFlight;
 }
 
-function showEnd(won){
-  var gl=LV.grade;
-  if(won){
-    var g=S.grade, stars=['★★★★★','★★★★☆','★★★☆☆','★★☆☆☆'][g];
-    var say=[
-      'Butter! You touched down at '+nf(S.fpm)+' fpm. Pilots dream of landings like that.',
-      'A smooth landing at '+nf(S.fpm)+' fpm. Nicely done.',
-      'A firm landing at '+nf(S.fpm)+' fpm. The passengers felt that one. Try flaring a little more next time.',
-      'A hard landing at '+nf(S.fpm)+' fpm. The plane survived, but it would need an inspection. Raise the trim a little just before touchdown (the flare) to soften it.'
-    ][g];
-    if(S.bad==='nose') say+=' Your nose was pointing down when the wheels touched.';
-    if(S.bad==='tail') say+=' Your nose was too high, so the tail could have scraped the runway.';
-    var next=LKEYS[LKEYS.indexOf(levelKey)+1];
-    openModal(
-      '<h2><span>'+(g===3?'HARD LANDING':'MISSION COMPLETE!')+'</span> ✈</h2>'+
-      '<p class="stars" aria-label="'+(5-g)+' out of 5 stars">'+stars+'</p>'+
-      '<p class="gname" style="color:'+GCOL[g]+'">'+NAMES[g]+'</p>'+
-      '<p>'+say+'</p>'+
-      '<div class="stats"><div><small>LEVEL</small><b>'+LV.label+'</b></div><div><small>TOUCHDOWN</small><b>'+nf(S.fpm)+' fpm</b></div><div><small>FLIGHT TIME</small><b>'+Math.round(S.time)+' s</b></div></div>'+
-      '<ul><li>To <b>climb</b> you made <b>Lift bigger than Weight</b>.</li>'+
-      '<li>To <b>speed up</b> you made <b>Thrust bigger than Drag</b>.</li>'+
-      '<li>To <b>land softly</b> you cut the thrust so you descended, then flared with trim so lift almost matched weight at touchdown.</li></ul>'+
-      '<div class="row"><button class="btn ghost" id="again2" type="button">Warm-up again</button>'+
-      (next?'<button class="btn ghost" id="nextlv" type="button">Next level: '+LEVELS[next].label+' →</button>':'')+
-      '<button class="btn" id="again" type="button">Fly again</button></div>');
-    $('#again').onclick=startFlight; $('#again2').onclick=showMatch; $('#again').focus();
-    if(next) $('#nextlv').onclick=function(){setLevel(next);startFlight();};
-  } else {
-    openModal('<h2><span>CRASH!</span></h2>'+
-      '<p>You hit the ground at '+nf(S.crashFpm)+' fpm. On the '+LV.label+' level anything faster than '+nf(gl[3])+' fpm destroys the plane.</p>'+
-      '<p>Hard landings are survivable, but this was far too fast: the weight was much bigger than the lift. Next time cut thrust gradually, keep descending slowly, and raise the trim just before touchdown (the flare) so lift almost matches weight.</p>'+
-      '<div class="row"><button class="btn ghost" id="intro" type="button">How to play</button><button class="btn" id="again" type="button">Try again</button></div>');
-    $('#again').onclick=startFlight; $('#intro').onclick=showIntro; $('#again').focus();
+/* ---------------- end-of-flight analysis + charts ---------------- */
+function analyseFlight(){
+  var ev=S.ev, Hh=S.hist; ev.flare=null;
+  if(ev.touch!==null && Hh.length>8){
+    var w=Hh.filter(function(s){return s.t>=ev.touch-10 && s.t<=ev.touch;});
+    if(w.length>4){
+      var mn=Infinity,mx=-Infinity,mt=0;
+      w.forEach(function(s){ if(s.p<mn) mn=s.p; if(s.p>mx){mx=s.p;mt=s.t;} });
+      if(mx-mn>=2.5 && mt<ev.touch) ev.flare=mt;
+    }
   }
 }
+function niceMax(v){var s=[100,150,200,250,300,400,500,600,800];for(var i=0;i<s.length;i++) if(v<=s[i]) return s[i]; return Math.ceil(v/100)*100;}
+var CHARTS=[];
+function chartHTML(cfg){
+  var Hh=S.hist; if(Hh.length<4) return '';
+  var VW=640, VH=206, ML=44, MR=76, MT=36, MB=30, pw=VW-ML-MR, ph=VH-MT-MB;
+  var tmax=Hh[Hh.length-1].t, mx=0; Hh.forEach(function(s){mx=Math.max(mx,s[cfg.a],s[cfg.b]);});
+  var ymax=niceMax(mx*1.05), ink=FC.ink, suf=ST.forceUnits==='pct'?'%':'';
+  var X=function(t){return ML+t/tmax*pw;}, Y=function(v){return MT+ph-v/ymax*ph;};
+  var f='font-family="'+fontf().replace(/"/g,'')+'"';
+  var s='', i, ystep=ymax<=200?50:100, xstep=tmax>240?60:tmax>100?30:15;
+  for(i=0;i<=ymax;i+=ystep){
+    s+='<line x1="'+ML+'" x2="'+(VW-MR)+'" y1="'+Y(i)+'" y2="'+Y(i)+'" stroke="'+FC.hair+'" stroke-width="1"/>'+
+       '<text x="'+(ML-6)+'" y="'+(Y(i)+4)+'" text-anchor="end" '+f+' font-size="13" fill="'+FC.pencil+'">'+i+suf+'</text>';
+  }
+  for(i=0;i<=tmax;i+=xstep){ s+='<text x="'+X(i)+'" y="'+(VH-MB+16)+'" text-anchor="middle" '+f+' font-size="13" fill="'+FC.pencil+'">'+i+' s</text>'; }
+  for(i=1;i<Hh.length;i++){
+    var p0=Hh[i-1], p1=Hh[i];
+    if(p0[cfg.a]>p0[cfg.b] && p1[cfg.a]>p1[cfg.b]) s+='<rect x="'+X(p0.t)+'" y="'+MT+'" width="'+Math.max(0.5,X(p1.t)-X(p0.t)+0.4)+'" height="'+ph+'" fill="'+cfg.colA+'" opacity="0.16"/>';
+  }
+  var evs=[];
+  if(S.ev.liftoff!==null) evs.push([S.ev.liftoff,'lift-off']);
+  if(S.ev.target!==null) evs.push([S.ev.target,'target']);
+  if(S.ev.flare!==null && cfg.flare) evs.push([S.ev.flare,'flare']);
+  if(S.ev.touch!==null) evs.push([S.ev.touch,'touchdown']);
+  evs.sort(function(a,b){return a[0]-b[0];});
+  var lastX=-999,row=0;
+  evs.forEach(function(e){
+    var x=X(e[0]); row=(x-lastX<62)?(row+1)%2:0; lastX=x;
+    s+='<line x1="'+x+'" x2="'+x+'" y1="'+(MT-6)+'" y2="'+(MT+ph)+'" stroke="'+ink+'" stroke-width="1" opacity=".45"/>'+
+       '<text x="'+x+'" y="'+(MT-10-row*13)+'" text-anchor="middle" '+f+' font-size="13" fill="'+ink+'">'+e[1]+'</text>';
+  });
+  if(cfg.stalls) S.ev.stalls.forEach(function(t){
+    var x=X(t); s+='<path d="M'+(x-6)+','+(MT+ph)+' L'+(x+6)+','+(MT+ph)+' L'+x+','+(MT+ph-11)+' Z" fill="'+FC.weight+'" stroke="'+ink+'" stroke-width="1.5"><title>Stall at '+Math.round(t)+' s</title></path>';
+  });
+  var dA='',dB='';
+  Hh.forEach(function(p,k){dA+=(k?' L':'M')+X(p.t).toFixed(1)+','+Y(p[cfg.a]).toFixed(1);dB+=(k?' L':'M')+X(p.t).toFixed(1)+','+Y(p[cfg.b]).toFixed(1);});
+  s+='<path d="'+dB+'" fill="none" stroke="'+cfg.colB+'" stroke-width="2.5" stroke-dasharray="8 5" stroke-linejoin="round"/>';
+  s+='<path d="'+dA+'" fill="none" stroke="'+cfg.colA+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  var la=Hh[Hh.length-1], yA=Y(la[cfg.a]), yB=Y(la[cfg.b]);
+  if(Math.abs(yA-yB)<16){ if(yA<=yB){yA-=8;yB+=8;} else {yA+=8;yB-=8;} }
+  s+='<line x1="'+(VW-MR+6)+'" x2="'+(VW-MR+20)+'" y1="'+yA+'" y2="'+yA+'" stroke="'+cfg.colA+'" stroke-width="3"/><text x="'+(VW-MR+24)+'" y="'+(yA+4)+'" '+f+' font-size="14" fill="'+ink+'">'+cfg.nameA+'</text>';
+  s+='<line x1="'+(VW-MR+6)+'" x2="'+(VW-MR+20)+'" y1="'+yB+'" y2="'+yB+'" stroke="'+cfg.colB+'" stroke-width="3" stroke-dasharray="4 3"/><text x="'+(VW-MR+24)+'" y="'+(yB+4)+'" '+f+' font-size="14" fill="'+ink+'">'+cfg.nameB+'</text>';
+  s+='<line class="xh" x1="0" x2="0" y1="'+MT+'" y2="'+(MT+ph)+'" stroke="'+ink+'" stroke-width="1" visibility="hidden"/>';
+  var idx=CHARTS.length; CHARTS.push({cfg:cfg,VW:VW,ML:ML,MR:MR,pw:pw,tmax:tmax,hist:Hh});
+  return '<div class="cwrap" data-chart="'+idx+'"><div class="ctitle">'+cfg.title+'</div>'+
+    '<div class="clegend"><span><svg width="26" height="10" aria-hidden="true"><line x1="0" x2="26" y1="5" y2="5" stroke="'+cfg.colA+'" stroke-width="3"/></svg>'+cfg.nameA+'</span>'+
+    '<span><svg width="26" height="10" aria-hidden="true"><line x1="0" x2="26" y1="5" y2="5" stroke="'+cfg.colB+'" stroke-width="3" stroke-dasharray="6 4"/></svg>'+cfg.nameB+'</span>'+
+    '<span><i style="background:'+cfg.colA+';opacity:.25"></i>'+cfg.shadeNote+'</span></div>'+
+    '<svg viewBox="0 0 '+VW+' '+VH+'" tabindex="0" role="img" aria-label="'+cfg.title+'. Use left and right arrow keys to read values, or open the table below.">'+s+'</svg>'+
+    '<div class="ctip" role="status"></div></div>';
+}
+function bindCharts(root){
+  [].forEach.call(root.querySelectorAll('.cwrap'),function(w){
+    var c=CHARTS[+w.dataset.chart], svg=w.querySelector('svg'), tip=w.querySelector('.ctip'), xh=w.querySelector('.xh'), cfg=c.cfg, cur=0;
+    function show(i){
+      i=clamp(i,0,c.hist.length-1); cur=i; var p=c.hist[i];
+      var x=(c.ML+p.t/c.tmax*c.pw);
+      xh.setAttribute('x1',x); xh.setAttribute('x2',x); xh.setAttribute('visibility','visible');
+      tip.textContent='';
+      var b=document.createElement('b'); b.textContent=Math.round(p.t)+' s · '+nf(ST.altU==='m'?p.alt/FT:p.alt)+' '+altUnit(); tip.appendChild(b);
+      [[cfg.a,cfg.nameA,cfg.colA,''],[cfg.b,cfg.nameB,cfg.colB,'dashed']].forEach(function(r){
+        tip.appendChild(document.createElement('br'));
+        var k=document.createElement('span'); k.className='k'; k.style.borderTopColor=r[2]; k.style.borderTopStyle=r[3]||'solid'; tip.appendChild(k);
+        tip.appendChild(document.createTextNode(r[1]+' '+fForce(p[r[0]])));
+      });
+      var rect=svg.getBoundingClientRect(), wr=w.getBoundingClientRect();
+      var px=rect.left-wr.left+x/c.VW*rect.width;
+      tip.style.display='block';
+      tip.style.left=Math.min(px+10,wr.width-tip.offsetWidth-4)+'px';
+      if(px+10+tip.offsetWidth>wr.width-4) tip.style.left=Math.max(4,px-tip.offsetWidth-10)+'px';
+      tip.style.top=(rect.top-wr.top+36)+'px';
+    }
+    function fromEvent(e){
+      var rect=svg.getBoundingClientRect(), vx=(e.clientX-rect.left)/rect.width*c.VW;
+      var t=clamp((vx-c.ML)/c.pw,0,1)*c.tmax; show(Math.round(t/0.25));
+    }
+    function hide(){tip.style.display='none';xh.setAttribute('visibility','hidden');}
+    svg.addEventListener('pointermove',fromEvent); svg.addEventListener('pointerdown',fromEvent);
+    svg.addEventListener('pointerleave',hide); svg.addEventListener('blur',hide);
+    svg.addEventListener('keydown',function(e){
+      if(e.key==='ArrowRight'){e.preventDefault();show(cur+4);} else if(e.key==='ArrowLeft'){e.preventDefault();show(cur-4);} else if(e.key==='Escape'){hide();}
+    });
+    svg.addEventListener('focus',function(){show(cur);});
+  });
+}
+function flightBlock(){
+  CHARTS=[]; analyseFlight();
+  var h1=chartHTML({title:'Lift vs Weight',a:'L',b:'W',nameA:'Lift',nameB:'Weight',colA:FC.lift,colB:FC.weight,shadeNote:'shaded = lift bigger than weight (climbing)',flare:true,stalls:true});
+  var h2=chartHTML({title:'Thrust vs Drag',a:'T',b:'D',nameA:'Thrust',nameB:'Drag',colA:FC.thrust,colB:FC.drag,shadeNote:'shaded = thrust bigger than drag (speeding up)',flare:false,stalls:false});
+  if(!h1) return '<p class="cnote">This flight was too short to draw charts.</p>';
+  var note='<p class="cnote">Where the lines cross, the plane switches between climbing and sinking, or between speeding up and slowing down.'+(S.ev.stalls.length?' Red triangles are stalls.':'')+'</p>';
+  var rows='<tr><th>Time (s)</th><th>Lift</th><th>Weight</th><th>Thrust</th><th>Drag</th><th>Altitude ('+altUnit()+')</th></tr>';
+  S.hist.forEach(function(p,i){ if(i%40===0) rows+='<tr><td>'+Math.round(p.t)+'</td><td>'+nf(p.L)+'</td><td>'+nf(p.W)+'</td><td>'+nf(p.T)+'</td><td>'+nf(p.D)+'</td><td>'+nf(ST.altU==='m'?p.alt/FT:p.alt)+'</td></tr>'; });
+  return h1+h2+note+'<details class="ctable"><summary>Show the flight data as a table</summary><table>'+rows+'</table></details>';
+}
+function flightSection(){
+  if(ST.autoCharts) return '<div id="flightArea">'+flightBlock()+'</div>';
+  return '<div id="flightArea"><div class="row" style="justify-content:flex-start"><button class="btn ghost small" id="showcharts" type="button">Show flight charts</button></div></div>';
+}
+function bindFlightSection(){
+  bindCharts(card);
+  var b=$('#showcharts'); if(b) b.onclick=function(){ $('#flightArea').innerHTML=flightBlock(); bindCharts($('#flightArea')); };
+}
+function scoreFlight(){
+  var g=S.grade, land=[3,2,1,0][g], noStall=(S.stallCount===0&&!S.cfg.stallProt)?1:0, fast=S.time<=LV.par?1:0;
+  return {g:g,land:land,noStall:noStall,fast:fast,total:land+noStall+fast};
+}
+function starRow(n){var s='';for(var i=0;i<5;i++) s+=i<n?'★':'☆';return s;}
 
-function startFlight(){ reset(); closeModal(); mode='fly'; updatePanel(); }
+var END_TABS=['Result','Flight data','Tips'];
+function showEnd(won){
+  var c={won:won};
+  if(won){
+    c.sc=scoreFlight();
+    var prev=PR[levelKey]?PR[levelKey].stars:0;
+    if(c.sc.total>prev){ PR[levelKey]={stars:c.sc.total,fpm:Math.round(S.fpm)}; saveProgress(); fillLevelSelect(); }
+    sfxWin(c.sc.total);
+    c.next=LKEYS[LKEYS.indexOf(levelKey)+1]||null;
+  }
+  endCtx=c; renderEnd(1);
+}
+function endResultHTML(){
+  var c=endCtx, gl=LV.grade;
+  if(c.won){
+    var sc=c.sc, g=sc.g;
+    var say=['Touched down at '+vsStr(S.fpm)+'. Pilots dream of landings like this!','Touched down at '+vsStr(S.fpm)+'. Nicely done.','Touched down at '+vsStr(S.fpm)+'. The passengers felt that one.','Touched down at '+vsStr(S.fpm)+'. The plane survived but needs an inspection.'][g];
+    var stallTxt=S.cfg.stallProt?'stall protection was on, so no star':(sc.noStall?'1 of 1 star':'stalled '+S.stallCount+'×, 0 of 1 star');
+    var lines=[
+      '<li class="'+(sc.land>0?'yes':'no')+'"><i>'+(sc.land>0?'✓':'✗')+'</i><b>Landing</b> · '+sc.land+' of 3 stars</li>',
+      '<li class="'+(sc.noStall?'yes':'no')+'"><i>'+(sc.noStall?'✓':'✗')+'</i><b>No stall</b> · '+stallTxt+'</li>',
+      '<li class="'+(sc.fast?'yes':'no')+'"><i>'+(sc.fast?'✓':'✗')+'</i><b>Time</b> · '+Math.round(S.time)+' s (goal '+LV.par+' s), '+sc.fast+' of 1 star</li>'
+    ].join('');
+    return '<h2><span>'+(g===3?'HARD LANDING':'MISSION COMPLETE!')+'</span> ✈</h2>'+
+      '<p class="stars" aria-label="'+sc.total+' out of 5 stars">'+starRow(sc.total)+'</p>'+
+      '<p class="gname" style="color:'+['var(--thrust)','var(--lift)','#B87400','var(--weight)'][g]+'">'+NAMES[g]+'</p>'+
+      '<p>'+say+'</p><ul class="score">'+lines+'</ul>';
+  }
+  var over=(S.crashWhy==='overrun');
+  return '<h2><span>'+(over?'OVERRUN!':'CRASH!')+'</span></h2>'+
+    '<p class="stars" aria-label="0 out of 5 stars">'+starRow(0)+'</p>'+
+    '<p class="gname" style="color:var(--weight)">'+(over?'RAN OUT OF RUNWAY':'TOO FAST FOR LANDING')+'</p>'+
+    '<p>'+(over?'The plane was not in the air before the '+altStrFt(LV.runway*FTPERU)+' runway ended.':'You hit the ground at '+vsStr(S.crashFpm)+'. On this level anything faster than '+vsStr(gl[3])+' destroys the plane.')+'</p>'+
+    '<div class="stats"><div><small>LEVEL</small><b>'+LV.num+' · '+LV.label+'</b></div><div><small>FLIGHT TIME</small><b>'+Math.round(S.time)+' s</b></div><div><small>'+(over?'RUNWAY':'TOUCHDOWN')+'</small><b>'+(over?altStrFt(LV.runway*FTPERU):vsStr(S.crashFpm))+'</b></div></div>';
+}
+function endDataHTML(){
+  var top=0; S.hist.forEach(function(h){if(h.alt>top) top=h.alt;});
+  var td=endCtx.won?vsStr(S.fpm):'—';
+  return '<h2><span>FLIGHT DATA</span></h2>'+
+    '<div class="stats"><div><small>LIFT-OFF AT</small><b>'+(S.ev.liftoff!==null?Math.round(S.ev.liftoff)+' s':'—')+'</b></div><div><small>TOP HEIGHT</small><b>'+altStrFt(top)+'</b></div><div><small>STALLS</small><b>'+S.stallCount+'</b></div></div>'+
+    flightSection();
+}
+function endTips(){
+  var c=endCtx, gl=LV.grade, t=[]; analyseFlight();
+  if(!c.won){
+    if(S.crashWhy==='overrun'){
+      t.push('Use full thrust straight away, then raise the pitch to about 10° when lift is close to weight (around '+spdStrKt(130)+' to '+spdStrKt(150)+').');
+      t.push('Rotating late, or with too little pitch, makes the take-off run much longer.');
+    } else {
+      if(S.stallCount>0&&!S.cfg.stallProt) t.push('You stalled: past 15° of pitch the lift collapses. Keep the nose lower.');
+      t.push('Cut thrust early and keep the descent gentle (under '+vsStr(gl[3])+' at touchdown).');
+      if(t.length<2) t.push('Raise the pitch just before touchdown (the flare) so lift almost matches weight.');
+    }
+    return t.slice(0,2);
+  }
+  var sc=c.sc;
+  if(S.stallCount>0&&!S.cfg.stallProt) t.push('You stalled. More nose-up is not always more lift: keep the pitch below 15°.');
+  if(sc.g>=2) t.push(S.ev.flare===null?'Flare: raise the pitch a little in the last seconds before touchdown to soften the landing.':'You flared, but a bit late. Start raising the nose earlier and hold it gently.');
+  if(S.bad==='nose') t.push('Your nose pointed down at touchdown. Keep the nose level or slightly up.');
+  else if(S.bad==='tail') t.push('Your nose was too high at touchdown. The tail could scrape the runway.');
+  if(!sc.fast) t.push('Climb faster: at full thrust, build speed first. Lift grows with speed², so speed gives you lift.');
+  if(!t.length) t.push(c.next?'Great flight! Next up: '+LEVELS[c.next].label+'. '+LEVELS[c.next].learn:'Great flight! Try a harder landing grade or turn on stronger turbulence in Settings.');
+  return t.slice(0,2);
+}
+function endTipsHTML(){
+  return '<h2><span>TIPS</span></h2><ul>'+endTips().map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'+
+    (endCtx.won&&endCtx.next&&endTips().length<2?'':'');
+}
+function renderEnd(pg){
+  endPage=clamp(pg,1,3); var c=endCtx, last=(endPage===3);
+  var body=endPage===1?endResultHTML():endPage===2?endDataHTML():endTipsHTML();
+  var dots='<div class="dots" role="group" aria-label="Page '+endPage+' of 3: '+END_TABS[endPage-1]+'">'+[1,2,3].map(function(n){return '<button type="button" class="dotb'+(n===endPage?' on':'')+'" data-p="'+n+'" aria-label="'+END_TABS[n-1]+(n===endPage?' (current page)':'')+'" aria-current="'+(n===endPage)+'"></button>';}).join('')+'</div>';
+  var right='<button class="btn ghost" id="again" type="button">'+(c.won?'↺ Replay':'↺ Try again')+'</button>';
+  if(!last) right+='<button class="btn arrow" id="pnext" type="button" aria-label="Next page">→</button>';
+  else if(c.won&&c.next) right+='<button class="btn" id="nextlv" type="button">Next level: '+esc(LEVELS[c.next].label)+' →</button>';
+  openModal(body+'<div class="pager"><button class="btn ghost arrow" id="pprev" type="button" aria-label="Previous page"'+(endPage===1?' disabled':'')+'>←</button>'+dots+'<div class="r">'+right+'</div></div>');
+  endOpen=true;
+  if(endPage===2) bindFlightSection();
+  $('#pprev').onclick=function(){renderEnd(endPage-1);};
+  [].forEach.call(card.querySelectorAll('.dotb'),function(b){b.onclick=function(){renderEnd(+b.dataset.p);};});
+  $('#again').onclick=startFlight;
+  if(!last){ $('#pnext').onclick=function(){renderEnd(endPage+1);}; $('#pnext').focus({preventScroll:true}); }
+  else if($('#nextlv')){ $('#nextlv').onclick=function(){setLevel(c.next);startFlight();}; $('#nextlv').focus({preventScroll:true}); }
+  else $('#again').focus({preventScroll:true});
+}
+
+function startFlight(){
+  reset(); closeModal(); mode='fly'; introFrom=false;
+  setPaused(false); coachCur={key:'',lvl:'',t:0}; updatePanel();
+}
 $('#restart').addEventListener('click',function(){ if(mode!=='modal') startFlight(); });
 
 /* ---------------- main loop ---------------- */
 var last=performance.now(), acc=0;
 function loop(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
-  if(mode==='fly'){
-    var dA=((keys.arrowup||keys.w)?1:0)-((keys.arrowdown||keys.s)?1:0);
-    var dT=((keys.arrowright||keys.d)?1:0)-((keys.arrowleft||keys.a)?1:0);
-    if(dA||dT){ angle=clamp(angle+dA*14*dt,-5,LV.maxTrim); thrust=clamp(thrust+dT*45*dt,0,100); syncSliders(); }
-    acc+=dt;
-    while(acc>=1/60 && mode==='fly'){ step(1/60); acc-=1/60; }
-    prop+=dt*(6+thrust*0.35);
+  var running=(mode==='fly'&&!halted());
+  if(mode==='fly'&&!halted()){
+    var kp=((isDown('pitchUp')?1:0)-(isDown('pitchDown')?1:0))*(ST.invert?-1:1);
+    var kt=(isDown('thrustUp')?1:0)-(isDown('thrustDown')?1:0);
+    var rep=REPEAT[ST.repeat]||1;
+    var dp=clamp(kp+hold.pit*rep,-2,2), dthr=clamp(kt+hold.thr*rep,-2,2);
+    if(dp||dthr){ angle=clamp(angle+dp*14*ST.pitchSens*dt,-5,maxAngle()); thrust=clamp(thrust+dthr*45*ST.thrSens*dt,0,100); syncSliders(); }
+    var sc=(slow?0.25:1)*(ST.gameSpeed==='slower'?0.75:1);
+    acc+=dt*sc;
+    while(acc>=1/60 && mode==='fly' && !paused){
+      step(1/60); acc-=1/60;
+      if(S.stallEvt){ S.stallEvt=false; if(ST.autoPause){ S.autoPaused=true; setPaused(true); S.autoPaused=true; } }
+    }
+    prop+=dt*sc*(6+thrust*0.35);
   } else acc=0;
-  if(S.msgT>0) S.msgT-=dt;
+  audioTick(dt,running);
+  if(S.msgT>0&&!halted()) S.msgT-=dt;
   if(S.shake>0) S.shake=Math.max(0,S.shake-dt);
   draw(now/1000);
   if(frame++%5===0) updatePanel();
   requestAnimationFrame(loop);
 }
-setLevel(levelKey); reset(); updatePanel(); showIntro();
+reset();
+applySettings();
+setLevel(levelKey);
+updatePanel();
+showIntro(1,false);
 requestAnimationFrame(loop);
 })();
 </script>

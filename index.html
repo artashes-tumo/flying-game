@@ -2,18 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F8F5EC">
 <title>Flight School – The 4 Forces Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Atkinson+Hyperlegible:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Atkinson+Hyperlegible:wght@400;700&display=swap"></noscript>
+<script>(function(){try{var d=document.documentElement,c=matchMedia("(pointer:coarse)").matches,w=innerWidth,h=innerHeight,q=(location.search.match(/[?&]layout=(cockpit|portrait|desktop)/)||[])[1];var l=q||(c&&w>h&&h<=540?"cockpit":c&&w<=h&&w<=700?"portrait":"desktop");d.setAttribute("data-layout",l);d.setAttribute("data-mobile",l==="desktop"?"0":"1");}catch(e){}})();</script>
 <style>
 :root{
-  --paper:#F8F5EC; --paper-2:#EFEADB; --card:#FFFDF6; --ink:#1D2B44; --pencil:#6B7385; --grid:rgba(29,43,68,.07); --hair:#DAD5C5; --skybg:#DCEBFA;
+  --paper:#F8F5EC; --paper-2:#EFEADB; --card:#FFFDF6; --ink:#1D2B44; --pencil:#5B6275; --grid:rgba(29,43,68,.07); --hair:#DAD5C5; --skybg:#DCEBFA;
   --lift:#2A72D4;   --lift-t:#DCE9FB;   --lift-on:#fff;
   --weight:#CF3F32; --weight-t:#F8DCD8; --weight-on:#fff;
-  --thrust:#23894F; --thrust-t:#D6EEDF; --thrust-on:#fff;
+  --thrust:#1A7340; --thrust-t:#D6EEDF; --thrust-on:#fff;
   --drag:#E39100;   --drag-t:#FBEBC8;   --drag-on:#1D2B44;
+  --amber:#7A5000;
   --hand:'Patrick Hand','Segoe Print','Bradley Hand','Comic Sans MS',cursive;
   --ts:1; --panelw:330px; --tbtn:52px;
 }
@@ -22,14 +26,14 @@
   --lift:#5B9BFF; --lift-t:#1E3560; --lift-on:#0E1424;
   --weight:#FF7468; --weight-t:#5A2623; --weight-on:#0E1424;
   --thrust:#43C37D; --thrust-t:#1B4A31; --thrust-on:#0E1424;
-  --drag:#FFB32B; --drag-t:#5A4210; --drag-on:#0E1424;
+  --drag:#FFB32B; --drag-t:#5A4210; --drag-on:#0E1424; --amber:#FFB32B;
 }
 :root[data-theme="hc"]{
   --paper:#000; --paper-2:#151515; --card:#000; --ink:#fff; --pencil:#e8e8e8; --grid:transparent; --hair:#fff; --skybg:#000;
   --lift:#4DB8FF; --lift-t:#00334d; --lift-on:#000;
   --weight:#FF6A5C; --weight-t:#4d0f0a; --weight-on:#000;
   --thrust:#3DDC84; --thrust-t:#0d3d22; --thrust-on:#000;
-  --drag:#FFD21F; --drag-t:#4d3d00; --drag-on:#000;
+  --drag:#FFD21F; --drag-t:#4d3d00; --drag-on:#000; --amber:#FFD21F;
 }
 /* colour-blind friendly force colours (Okabe-Ito based). Patterns and labels stay. */
 :root[data-cb="1"]{
@@ -48,7 +52,7 @@
 :root[data-font="readable"] .logo,:root[data-font="readable"] .card h2,:root[data-font="readable"] .panel h2{letter-spacing:1px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:var(--hand);font-size:calc(20px*var(--ts));line-height:1.3;color:var(--ink);min-height:100vh;
+  font-family:var(--hand);font-size:clamp(17px,1.1vw + 12px,20px);line-height:1.3;color:var(--ink);min-height:100vh;min-height:100dvh;
   background-color:var(--paper);
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:28px 28px;
@@ -62,16 +66,17 @@ body{
 .f4{--c:var(--drag);--t:var(--drag-t);--on:var(--drag-on)}
 .dot{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);font-size:calc(15px*var(--ts));background:var(--c);color:var(--on);flex:none}
 .btn{font:inherit;font-size:calc(22px*var(--ts));letter-spacing:1px;cursor:pointer;padding:8px 20px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--ink);color:var(--paper);box-shadow:3px 3px 0 rgba(0,0,0,.22)}
-.btn:hover:not(:disabled){transform:translate(-1px,-1px)}
+@media (hover:hover){.btn:hover:not(:disabled){transform:translate(-1px,-1px)}}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn.ghost{background:var(--card);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border-width:2.5px}
+.btn:not(.ghost):not(.small){box-shadow:4px 4px 0 rgba(0,0,0,.3)}
 .btn.small{font-size:calc(17px*var(--ts));padding:2px 10px;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
 .btn[aria-pressed=true]{background:var(--ink);color:var(--paper)}
 .btn.arrow{font-size:calc(26px*var(--ts));padding:4px 18px;line-height:1.1}
 button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,svg:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--lift);outline-offset:3px}
 :root[data-focus="strong"] :focus-visible{outline:6px solid #FF00C8!important;outline-offset:3px!important;box-shadow:0 0 0 3px #000 !important}
 a.home{font-family:var(--hand);font-size:calc(20px*var(--ts));letter-spacing:1px;text-decoration:none;color:var(--ink);display:inline-block;padding:3px 14px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);box-shadow:3px 3px 0 rgba(0,0,0,.22)}
-a.home:hover{background:var(--lift-t)}
+@media (hover:hover){a.home:hover{background:var(--lift-t)}}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 18px;border-bottom:3px solid var(--ink);background:var(--paper)}
 .logo{font-size:calc(28px*var(--ts));letter-spacing:4px;border-bottom:4px dashed var(--lift);line-height:1.1}
@@ -103,7 +108,6 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 .tgrp>span{font-size:calc(18px*var(--ts));color:var(--pencil);letter-spacing:1px;min-width:68px}
 .hold{flex:1;min-height:var(--tbtn);font:inherit;font-size:calc(26px*var(--ts));line-height:1;cursor:pointer;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);color:var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
 .hold:active,.hold.down{background:var(--t);transform:translate(1px,1px)}
-.keys{grid-column:1/-1;color:var(--pencil);font-size:calc(16px*var(--ts))}
 kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;background:var(--paper);color:var(--ink);white-space:nowrap}
 
 .panel{padding:12px 14px}
@@ -128,16 +132,12 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .pchart{border:2.5px solid var(--ink);border-radius:8px;background:var(--paper);margin:8px 0;padding:2px 4px 0}
 .pchart svg{display:block;width:100%;height:auto}
 [data-adv="0"] .advonly{display:none!important}
-.lvlname{font-size:calc(18px*var(--ts));padding:2px 12px;border:3px solid var(--ink);border-radius:20px;background:var(--card)}
+.lvlname{font-size:calc(18px*var(--ts));color:var(--pencil);padding:0 6px}
 .dots .dotb{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);background:var(--card);cursor:pointer;padding:0}
 .dots .dotb.on{background:var(--ink)}
 .smore{margin-top:10px;border:3px solid var(--ink);border-radius:10px;padding:4px 12px;background:var(--card)}
 .smore>summary{cursor:pointer;font-size:calc(20px*var(--ts));padding:4px 0}
 .smore[open]>summary{margin-bottom:4px}
-.steps2,.kpanel{display:none}
-.kpanel{margin-top:8px;border-top:2px dashed var(--hair);padding-top:6px}
-.kpanel h2{font-size:calc(18px*var(--ts))}
-.kpanel .keygrid{grid-template-columns:1fr;font-size:calc(16px*var(--ts));gap:2px}
 
 /* density */
 .app[data-density="compact"] .panel{padding:8px 10px}
@@ -176,19 +176,18 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 
 /* ----- fullscreen: only the airplane view + the flight-info panel ----- */
 .is-fs,.is-fs body{overflow:hidden;height:100%}
-.is-fs header.top,.is-fs .controls,.is-fs .steps:not(.steps2),.is-fs .lvlname{display:none}
-.is-fs .app{max-width:none;margin:0;padding:8px;height:100vh;gap:10px;align-items:stretch}
+.is-fs header.top,.is-fs .controls,.is-fs .lvlname{display:none}
+.is-fs .app{max-width:none;margin:0;padding:8px;height:100vh;height:100dvh;gap:10px;align-items:stretch}
 .is-fs .app>section{display:flex;flex-direction:column;justify-content:center;min-height:0}
 .is-fs .stepsbar{margin-bottom:6px;justify-content:flex-end}
 .is-fs .tools{margin-left:0}
 .is-fs canvas{width:min(100%,calc((100vh - 70px)*960/540));height:auto}
 .is-fs .panel{overflow:auto;max-height:calc(100vh - 16px);padding:10px 12px}
 .is-fs .panel .hint,.is-fs .panel .sub{display:none}
-.is-fs .steps2{display:flex;margin-bottom:8px}
-.is-fs .kpanel{display:block}
+.is-fs .panel .steps{margin-bottom:8px}
 @media (pointer:coarse){
   .is-fs .controls{display:grid;margin-top:6px;padding:6px 10px}
-  .is-fs .controls .ctl,.is-fs .controls .keys{display:none}
+  .is-fs .controls .ctl{display:none}
   .is-fs canvas{width:min(100%,calc((100vh - 150px)*960/540))}
 }
 .keygrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:calc(18px*var(--ts))}
@@ -199,9 +198,9 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .modal{position:fixed;inset:0;z-index:50;background:rgba(10,16,30,.62);display:none;align-items:center;justify-content:center;padding:14px;overflow:auto}
 .modal.show{display:flex}
 #settings{z-index:70}
-.card{position:relative;background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border:4px solid var(--ink);border-radius:16px 8px 14px 10px/10px 14px 8px 16px;max-width:760px;width:100%;max-height:calc(100vh - 28px);overflow:auto;padding:22px 24px;color:var(--ink)}
+.card{position:relative;background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border:4px solid var(--ink);border-radius:16px 8px 14px 10px/10px 14px 8px 16px;max-width:760px;width:100%;max-height:calc(100vh - 28px);max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(14px,2.4vw,22px) clamp(14px,2.6vw,24px);color:var(--ink)}
 .card.wide{max-width:880px}
-.card h2{font-weight:400;font-size:calc(34px*var(--ts));letter-spacing:3px;line-height:1.1;margin-bottom:10px;padding-right:50px}
+.card h2{font-weight:400;font-size:clamp(26px,3.6vw,34px);letter-spacing:3px;line-height:1.1;margin-bottom:10px;padding-right:50px}
 .card h2 span{border-bottom:4px dashed var(--lift)}
 .card h3{font-weight:400;font-size:calc(22px*var(--ts));letter-spacing:2px;margin:12px 0 2px}
 .card p{margin-bottom:8px}
@@ -209,7 +208,7 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .card li{position:relative;padding-left:22px;margin-top:6px}
 .card li::before{content:"";position:absolute;left:3px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--ink)}
 .xbtn{position:absolute;top:10px;right:12px;width:44px;height:44px;font:inherit;font-size:calc(24px*var(--ts));line-height:1;cursor:pointer;border:3px solid var(--ink);border-radius:50%;background:var(--card);color:var(--ink);z-index:2}
-.xbtn:hover{background:var(--weight-t)}
+@media (hover:hover){.xbtn:hover{background:var(--weight-t)}}
 .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
 .mini{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
 .mini div{border:3px solid var(--ink);border-radius:10px;padding:6px 10px;background:var(--card);border-left:10px solid var(--c)}
@@ -259,7 +258,7 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 /* matching warm-up */
 .pgrid{display:grid;grid-template-columns:96px 1fr 96px;grid-template-rows:74px auto 74px;grid-template-areas:". up ." "back plane fwd" ". down .";gap:8px;margin:10px 0;align-items:center;justify-items:center}
 .slot{font:inherit;cursor:pointer;width:100%;height:100%;min-height:60px;border:3px dashed var(--ink);border-radius:12px;background:var(--card);font-size:calc(40px*var(--ts));color:var(--pencil);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
-.slot:hover:not(.ok){background:var(--paper-2)}
+@media (hover:hover){.slot:hover:not(.ok){background:var(--paper-2)}}
 .slot.ok{border-style:solid;background:var(--c);color:var(--on);font-size:calc(18px*var(--ts));cursor:default}
 .slot.ok b{font-weight:400;font-size:calc(20px*var(--ts))}
 .slot.shake{animation:shake .35s}
@@ -279,7 +278,9 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px;border-bottom:3px solid var(--ink);padding-bottom:8px}
 .tab{font:inherit;font-size:calc(19px*var(--ts));cursor:pointer;padding:3px 14px;border:3px solid var(--ink);border-radius:10px 10px 4px 4px;background:var(--card);color:var(--ink)}
 .tab[aria-selected=true]{background:var(--ink);color:var(--paper)}
-.tabpanel{min-height:300px;max-height:calc(100vh - 330px);overflow:auto;padding:2px 4px 2px 0}
+.tabpanel{min-height:160px;overflow:auto;padding:2px 4px 2px 0}
+#sCard{display:flex;flex-direction:column}
+#sBody{flex:1 1 auto;min-height:0}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:7px 2px;border-bottom:2px dashed var(--hair);font-size:calc(19px*var(--ts));cursor:pointer}
 .srow .sl{flex:1}
 .srow small{display:block;font-size:calc(15px*var(--ts));color:var(--pencil);line-height:1.2}
@@ -307,6 +308,123 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 }
 @media (prefers-reduced-motion:reduce){.slot.shake{animation:none}}
 :root[data-motion="reduce"] .slot.shake{animation:none}
+
+/* ================= v7: touch layouts (cockpit = phone sideways, portrait = phone upright) ================= */
+.menu,.hud,.sheethead,.sheetonly,.sheetback,.mobonly,.rotate{display:none}
+.hud{font:inherit;color:var(--ink);background:var(--card);border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;padding:4px 8px;cursor:pointer;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.hm{display:grid;gap:1px;min-width:56px}
+.hm .hl{font-size:calc(13px*var(--ts));line-height:1.1;white-space:nowrap}
+.hm .bar{display:block;height:10px;border-width:2px;margin-top:0;border-radius:6px}
+.hm .bar i{border-radius:3px}
+.hm .bar u{border-left-width:2px;top:-4px;bottom:-4px}
+.hm em{font-style:normal;font-size:calc(13px*var(--ts));line-height:1.1;font-variant-numeric:tabular-nums}
+.hd{display:grid;gap:1px;min-width:54px;padding-left:8px;border-left:2px dashed var(--hair)}
+.hd small{font-size:calc(13px*var(--ts));color:var(--pencil);line-height:1.1;white-space:nowrap}
+.hd b{font-weight:400;font-size:calc(17px*var(--ts));line-height:1.1;font-variant-numeric:tabular-nums}
+.hstep{font-size:calc(14px*var(--ts));color:var(--pencil);line-height:1.2}
+.hold.txt{font-size:calc(15px*var(--ts));letter-spacing:.5px}
+.rotate{align-items:center;gap:8px;font-size:calc(14px*var(--ts));line-height:1.2;padding:4px 6px 4px 10px;background:var(--card);border:2.5px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.rotate button{width:36px;height:36px;font:inherit;border:2px solid var(--ink);border-radius:50%;background:var(--card);color:var(--ink);cursor:pointer;flex:none}
+.rotate button::after{content:"";position:absolute;inset:-4px}
+
+html[data-mobile="1"],html[data-mobile="1"] body{height:100%;overflow:hidden;overscroll-behavior:none}
+html[data-mobile="1"] body{position:fixed;inset:0;width:100%;min-height:0}
+html[data-mobile="1"] header.top,html[data-mobile="1"] .controls .ctl{display:none}
+html[data-mobile="1"] .hud{display:grid;grid-auto-flow:column;gap:8px;align-items:end}
+html[data-mobile="1"] .menu{display:inline-grid;place-items:center;width:44px;height:44px;padding:0;font-size:calc(24px*var(--ts));line-height:1;background:var(--card)}
+html[data-mobile="1"] .mobonly,html[data-mobile="1"] .sheetonly{display:block}
+html[data-mobile="1"] .app{display:block;max-width:none;margin:0;padding:0;height:100vh;height:100dvh;gap:0}
+html[data-mobile="1"] .app>section{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-start;min-height:0}
+html[data-mobile="1"] .stepsbar{position:absolute;z-index:8;top:calc(8px + env(safe-area-inset-top));left:calc(8px + env(safe-area-inset-left));margin:0;display:block}
+html[data-mobile="1"] .tools{display:none;position:absolute;top:50px;left:0;flex-direction:column;align-items:stretch;gap:6px;padding:8px;min-width:200px;background:var(--paper);border:3px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 rgba(0,0,0,.28)}
+html[data-mobile="1"] .stepsbar.menu-open .tools{display:flex}
+html[data-mobile="1"] .tools .btn{min-height:44px;font-size:calc(18px*var(--ts));text-align:left;border-width:2.5px}
+html[data-mobile="1"] .tools .lvlname{font-size:calc(16px*var(--ts));padding:2px 4px}
+html[data-mobile="1"] canvas{touch-action:none}
+html[data-mobile="1"] .coachbar{font-size:calc(16px*var(--ts));padding:5px 10px;border-width:3px;border-radius:12px;box-shadow:2px 2px 0 rgba(0,0,0,.25);min-height:40px;line-height:1.15}
+html[data-mobile="1"] .coachbar.warn{font-size:calc(19px*var(--ts));animation:none}
+html[data-mobile="1"] .coachbar .ci{width:1.6em;height:1.6em}
+html[data-mobile="1"] .controls{border:0;background:none;box-shadow:none;margin:0;padding:0;display:block;border-radius:0}
+html[data-mobile="1"] .touch{display:grid}
+
+/* --- cockpit (landscape phone): flight view fills the screen, thrust left, pitch right --- */
+html[data-layout="cockpit"]{--hb:clamp(44px,calc((100dvh - 96px)/4),60px)}
+html[data-layout="cockpit"] .view{position:absolute;inset:0;background:var(--skybg)}
+html[data-layout="cockpit"] canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:0;border-radius:0;margin:0}
+html[data-layout="cockpit"] .hud{position:absolute;z-index:5;top:calc(6px + env(safe-area-inset-top));left:50%;transform:translateX(-50%)}
+html[data-layout="cockpit"] .hstep{display:none}
+html[data-layout="cockpit"] .view .coachbar.pos-top,html[data-layout="cockpit"] .view .coachbar.pos-bottom{top:calc(78px + env(safe-area-inset-top));bottom:auto;left:0;right:0;margin:0 auto;width:max-content;max-width:min(64vw,560px)}
+html[data-layout="cockpit"] .controls{position:fixed;inset:0;pointer-events:none;z-index:6}
+html[data-layout="cockpit"] .touch{position:absolute;inset:0;display:block}
+html[data-layout="cockpit"] .tgrp{align-items:stretch;position:absolute;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column-reverse;gap:6px;pointer-events:auto;width:68px}
+html[data-layout="cockpit"] .tgrp.f3{left:calc(8px + env(safe-area-inset-left))}
+html[data-layout="cockpit"] .tgrp.f1{right:calc(8px + env(safe-area-inset-right))}
+html[data-layout="cockpit"] .tgrp>span{display:none}
+html[data-layout="cockpit"] .hold{flex:none;min-height:0;height:var(--hb);font-size:calc(24px*var(--ts))}
+html[data-layout="cockpit"] .hold.txt{font-size:calc(15px*var(--ts))}
+html[data-layout="cockpit"] .tgrp.f1 .hold{height:calc(var(--hb)*1.5)}
+html[data-layout="cockpit"] .rotate{display:none}
+
+/* --- portrait (phone upright): view on top, force strip, controls in the thumb zone --- */
+html[data-layout="portrait"] .view{flex:none;width:100%}
+html[data-layout="portrait"] canvas{width:100%;height:auto;border-width:0 0 3px;border-radius:0}
+html[data-layout="portrait"] .hud{margin:8px 8px 0;width:calc(100% - 16px);grid-auto-flow:row;grid-template-columns:repeat(4,1fr);gap:6px 8px}
+html[data-layout="portrait"] .hm{min-width:0}
+html[data-layout="portrait"] .hd{grid-column:span 2;display:flex;justify-content:space-between;align-items:baseline;border-left:0;padding-left:0;border-top:2px dashed var(--hair);padding-top:3px}
+html[data-layout="portrait"] .hstep{grid-column:1/-1;text-align:left}
+html[data-layout="portrait"] .view .coachbar{position:static;margin:8px 8px 0;left:auto;right:auto}
+html[data-layout="portrait"] .rotate:not([hidden]){display:flex;position:absolute;top:8px;right:8px;max-width:62%;z-index:6}
+html[data-layout="portrait"] .controls{flex:1 1 auto;min-height:0;max-height:420px;margin-top:auto;padding:10px 8px calc(10px + env(safe-area-inset-bottom))}
+html[data-layout="portrait"] .touch{height:100%;grid-template-columns:1fr 1fr;gap:10px}
+html[data-layout="portrait"] .tgrp{flex-direction:column-reverse;align-items:stretch;gap:8px;min-height:0}
+html[data-layout="portrait"] .tgrp>span{order:99;text-align:center;min-width:0;font-size:calc(15px*var(--ts))}
+html[data-layout="portrait"] .hold{min-height:52px;flex:1;font-size:calc(30px*var(--ts))}
+html[data-layout="portrait"] .hold.txt{font-size:calc(17px*var(--ts))}
+
+/* --- details sheet = the existing side panel, as a bottom sheet (portrait) or right drawer (cockpit) --- */
+html[data-mobile="1"] .panel{position:fixed;z-index:30;margin:0;overflow:auto;overscroll-behavior:contain;visibility:hidden;transition:transform .25s ease,visibility 0s .25s;padding:0 14px calc(14px + env(safe-area-inset-bottom));background:var(--card);max-height:none;-webkit-overflow-scrolling:touch}
+html[data-layout="portrait"] .panel{left:0;right:0;bottom:0;max-height:78vh;max-height:78dvh;transform:translateY(105%);border-radius:16px 16px 0 0}
+html[data-layout="cockpit"] .panel{top:0;bottom:0;right:0;width:min(420px,72vw);transform:translateX(105%);border-radius:16px 0 0 16px;padding-right:calc(14px + env(safe-area-inset-right))}
+html[data-mobile="1"] .panel.open{visibility:visible;transform:none;transition:transform .25s ease}
+html[data-mobile="1"] .sheethead{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:2;background:var(--card);padding:10px 0 6px}
+html[data-mobile="1"] .sheethead h2{margin:0}
+html[data-mobile="1"] .sheethead .xbtn{position:static}
+html[data-mobile="1"] .sheetback:not([hidden]){display:block;position:fixed;inset:0;z-index:25;background:rgba(10,16,30,.5)}
+html[data-mobile="1"] .panel .hint{display:block}
+.sheetcoach{border:2.5px dashed var(--hair);border-radius:10px;padding:6px 10px;margin:6px 0;font-size:calc(17px*var(--ts));min-height:3.4em}
+:root[data-motion="reduce"] .panel{transition:none!important}
+
+/* --- dvh-aware fullscreen sizing --- */
+@supports (height:100dvh){
+  .is-fs canvas{width:min(100%,calc((100dvh - 70px)*960/540))}
+  .is-fs .panel{max-height:calc(100dvh - 16px)}
+}
+
+/* --- short screens (phones sideways): compact dialogs, usable settings --- */
+@media (max-height:540px){
+  .modal{padding:6px}
+  .card{max-height:calc(100vh - 12px);max-height:calc(100dvh - 12px);padding:10px 14px}
+  .card h2{font-size:calc(22px*var(--ts));margin-bottom:4px;padding-right:50px}
+  .card h3{margin:8px 0 2px}
+  #sCard .note,#sCard>.row{display:none}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;margin:2px 0 6px;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+  .tab{flex:none}
+  .row{margin-top:6px}
+  .pager{margin-top:8px}
+  .mini{grid-template-columns:repeat(4,1fr);margin:6px 0}
+  .stats{margin:4px 0}
+  .lvldesc{min-height:0}
+  .tabpanel{min-height:0}
+}
+
+/* --- touch targets >= 44px --- */
+@media (pointer:coarse){
+  .btn.small,.tab,.kbtn,.lvl,.srow select,.lvlsel select,.smore>summary{min-height:44px}
+  .btn.small{padding-top:6px;padding-bottom:6px}
+  .dots .dotb{position:relative}
+  .dots .dotb::after{content:"";position:absolute;inset:-13px}
+  .chip{min-height:48px}
+}
 </style>
 </head>
 <body>
@@ -340,46 +458,45 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 
 <div class="app" id="app" data-side="right" data-density="spacious">
   <section>
-    <div class="stepsbar">
+    <div class="stepsbar" id="stepsbar">
       <ol class="steps" id="steps" aria-label="Mission checklist">
         <li data-s="1">Take off</li><li data-s="2">Climb</li><li data-s="3">Land softly</li><li data-s="4">Brake to a stop</li>
       </ol>
-      <div class="tools" role="toolbar" aria-label="Game tools">
+      <button class="btn ghost menu" id="menuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="tools" aria-label="Menu">☰</button>
+      <div class="tools" id="tools" role="toolbar" aria-label="Game tools">
         <span class="lvlname" id="lvlname"></span>
         <button class="btn ghost small" id="pause" type="button" aria-pressed="false">❚❚ Pause</button>
         <button class="btn ghost small" id="restart" type="button">↺ Restart</button>
+        <button class="btn ghost small mobonly" id="details" type="button">▤ Flight details</button>
         <button class="btn ghost small" id="fs" type="button" aria-pressed="false">⤢ Fullscreen</button>
         <button class="btn ghost small" id="gear" type="button" aria-label="Settings" aria-haspopup="dialog">⚙ Settings</button>
       </div>
     </div>
     <div class="view" id="view">
       <canvas id="cv" role="img" aria-label="Flight view: your airplane with arrows for the four forces"></canvas>
+      <button class="hud" id="hud" type="button" aria-haspopup="dialog" aria-label="Open flight details: forces, speed and altitude"></button>
+      <div class="rotate" id="rotateHint" role="note" hidden><span>↻ Turn your phone sideways for a bigger view</span><button id="rotateX" type="button" aria-label="Dismiss">✕</button></div>
       <div class="coachbar pos-top idle" id="coachBox" aria-hidden="true"><span class="ci" id="coachIcon"></span><span class="ct" id="coachText"></span></div>
     </div>
     <div class="controls frame" id="controls">
       <div class="ctl f3"><label for="thr"><span>THRUST (engine)</span><b id="thrV">0%</b></label><input id="thr" type="range" min="0" max="100" step="any" value="0"></div>
       <div class="ctl f1"><label for="ang"><span>PITCH (nose up ↑ / down ↓)</span><b id="angV">5°</b></label><input id="ang" type="range" min="-5" max="20" step="any" value="5"></div>
       <div class="touch" id="touch" role="group" aria-label="On-screen controls: press and hold">
-        <div class="tgrp f3"><span>THRUST</span><button class="hold" type="button" data-h="thr" data-d="-1" aria-label="Less thrust (press and hold)">−</button><button class="hold" type="button" data-h="thr" data-d="1" aria-label="More thrust (press and hold)">+</button></div>
+        <div class="tgrp f3"><span>THRUST</span><button class="hold txt" type="button" data-a="idle" aria-label="Thrust to idle (0%)">IDLE</button><button class="hold" type="button" data-h="thr" data-d="-1" aria-label="Less thrust (press and hold)">−</button><button class="hold" type="button" data-h="thr" data-d="1" aria-label="More thrust (press and hold)">+</button><button class="hold txt" type="button" data-a="full" aria-label="Full thrust (100%)">FULL</button></div>
         <div class="tgrp f1"><span>PITCH</span><button class="hold" type="button" data-h="pit" data-d="-1" aria-label="Nose down (press and hold)">▼</button><button class="hold" type="button" data-h="pit" data-d="1" aria-label="Nose up (press and hold)">▲</button></div>
       </div>
     </div>
   </section>
 
   <aside class="panel frame" id="panel" aria-label="Flight information">
-    <ol class="steps steps2" id="steps2" aria-label="Mission checklist (fullscreen)">
-      <li data-s="1">Take off</li><li data-s="2">Climb</li><li data-s="3">Land softly</li><li data-s="4">Stop</li>
-    </ol>
+    <div class="sheethead"><h2>FLIGHT DETAILS</h2><button class="xbtn" id="sheetClose" type="button" aria-label="Close flight details">✕</button></div>
+    <p class="sub sheetonly" id="sheetLvl"></p>
+    <div class="grp" id="stepsHost"></div>
+    <p class="sheetcoach sheetonly" id="sheetCoach" aria-hidden="true"></p>
     <div class="grp" id="gMeters">
       <h2>FORCE METERS</h2>
       <p class="sub" id="subScale">100% = the normal weight of the plane</p>
-      <div class="meter f1"><div class="row"><b class="dot">F1</b>Lift ↑<em id="vL">0%</em></div><div class="bar" id="barL" role="meter" aria-label="Lift" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i id="bL"></i><u class="advonly" id="mW" style="left:50%"></u></div></div>
-      <div class="meter f2"><div class="row"><b class="dot">F2</b>Weight ↓<em id="vW">100%</em></div><div class="bar" id="barW" role="meter" aria-label="Weight" aria-valuemin="0" aria-valuemax="200" aria-valuenow="100"><i id="bW" style="width:50%"></i></div></div>
-      <p class="hint">Lift grows with speed²: twice as fast = 4× the lift.</p>
-      <p class="hint advonly">Dashed line on Lift = the weight it has to beat.</p>
-      <div class="meter f3"><div class="row"><b class="dot">F3</b>Thrust →<em id="vT">0%</em></div><div class="bar" id="barT" role="meter" aria-label="Thrust" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i id="bT"></i></div></div>
-      <div class="meter f4"><div class="row"><b class="dot">F4</b>Drag ←<em id="vD">0%</em></div><div class="bar" id="barD" role="meter" aria-label="Drag" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i id="bD"></i><u class="advonly" id="mT" style="left:0"></u></div></div>
-      <p class="hint advonly">Dashed line on Drag = your thrust. Thrust has to beat drag to speed up.</p>
+      <div id="meterHost"></div>
     </div>
     <div class="grp" id="gData">
       <div class="tele">
@@ -393,6 +510,7 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
     <div class="grp" id="gCoach"></div>
   </aside>
 </div>
+<div class="sheetback" id="sheetBack" hidden></div>
 <div class="sr" id="srLive" aria-live="polite" role="status"></div>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Flight School"><div class="card" id="card"></div></div>
@@ -423,11 +541,11 @@ function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
    Forces use arbitrary units, shown as "% of the plane's normal weight" (100% = normal weight).
    Display units are converted to what pilots use. */
 var W=960,H=540,GROUND=470,PXM=0.85,PX=300;
+var PLANE_H=27, CAM_TOP=170, ARROW_UP=30, ARROW_DN=28, ARROW_FWD=96, MIN_LABEL_PX=14;
 var M_H=14, M_V=5, TMAX=150, KL=0.0476, KD0=0.012, KDI=0.0002, ROLL=14, BRAKE=40, GE_H=15;
 var AOA_WARN=13, AOA_CRIT=15, AOA_REC=12, AOA_PROT=14.5, CL_ST=0.5, STALL_DRAG=2.5;
 var BURN=0.05, OVERRUN_ZONE=600, FTPERU=4.557;
 var KT=2.7, FT=3.281, FPM=196.85;
-var PO='#1D2B44';   /* plane outline colour */
 var NAMES=['BUTTER LANDING!','SMOOTH LANDING','FIRM LANDING','HARD LANDING','CRASH'];
 var TURBF={off:0,light:0.5,normal:1,strong:1.6};
 var TSCALE={small:0.9,medium:1,large:1.2,xlarge:1.4};
@@ -491,7 +609,7 @@ var DEF={
   thrSens:1, pitchSens:1, invert:false, touchSize:'medium', repeat:'normal', keys:defKeys(),
   gameSpeed:'normal', turb:'normal', stallProt:false, fuel:true, tips:'all', autoPause:false, autoCharts:true,
   master:0.7, sfxVol:0.8, warnVol:1, stallSound:true,
-  cb:false, reduceMotion:false, font:'default', focus:'normal', announce:true
+  cb:false, reduceMotion:false, font:'default', focus:'normal', announce:true, fnum:true, haptics:true
 };
 var SKEY='flightSchoolSettings3', PKEY='flightSchoolProgress';
 function merge(def,sv){
@@ -532,8 +650,25 @@ function fForce(v){return nf(v)+(ST.forceUnits==='pct'?'%':'');}
 
 /* ---------------- state ---------------- */
 var cvs=$('#cv'), ctx=cvs.getContext('2d');
-var dpr=Math.min(window.devicePixelRatio||1,2);
-cvs.width=W*dpr; cvs.height=H*dpr;
+var dpr=1, CS=1, skyGrad=null, dirty=true;
+var IS_TOUCH=false; try{IS_TOUCH=window.matchMedia('(pointer:coarse)').matches;}catch(e){}
+var layout='desktop', MOBILE=false, sheetOpen=false, menuOpen=false, rotateGone=false, sheetPrevFocus=null;
+function markDirty(){dirty=true;}
+function calcLayout(){
+  var q=(location.search.match(/[?&]layout=(cockpit|portrait|desktop)/)||[])[1]; if(q) return q;
+  var w=window.innerWidth, h=window.innerHeight;
+  if(IS_TOUCH&&w>h&&h<=540) return 'cockpit';
+  if(IS_TOUCH&&w<=h&&w<=700) return 'portrait';
+  return 'desktop';
+}
+function capDpr(){return Math.min(window.devicePixelRatio||1,IS_TOUCH?1.5:2);}
+function setupCanvas(){
+  var nd=capDpr();
+  if(nd!==dpr||cvs.width!==Math.round(W*nd)){ dpr=nd; cvs.width=Math.round(W*dpr); cvs.height=Math.round(H*dpr); if(TH) buildClouds(); }
+  var cw=cvs.clientWidth, ch=cvs.clientHeight;
+  CS=cw?Math.min(cw/W,ch?ch/H:9):1;
+  markDirty();
+}
 var thr=$('#thr'), ang=$('#ang'), rootEl=document.documentElement;
 var thrust=0, angle=5, S, mode='modal', frame=0, prop=0, paused=false, slow=false;
 var pressed={}, hold={thr:0,pit:0};
@@ -542,11 +677,12 @@ var levelKey='calm', LV=LEVELS.calm, TARGET_M=LV.target/FT, WIND=0;
 try{var saved=localStorage.getItem('flightSchoolLevel2'); if(saved&&LEVELS[saved]) levelKey=saved;}catch(e){}
 
 function starsOf(k){var n=PR[k]?PR[k].stars:0,s='';for(var i=0;i<5;i++) s+=i<n?'★':'☆';return s;}
-function fillLevelSelect(){ var n=$('#lvlname'); if(n) n.textContent='Level '+LV.num+' · '+LV.label+(PR[levelKey]?'  '+starsOf(levelKey):''); }
+function updateLevelLabel(){ var n=$('#lvlname'); if(n) n.textContent='Level '+LV.num+' · '+LV.label+(PR[levelKey]?'  '+starsOf(levelKey):'');
+  var sl=$('#sheetLvl'); if(sl) sl.textContent='Level '+LV.num+' · '+LV.label+'. '+LV.desc()+' You will learn: '+LV.learn; }
 function setLevel(key){
   if(!LEVELS[key]) key='calm';
   levelKey=key; LV=LEVELS[key]; TARGET_M=LV.target/FT; WIND=LV.wind/KT;
-  fillLevelSelect(); updateStepLabels();
+  updateLevelLabel(); updateStepLabels();
   try{localStorage.setItem('flightSchoolLevel2',key);}catch(e){}
 }
 function updateStepLabels(){
@@ -555,7 +691,7 @@ function updateStepLabels(){
 
 function reset(){
   S={x:0,alt:0,v:0,vy:0,phase:'takeoff',airborne:false,reached:false,time:0,L:0,D:0,T:0,W:LV.weight,
-     stalled:false,warn:false,stallCount:0,stallEvt:false,autoPaused:false,boom:0,gust:0,grade:0,fpm:0,bad:null,msg:'',msg2:'',msgT:0,msgCol:'#000',shake:0,crashFpm:0,crashWhy:'',
+     stalled:false,warn:false,stallCount:0,stallEvt:false,autoPaused:false,boom:0,gust:0,grade:0,fpm:0,bad:null,msg:'',msg2:'',msgT:0,msgCol:'ink',shake:0,crashFpm:0,crashWhy:'',
      cfg:{turb:ST.turb,fuel:ST.fuel,stallProt:ST.stallProt},
      hist:[],nextHist:0,ev:{liftoff:null,target:null,touch:null,flare:null,stalls:[]}};
   thrust=0; angle=5; applyAngRange(); syncSliders();
@@ -563,7 +699,7 @@ function reset(){
 function maxAngle(){return (S&&S.cfg&&S.cfg.stallProt)?AOA_PROT:20;}
 function applyAngRange(){ang.max=maxAngle();}
 function syncSliders(){
-  thr.value=thrust; ang.value=angle;
+  markDirty(); thr.value=thrust; ang.value=angle;
   $('#thrV').textContent=Math.round(thrust)+'%';
   var a=Math.round(angle*10)/10;
   $('#angV').textContent=(a>0?'+':'')+a.toFixed(1)+'°';
@@ -652,22 +788,22 @@ function shortcutRows(){
   ];
 }
 function keyGridHTML(){return shortcutRows().map(function(r){return '<div><kbd>'+esc(r[0])+'</kbd><span>'+esc(r[1])+'</span></div>';}).join('');}
-function renderKeyLists(){[].forEach.call(document.querySelectorAll('[data-keys]'),function(el){el.innerHTML=keyGridHTML();});}
 
 /* ---------------- pause, slow-mo, advanced ---------------- */
 function updatePauseUI(){var b=$('#pause'); b.setAttribute('aria-pressed',paused); b.textContent=paused?'▶ Resume':'❚❚ Pause';}
-function setPaused(v){paused=v; if(!v&&S) S.autoPaused=false; updatePauseUI();}
+function setPaused(v){paused=v; if(!v&&S) S.autoPaused=false; updatePauseUI(); markDirty();}
 function togglePause(){ if(mode!=='fly'||overlay) return; setPaused(!paused); }
-function toggleSlow(){slow=!slow; var c=$('#s_slow'); if(c) c.checked=slow;}
+function toggleSlow(){slow=!slow; markDirty(); var c=$('#s_slow'); if(c) c.checked=slow;}
 function toggleAdv(){ST.adv=!ST.adv;saveSettings();applySettings();}
-function halted(){return paused||settingsOpen||overlay!=='';}
+function halted(){return paused||settingsOpen||overlay!==''||sheetOpen||menuOpen;}
+function buzz(p){ if(!ST.haptics||ST.reduceMotion||!IS_TOUCH||!navigator.vibrate) return; try{navigator.vibrate(p);}catch(e){} }
 
 /* ---------------- fullscreen (falls back to a full-window layout when the browser refuses) ---------------- */
 var fsBtn=$('#fs'), pseudoFs=false;
 var fsSupported=!!(rootEl.requestFullscreen||rootEl.webkitRequestFullscreen);
 function fsElement(){return document.fullscreenElement||document.webkitFullscreenElement||null;}
 function setFsUI(on){
-  rootEl.classList.toggle('is-fs',on);
+  rootEl.classList.toggle('is-fs',on); placeSteps(); markDirty();
   fsBtn.setAttribute('aria-pressed',on); fsBtn.textContent=on?'⤡ Exit fullscreen':'⤢ Fullscreen';
 }
 function toggleFullscreen(){
@@ -680,6 +816,8 @@ function toggleFullscreen(){
 }
 function fsChanged(){ if(fsElement()) pseudoFs=false; setFsUI(!!fsElement()||pseudoFs); }
 fsBtn.addEventListener('click',toggleFullscreen);
+var IS_IPHONE=/iPhone|iPod/.test(navigator.userAgent||'');
+function updateFsBtn(){ fsBtn.hidden=IS_IPHONE||(MOBILE&&!fsSupported); }
 document.addEventListener('fullscreenchange',fsChanged);
 document.addEventListener('webkitfullscreenchange',fsChanged);
 $('#pause').addEventListener('click',togglePause);
@@ -713,6 +851,8 @@ function handleEsc(){
   if(capturing){cancelCapture();return;}
   if(settingsOpen){closeSettings();return;}
   if(introOpen){closeIntro();return;}
+  if(sheetOpen){closeSheet();return;}
+  if(menuOpen){closeMenu();return;}
   if(pseudoFs){toggleFullscreen();}
 }
 window.addEventListener('keydown',function(e){
@@ -729,7 +869,7 @@ window.addEventListener('keydown',function(e){
   var ae=document.activeElement, tag=ae?ae.tagName:'';
   if(tag==='SELECT'||tag==='TEXTAREA') return;
   if(settingsOpen){
-    if(k==='tab') trapTab(e);
+    if(k==='tab') trapTab(e,$('#sCard'));
     else if(actionOf(k)==='settings'&&tag!=='INPUT'){e.preventDefault();closeSettings();}
     return;
   }
@@ -738,6 +878,7 @@ window.addEventListener('keydown',function(e){
     if(introOpen) showIntro(introPage+dd); else renderEnd(endPage+dd);
     return;
   }
+  if(k==='tab'){ var tr=sheetOpen?panelEl:menuOpen?$('#tools'):modal.classList.contains('show')?card:null; if(tr) trapTab(e,tr); return; }
   var act=actionOf(k); if(!act) return;
   if(ae&&ae.type==='range'&&k.indexOf('arrow')===0) return;
   if((tag==='BUTTON'||tag==='SUMMARY'||tag==='A')&&(k===' '||k==='enter')) return;
@@ -748,9 +889,9 @@ window.addEventListener('keydown',function(e){
 });
 window.addEventListener('keyup',function(e){pressed[normKey(e)]=false;});
 window.addEventListener('blur',function(){pressed={};hold.thr=0;hold.pit=0;});
-[].forEach.call(document.querySelectorAll('.hold'),function(b){
+[].forEach.call(document.querySelectorAll('.hold[data-h]'),function(b){
   var h=b.dataset.h, d=+b.dataset.d;
-  function on(e){e.preventDefault(); hold[h]=d; b.classList.add('down'); try{b.setPointerCapture(e.pointerId);}catch(x){}}
+  function on(e){e.preventDefault(); hold[h]=d; b.classList.add('down'); buzz(6); try{b.setPointerCapture(e.pointerId);}catch(x){}}
   function off(){ if(hold[h]===d) hold[h]=0; b.classList.remove('down'); }
   b.addEventListener('pointerdown',on);
   b.addEventListener('pointerup',off); b.addEventListener('pointercancel',off); b.addEventListener('lostpointercapture',off);
@@ -761,6 +902,58 @@ window.addEventListener('blur',function(){pressed={};hold.thr=0;hold.pit=0;});
     syncSliders();
   });
 });
+
+[].forEach.call(document.querySelectorAll('.hold[data-a]'),function(b){
+  b.addEventListener('click',function(){
+    if(mode!=='fly'||halted()) return;
+    thrust=(b.dataset.a==='full')?100:0; syncSliders(); buzz(12);
+  });
+});
+cvs.addEventListener('pointerdown',function(){ if(IS_TOUCH&&paused&&mode==='fly'&&!overlay&&!settingsOpen) setPaused(false); });
+
+/* ---------------- menu + details sheet (phones) ---------------- */
+var panelEl=$('#panel'), sheetBack=$('#sheetBack'), menuBtn=$('#menuBtn'), stepsbar=$('#stepsbar'), rotateEl=$('#rotateHint');
+function placeSteps(){
+  var host=$('#stepsHost'), steps=$('#steps');
+  if(MOBILE||rootEl.classList.contains('is-fs')){ if(steps.parentNode!==host) host.appendChild(steps); }
+  else if(steps.parentNode!==stepsbar) stepsbar.insertBefore(steps,stepsbar.firstChild);
+}
+function openMenu(){ if(!MOBILE||menuOpen||sheetOpen||settingsOpen||overlay) return; menuOpen=true; stepsbar.classList.add('menu-open'); menuBtn.setAttribute('aria-expanded','true'); pressed={}; hold.thr=0; hold.pit=0; markDirty(); }
+function closeMenu(){ if(!menuOpen) return; menuOpen=false; stepsbar.classList.remove('menu-open'); menuBtn.setAttribute('aria-expanded','false'); markDirty(); }
+function openSheet(){
+  if(!MOBILE||sheetOpen||settingsOpen||overlay||mode!=='fly') return;
+  closeMenu(); sheetOpen=true; sheetPrevFocus=document.activeElement; pressed={}; hold.thr=0; hold.pit=0;
+  panelEl.classList.add('open'); sheetBack.hidden=false; updatePanel(); markDirty();
+  try{$('#sheetClose').focus({preventScroll:true});}catch(e){}
+}
+function closeSheet(silent){
+  if(!sheetOpen) return; sheetOpen=false; panelEl.classList.remove('open'); sheetBack.hidden=true; markDirty();
+  if(!silent&&sheetPrevFocus&&sheetPrevFocus.focus&&document.body.contains(sheetPrevFocus)){ try{sheetPrevFocus.focus({preventScroll:true});}catch(e){} }
+}
+function updateRotateHint(){
+  var seen=false; try{seen=localStorage.getItem('flightSchoolRotateSeen')==='1';}catch(e){}
+  rotateEl.hidden=!(layout==='portrait'&&!seen&&!rotateGone);
+}
+function applyLayout(force){
+  var l=calcLayout(); if(l===layout&&!force) return;
+  layout=l; MOBILE=(l!=='desktop');
+  rootEl.setAttribute('data-layout',l); rootEl.setAttribute('data-mobile',MOBILE?'1':'0');
+  if(!MOBILE){ closeSheet(true); closeMenu(); }
+  placeSteps(); coachContainer(); coachCur={key:'',lvl:'',t:0}; updateFsBtn(); updateRotateHint(); setupCanvas();
+  if(S&&MH.length) updatePanel();
+}
+menuBtn.addEventListener('click',function(){ if(menuOpen) closeMenu(); else openMenu(); });
+$('#tools').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; if(b.id==='details'){ closeMenu(); openSheet(); } else if(MOBILE) closeMenu(); });
+$('#hud').addEventListener('click',openSheet);
+$('#sheetClose').addEventListener('click',function(){closeSheet();});
+sheetBack.addEventListener('click',function(){closeSheet();});
+document.addEventListener('pointerdown',function(e){ if(menuOpen&&!stepsbar.contains(e.target)){ closeMenu(); e.stopPropagation(); e.preventDefault(); } },true);
+$('#rotateX').addEventListener('click',function(){ rotateGone=true; try{localStorage.setItem('flightSchoolRotateSeen','1');}catch(e){} updateRotateHint(); });
+var resizeRaf=0;
+function onResize(){ if(resizeRaf) return; resizeRaf=requestAnimationFrame(function(){ resizeRaf=0; applyLayout(); setupCanvas(); }); }
+window.addEventListener('resize',onResize); window.addEventListener('orientationchange',onResize);
+if(window.ResizeObserver) new ResizeObserver(function(){ setupCanvas(); }).observe(cvs);
+document.addEventListener('visibilitychange',function(){ if(document.hidden&&mode==='fly'&&!halted()) setPaused(true); });
 
 /* ---------------- physics ---------------- */
 function liftCoeff(a,stalled){
@@ -832,17 +1025,17 @@ function touchdown(sink){
   if(S.phase==='landing' || S.phase==='rollout'){
     if(g>=S.grade){S.grade=g; S.fpm=fpm; S.bad=bad||S.bad;}
     if(S.phase==='landing'){S.phase='rollout'; S.ev.touch=S.time;}
-    S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['#23894F','#2A72D4','#B87400','#CF3F32','#CF3F32'][g]; S.msgT=3.5;
+    S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['thrust','lift','amber','weight','weight'][g]; S.msgT=3.5;
   } else if(S.phase==='climb'){
     S.phase='takeoff';
-    if(g>=2){S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['#23894F','#2A72D4','#B87400','#CF3F32','#CF3F32'][g]; S.msgT=2.5;}
+    if(g>=2){S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['thrust','lift','amber','weight','weight'][g]; S.msgT=2.5;}
   }
-  sfxTouch(g);
+  sfxTouch(g); buzz(g>=3?90:g===2?35:12);
   if(g>=3) S.shake=0.5; else if(g===2) S.shake=0.2;
 }
 function crash(fpm,why){
   if(mode!=='fly') return;
-  mode='crashed'; S.boom=0; S.crashFpm=fpm; S.crashWhy=why; S.shake=0.8; sfxCrash();
+  mode='crashed'; S.boom=0; S.crashFpm=fpm; S.crashWhy=why; S.shake=0.8; sfxCrash(); buzz([160,60,160]);
   setTimeout(function(){showEnd(false);},900);
 }
 function win(){
@@ -851,17 +1044,17 @@ function win(){
 }
 
 /* ---------------- colours + drawing ---------------- */
-var FC={lift:'#2A72D4',weight:'#CF3F32',thrust:'#23894F',drag:'#E39100',ink:'#1D2B44',card:'#FFFDF6',paper:'#F8F5EC',pencil:'#6B7385',hair:'#DAD5C5'};
+var FC={lift:'#2A72D4',weight:'#CF3F32',thrust:'#1A7340',drag:'#E39100',amber:'#7A5000',ink:'#1D2B44',card:'#FFFDF6',paper:'#F8F5EC',pencil:'#5B6275',hair:'#DAD5C5'};
 var TH_ALL={
-  light:{sky0:'#BFD8F5',sky1:'#F4F8FC',cloud:'#fff',halo:'rgba(255,255,255,.85)',grass:'#D6EEDF',run:'#4B566B',dash:'#fff',streak:'rgba(29,43,68,.28)',blade:'#1D2B44'},
-  dark:{sky0:'#0B1430',sky1:'#2B3F6A',cloud:'#3C4F78',halo:'rgba(11,20,48,.85)',grass:'#1D3B2D',run:'#3A4361',dash:'#E9EDF6',streak:'rgba(233,237,246,.3)',blade:'#E9EDF6'},
-  hc:{sky0:'#000',sky1:'#0A1630',cloud:'#262626',halo:'rgba(0,0,0,.92)',grass:'#003B00',run:'#5A5A5A',dash:'#fff',streak:'rgba(255,255,255,.45)',blade:'#fff'}
+  light:{sky0:'#BFD8F5',sky1:'#F4F8FC',cloud:'#fff',halo:'rgba(255,255,255,.85)',grass:'#D6EEDF',run:'#4B566B',dash:'#fff',streak:'rgba(29,43,68,.28)',blade:'#1D2B44',planeOut:'#1D2B44',signBg:'#fff',signText:'#B02A1E'},
+  dark:{sky0:'#0B1430',sky1:'#2B3F6A',cloud:'#3C4F78',halo:'rgba(11,20,48,.85)',grass:'#1D3B2D',run:'#3A4361',dash:'#E9EDF6',streak:'rgba(233,237,246,.3)',blade:'#E9EDF6',planeOut:'#1D2B44',signBg:'#E9EDF6',signText:'#A32619'},
+  hc:{sky0:'#000',sky1:'#0A1630',cloud:'#262626',halo:'rgba(0,0,0,.92)',grass:'#003B00',run:'#5A5A5A',dash:'#fff',streak:'rgba(255,255,255,.45)',blade:'#fff',planeOut:'#000',signBg:'#fff',signText:'#8A0F05'}
 };
 var TH=TH_ALL.light, PAT={}, TSF=1;
 function readColors(){
   var cs=getComputedStyle(rootEl);
   function g(n){return cs.getPropertyValue(n).trim();}
-  FC={lift:g('--lift'),weight:g('--weight'),thrust:g('--thrust'),drag:g('--drag'),ink:g('--ink'),card:g('--card'),paper:g('--paper'),pencil:g('--pencil'),hair:g('--hair')};
+  FC={lift:g('--lift'),weight:g('--weight'),thrust:g('--thrust'),drag:g('--drag'),amber:g('--amber'),ink:g('--ink'),card:g('--card'),paper:g('--paper'),pencil:g('--pencil'),hair:g('--hair')};
 }
 function mkPat(color,kind){
   var c=document.createElement('canvas'); c.width=c.height=10; var g=c.getContext('2d');
@@ -885,19 +1078,32 @@ var planeParts=[
   ['M176,78 L112,132 L176,132 L270,84 Z','#DCE9FB'],
   ['M334,52 L378,52 C396,56 408,62 414,70 L334,70 Z','#BFD8F5']
 ].map(function(p){return [new Path2D(p[0]),p[1]];});
+function resumeTxt(){return IS_TOUCH?'tap anywhere to resume':'press Resume ('+keyFirst('pause')+')';}
 function fontf(){return ST.font==='readable'?'"Atkinson Hyperlegible",Verdana,"Trebuchet MS",sans-serif':'"Patrick Hand","Segoe Print","Comic Sans MS",cursive';}
-function fsz(n){return Math.round(n*Math.min(TSF,1.35))+'px ';}
+function fsz(n){
+  var px=n*Math.min(TSF,1.35), minC=n<=22?MIN_LABEL_PX:n<=30?16:0;     /* small labels stay >= ~14 CSS px on phones */
+  if(minC) px=Math.max(px,minC/Math.max(CS,0.25));
+  return Math.round(px)+'px ';
+}
+function buildSky(){ skyGrad=ctx.createLinearGradient(0,0,0,H); skyGrad.addColorStop(0,TH.sky0); skyGrad.addColorStop(1,TH.sky1); }
 
-function cloud(x,y,s){
+function drawCloudShape(g,x,y,s){
   var c=[[-26,0,18],[0,-10,24],[28,0,17],[0,6,20]],i;
-  ctx.fillStyle=TH.cloud;ctx.strokeStyle=FC.ink;ctx.lineWidth=5;
-  for(i=0;i<c.length;i++){ctx.beginPath();ctx.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);ctx.stroke();}
-  for(i=0;i<c.length;i++){ctx.beginPath();ctx.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);ctx.fill();}
+  g.fillStyle=TH.cloud;g.strokeStyle=FC.ink;g.lineWidth=5;
+  for(i=0;i<c.length;i++){g.beginPath();g.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);g.stroke();}
+  for(i=0;i<c.length;i++){g.beginPath();g.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);g.fill();}
+}
+function buildClouds(){      /* each cloud is drawn once into a small sprite */
+  clouds.forEach(function(c){
+    var w=Math.ceil(104*c.s), h=Math.ceil(84*c.s), cn=document.createElement('canvas');
+    cn.width=Math.ceil(w*dpr); cn.height=Math.ceil(h*dpr); c.w=w; c.h=h;
+    var g=cn.getContext('2d'); g.scale(dpr,dpr); drawCloudShape(g,w/2,h/2,c.s); c.spr=cn;
+  });
 }
 function drawPlane(x,y,pitch,sc){
   ctx.save();
   ctx.translate(x,y); ctx.rotate(-pitch*Math.PI/180*0.8); ctx.scale(sc,sc); ctx.translate(-220,-70);
-  ctx.lineWidth=3.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=PO;
+  ctx.lineWidth=3.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=TH.planeOut;
   planeParts.forEach(function(p){ctx.fillStyle=p[1];ctx.fill(p[0]);ctx.stroke(p[0]);});
   ctx.fillStyle='#BFD8F5';
   for(var i=0;i<5;i++){ctx.beginPath();ctx.arc(150+i*34,62,7,0,7);ctx.fill();ctx.lineWidth=2.4/sc;ctx.stroke();}
@@ -934,17 +1140,17 @@ function draw(t){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   var sh=ST.reduceMotion?0:S.shake+(S.stalled&&mode==='fly'&&!halted()?0.18:0);
   if(sh>0) ctx.translate((Math.random()-.5)*16*sh,(Math.random()-.5)*16*sh);
-  var rawY=GROUND-27-S.alt*PXM;
-  var cam=rawY<170?170-rawY:0;
+  var rawY=GROUND-PLANE_H-S.alt*PXM;
+  var cam=rawY<CAM_TOP?CAM_TOP-rawY:0;
   var py=rawY+cam, gy=GROUND+cam;
   var scroll=S.x*3;
 
-  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,TH.sky0); g.addColorStop(1,TH.sky1);
-  ctx.fillStyle=g; ctx.fillRect(-20,-20,W+40,H+40);
+  if(!skyGrad) buildSky();
+  ctx.fillStyle=skyGrad; ctx.fillRect(-20,-20,W+40,H+40);
 
   for(var i=0;i<clouds.length;i++){
     var c=clouds[i], cx=((c.x-scroll*0.25)%(W+300)+(W+300))%(W+300)-150;
-    cloud(cx,c.y+cam*0.5,c.s);
+    if(c.spr) ctx.drawImage(c.spr,cx-c.w/2,c.y+cam*0.5-c.h/2,c.w,c.h);
   }
 
   if(LV.wind>0){
@@ -985,8 +1191,8 @@ function draw(t){
       var ex=sxOf(LV.runway);
       if(ex>-60 && ex<W+60){
         ctx.fillStyle=FC.weight; ctx.fillRect(ex-3,gy-46,6,46);
-        ctx.fillStyle='#fff'; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.beginPath(); ctx.rect(ex-60,gy-86,120,40); ctx.fill(); ctx.stroke();
-        ctx.font=fsz(21)+fontf(); ctx.textAlign='center'; ctx.fillStyle='#CF3F32'; ctx.fillText('RUNWAY END',ex,gy-59);
+        ctx.fillStyle=TH.signBg; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.beginPath(); ctx.rect(ex-60,gy-86,120,40); ctx.fill(); ctx.stroke();
+        ctx.font=fsz(21)+fontf(); ctx.textAlign='center'; ctx.fillStyle=TH.signText; ctx.fillText('RUNWAY END',ex,gy-59);
       }
     }
   }
@@ -1000,19 +1206,20 @@ function draw(t){
     var U=ARROWK[ST.arrowSize], cap=130*U/0.6;
     var Lv=Math.max(0,S.L)*U, Wv=S.W*U, Tv=S.T*U, Dv=S.D*U;
     var Lc=Math.min(Lv,cap), Dc=Math.min(Dv,cap);
-    arrow(PX,py-30,-Math.PI/2,Lc,PAT.lift,9,18,14);
-    arrow(PX,py+28,Math.PI/2,Wv,PAT.weight,9,18,14);
-    arrow(PX+96,py,0,Tv,PAT.thrust,9,18,14);
-    arrow(PX-96,py,Math.PI,Dc,PAT.drag,9,18,14);
+    arrow(PX,py-ARROW_UP,-Math.PI/2,Lc,PAT.lift,9,18,14);
+    arrow(PX,py+ARROW_DN,Math.PI/2,Wv,PAT.weight,9,18,14);
+    arrow(PX+ARROW_FWD,py,0,Tv,PAT.thrust,9,18,14);
+    arrow(PX-ARROW_FWD,py,Math.PI,Dc,PAT.drag,9,18,14);
     if(ST.labels){
-      if(Lc>14) tag('F1 LIFT '+fForce(S.L),PX,py-30-Lc-6);
-      var wy=py+28+Wv+22; if(wy>H-8) tag('F2 WEIGHT '+fForce(S.W),PX+18,H-10,'left'); else tag('F2 WEIGHT '+fForce(S.W),PX,wy);
-      if(Tv>14) tag('F3 THRUST '+fForce(S.T),PX+96+Tv+8,py-16,'left');
-      if(Dc>14) tag('F4 DRAG '+fForce(S.D),PX-96-Dc-8,py-16,'right');
+      var fp=(ST.fnum&&CS>=0.55);                       /* F1..F4 prefixes are dropped on small screens */
+      if(Lc>14) tag((fp?'F1 ':'')+'LIFT '+fForce(S.L),PX,py-ARROW_UP-Lc-6);
+      var wy=py+ARROW_DN+Wv+22; if(wy>H-8) tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),PX+18,H-10,'left'); else tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),PX,wy);
+      if(Tv>14) tag((fp?'F3 ':'')+'THRUST '+fForce(S.T),PX+ARROW_FWD+Tv+8,py-16,'left');
+      if(Dc>14) tag((fp?'F4 ':'')+'DRAG '+fForce(S.D),PX-ARROW_FWD-Dc-8,py-16,'right');
     }
   }
 
-  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,S.msgCol,200);
+  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,FC[S.msgCol]||FC.ink,200);
   if(mode==='crashed'){
     bigText(S.crashWhy==='overrun'?'RAN OUT OF RUNWAY!':'CRASH!',py-70,60,FC.weight);
   }
@@ -1022,12 +1229,12 @@ function draw(t){
     if(S.autoPaused){
       bigText('STALL! Paused',H/2-30,60,'#fff');
       ctx.font=fsz(26)+fontf(); ctx.textAlign='center'; ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.8)'; ctx.fillStyle='#fff';
-      var l1='Pitch went past 15°, so the air tore away from the wing and lift collapsed.', l2='Lower the nose below 12° after you press Resume ('+keyFirst('pause')+').';
+      var l1='Pitch went past 15°, so the air tore away from the wing and lift collapsed.', l2='Lower the nose below 12° after you '+resumeTxt()+'.';
       ctx.strokeText(l1,W/2,H/2+10); ctx.fillText(l1,W/2,H/2+10); ctx.strokeText(l2,W/2,H/2+44); ctx.fillText(l2,W/2,H/2+44);
     } else {
       bigText('PAUSED',H/2-6,64,'#fff');
       ctx.font=fsz(26)+fontf(); ctx.textAlign='center'; ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.8)'; ctx.fillStyle='#fff';
-      var l3='Read the meters, then press Resume ('+keyFirst('pause')+')';
+      var l3='Read the meters, then '+resumeTxt();
       ctx.strokeText(l3,W/2,H/2+34); ctx.fillText(l3,W/2,H/2+34);
     }
   }
@@ -1036,9 +1243,9 @@ function draw(t){
 /* ---------------- coaching message (banner near the plane) ---------------- */
 var RANK={tip:0,cue:1,caution:2,warn:3}, ICON={tip:'i',cue:'➜',caution:'!',warn:'⚠'};
 var coachCur={key:'',lvl:'',t:0}, coachFlashT=null;
-var coachBox=$('#coachBox'), coachTextEl=$('#coachText'), coachIconEl=$('#coachIcon'), srLive=$('#srLive');
+var coachBox=$('#coachBox'), coachTextEl=$('#coachText'), coachIconEl=$('#coachIcon'), srLive=$('#srLive'), sheetCoachEl=$('#sheetCoach');
 
-function computeCoach(){
+function computeCoachFull(){
   var gl=LV.grade, sinkFpm=-S.vy*FPM, altFt=S.alt*FT, onG=!S.airborne&&S.alt<=0, p=S.phase;
   var tti=S.vy<-0.5?S.alt/(-S.vy):99;
   if(S.stalled) return {key:'stall',lvl:'warn',text:'STALL! Lower the nose (pitch below 12°) to get your lift back.'};
@@ -1070,16 +1277,31 @@ function computeCoach(){
   }
   return null;
 }
+var SHORT={stall:'STALL! Nose down!',toofast:'TOO FAST! Pitch up, add thrust.',stallwarn:'Stall warning: nose down!',runwayend:'Runway ending! Pitch up ~10°.',
+  rotate:'Pitch up ~10° to lift off.',brake:'Tap IDLE to stop.',braking:'Rolling to a stop…',start:'Tap FULL to start rolling.',pushmore:'Thrust must beat drag. More thrust!',
+  roll:'Thrust > Drag: speeding up.',flare:'Flare! Raise the pitch a bit.',land:'Cut thrust, descend gently.',climbUp:'Lift > Weight: climbing.',climbDown:'Lift < Weight: sinking.',climbLevel:'Lift ≈ Weight: level flight.'};
+function computeCoach(){
+  var c=computeCoachFull(); if(!c) return c;
+  c.s=SHORT[c.key]||c.text;
+  if(IS_TOUCH){
+    var where=layout==='desktop'?'below the flight view':'on the left';
+    if(c.key==='start') c.text='Hold + (or tap FULL) '+where+' to start rolling. Full thrust is best.';
+    else if(c.key==='brake') c.text='Tap IDLE '+where+' to set THRUST to 0. The brakes and drag will stop you.';
+  }
+  return c;
+}
+function ctext(c){return (MOBILE&&c.s)?c.s:c.text;}
+function coachPlace(){return (MOBILE&&ST.coachPos==='panel')?'top':ST.coachPos;}
 function coachContainer(){
-  var wantPanel=(ST.coachPos==='panel');
+  var wantPanel=(coachPlace()==='panel');
   var host=wantPanel?$('#gCoach'):$('#view');
   if(coachBox.parentNode!==host) host.appendChild(coachBox);
   coachBox.classList.toggle('inpanel',wantPanel);
-  coachBox.classList.toggle('pos-top',!wantPanel&&ST.coachPos==='top');
-  coachBox.classList.toggle('pos-bottom',!wantPanel&&ST.coachPos==='bottom');
+  coachBox.classList.toggle('pos-top',!wantPanel&&coachPlace()==='top');
+  coachBox.classList.toggle('pos-bottom',!wantPanel&&coachPlace()==='bottom');
 }
 function setCoachClass(lvl,idle){
-  coachBox.className='coachbar '+(ST.coachPos==='panel'?'inpanel ':'pos-'+ST.coachPos+' ')+(lvl||'tip')+(idle?' idle':'');
+  coachBox.className='coachbar '+(coachPlace()==='panel'?'inpanel ':'pos-'+coachPlace()+' ')+(lvl||'tip')+(idle?' idle':'');
 }
 function flashCoach(){
   clearTimeout(coachFlashT); coachBox.classList.remove('flash'); void coachBox.offsetWidth; coachBox.classList.add('flash');
@@ -1099,17 +1321,16 @@ function updateCoach(){
     if(!coachCur.key||RANK[c.lvl]>=curRank||now-coachCur.t>1500){
       coachCur={key:c.key,lvl:c.lvl,t:now};
       setCoachClass(c.lvl,false); coachIconEl.textContent=ICON[c.lvl]; coachBox.setAttribute('aria-hidden','false');
-      coachTextEl.textContent=c.text; flashCoach();
+      coachTextEl.textContent=ctext(c); sheetCoachEl.textContent=c.text; flashCoach();
       if(ST.announce){ srLive.setAttribute('aria-live',c.lvl==='warn'?'assertive':'polite'); srLive.textContent=''; setTimeout(function(){srLive.textContent=c.text;},30); }
       return;
     }
     return;
   }
-  if(coachTextEl.textContent!==c.text) coachTextEl.textContent=c.text;
+  if(coachTextEl.textContent!==ctext(c)){ coachTextEl.textContent=ctext(c); sheetCoachEl.textContent=c.text; }
 }
 
 /* ---------------- side panel ---------------- */
-function setBar(id,val){$(id).style.width=clamp(val/200*100,0,100)+'%';}
 var PC={x0:34,x1:290,y0:96,y1:16,amin:-5,amax:20,cmin:-0.4,cmax:1.6};
 function pcx(a){return PC.x0+(a-PC.amin)/(PC.amax-PC.amin)*(PC.x1-PC.x0);}
 function pcy(c){return PC.y0-(c-PC.cmin)/(PC.cmax-PC.cmin)*(PC.y0-PC.y1);}
@@ -1140,26 +1361,61 @@ function updatePitchChart(){
   var a=clamp(angle,PC.amin,PC.amax), c=liftCoeff(angle,S.stalled);
   m.setAttribute('cx',pcx(a)); m.setAttribute('cy',pcy(c)); m.setAttribute('fill',S.stalled?FC.weight:FC.lift);
 }
-function setMeter(barId,val){var b=$(barId); b.setAttribute('aria-valuenow',Math.round(val)); b.setAttribute('aria-valuetext',fForce(val)+(ST.forceUnits==='pct'?' of normal weight':''));}
 function updateUnitLabels(){
   $('#lAir').textContent='AIRSPEED '+spdUnit(); $('#lGnd').textContent='GROUND SPD '+spdUnit();
   $('#lAlt').textContent='ALTITUDE '+altUnit(); $('#lVs').textContent='V/S '+vsUnit();
+  $('#hSl').textContent='SPEED '+spdUnit(); $('#hAl').textContent='ALT '+altUnit();
   $('#subScale').textContent=ST.forceUnits==='pct'?'100% = the normal weight of the plane':'100 = the normal weight of the plane (plain force numbers)';
 }
+var METER_DEFS=[
+  {k:'lift',  f:'f1',n:'F1',name:'Lift',  arrow:'↑',val:function(){return Math.max(0,S.L);},mark:1},
+  {k:'weight',f:'f2',n:'F2',name:'Weight',arrow:'↓',val:function(){return S.W;},hint:'Lift grows with speed²: twice as fast = 4× the lift.',hintAdv:'Dashed line on Lift = the weight it has to beat.'},
+  {k:'thrust',f:'f3',n:'F3',name:'Thrust',arrow:'→',val:function(){return S.T;}},
+  {k:'drag',  f:'f4',n:'F4',name:'Drag',  arrow:'←',val:function(){return S.D;},mark:2,hintAdv:'Dashed line on Drag = your thrust. Thrust has to beat drag to speed up.'}
+];
+var MP=[], MH=[], E={}, stepLis=[];
+function meterHTML(d){
+  return '<div class="meter '+d.f+'"><div class="row"><b class="dot">'+d.n+'</b>'+d.name+' '+d.arrow+'<em data-v></em></div>'+
+    '<div class="bar" role="meter" aria-label="'+d.name+'" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i></i>'+(d.mark?'<u class="advonly" data-mk></u>':'')+'</div></div>'+
+    (d.hint?'<p class="hint">'+d.hint+'</p>':'')+(d.hintAdv?'<p class="hint advonly">'+d.hintAdv+'</p>':'');
+}
+function hudMeterHTML(d){
+  return '<span class="hm '+d.f+'"><span class="hl">'+d.name+' '+d.arrow+'</span><span class="bar"><i></i>'+(d.mark?'<u class="advonly" data-mk></u>':'')+'</span><em data-v></em></span>';
+}
+function buildMeters(){
+  $('#meterHost').innerHTML=METER_DEFS.map(meterHTML).join('');
+  $('#hud').innerHTML=METER_DEFS.map(hudMeterHTML).join('')+
+    '<span class="hd"><small id="hSl">SPEED kt</small><b id="hS">0</b></span><span class="hd"><small id="hAl">ALT ft</small><b id="hA">0</b></span><span class="hstep" id="hStep"></span>';
+  function grab(root,sel){ var nodes=root.querySelectorAll(sel);
+    return METER_DEFS.map(function(d,i){ var m=nodes[i]; return {v:m.querySelector('[data-v]'),fill:m.querySelector('i'),bar:m.querySelector('.bar'),mk:m.querySelector('[data-mk]')}; }); }
+  MP=grab($('#meterHost'),'.meter'); MH=grab($('#hud'),'.hm');
+  E={tS:$('#tS'),tG:$('#tG'),tA:$('#tA'),tC:$('#tC'),hS:$('#hS'),hA:$('#hA'),hStep:$('#hStep')};
+  stepLis=[].slice.call(document.querySelectorAll('#steps li[data-s]'));
+}
+function setTxt(el,v){ if(el._t!==v){ el._t=v; el.textContent=v; } }
+function setStyle(el,prop,v){ var k='_'+prop; if(el[k]!==v){ el[k]=v; el.style[prop]=v; } }
 function updatePanel(){
-  $('#vL').textContent=fForce(Math.max(0,S.L)); $('#vW').textContent=fForce(S.W);
-  $('#vT').textContent=fForce(S.T); $('#vD').textContent=fForce(S.D);
-  setBar('#bL',Math.max(0,S.L)); setBar('#bW',S.W); setBar('#bT',S.T); setBar('#bD',S.D);
-  setMeter('#barL',Math.max(0,S.L)); setMeter('#barW',S.W); setMeter('#barT',S.T); setMeter('#barD',S.D);
-  $('#mW').style.left=clamp(S.W/200*100,0,100)+'%';
-  $('#mT').style.left=clamp(S.T/200*100,0,100)+'%';
-  $('#tS').textContent=nf(spdFromU(S.v+WIND)); $('#tG').textContent=nf(spdFromU(S.v)); $('#tA').textContent=nf(altFromM(S.alt));
-  var vs; if(ST.vsU==='ms'){var m=Math.round(S.vy*10)/10; vs=(m>0?'+':'')+m.toFixed(1);} else {var f=Math.round(S.vy*FPM/10)*10; vs=(f>0?'+':'')+nf(f);}
-  $('#tC').textContent=vs;
-  if(ST.adv&&ST.panels.chart) updatePitchChart();
+  var vals=[], i, m, v, txt, w;
+  for(i=0;i<METER_DEFS.length;i++){
+    v=METER_DEFS[i].val(); vals[i]=v; txt=fForce(v); w=clamp(v/200*100,0,100)+'%'; m=MP[i];
+    setTxt(m.v,txt); setStyle(m.fill,'width',w);
+    var rv=Math.round(v);
+    if(m.bar._n!==rv){ m.bar._n=rv; m.bar.setAttribute('aria-valuenow',rv); m.bar.setAttribute('aria-valuetext',txt+(ST.forceUnits==='pct'?' of normal weight':'')); }
+    if(MOBILE){ setTxt(MH[i].v,txt); setStyle(MH[i].fill,'width',w); }
+  }
+  var mw=clamp(vals[1]/200*100,0,100)+'%', mt=clamp(vals[2]/200*100,0,100)+'%';
+  setStyle(MP[0].mk,'left',mw); setStyle(MP[3].mk,'left',mt);
+  if(MOBILE){ setStyle(MH[0].mk,'left',mw); setStyle(MH[3].mk,'left',mt); }
+  var sp=nf(spdFromU(S.v+WIND)), al=nf(altFromM(S.alt));
+  setTxt(E.tS,sp); setTxt(E.tG,nf(spdFromU(S.v))); setTxt(E.tA,al);
+  var vs; if(ST.vsU==='ms'){var mm=Math.round(S.vy*10)/10; vs=(mm>0?'+':'')+mm.toFixed(1);} else {var f=Math.round(S.vy*FPM/10)*10; vs=(f>0?'+':'')+nf(f);}
+  setTxt(E.tC,vs);
+  if(MOBILE){ setTxt(E.hS,sp); setTxt(E.hA,al); }
+  if(ST.adv&&ST.panels.chart&&(!MOBILE||sheetOpen)) updatePitchChart();
 
   var p=S.phase, cur=(p==='takeoff')?1:(p==='climb')?2:(p==='landing')?3:4;
-  [].forEach.call(document.querySelectorAll('.steps li[data-s]'),function(li){var n=+li.dataset.s;li.className=(n<cur||mode==='won')?'done':(n===cur?'on':'');});
+  stepLis.forEach(function(li){var n=+li.dataset.s, cl=(n<cur||mode==='won')?'done':(n===cur?'on':''); if(li._c!==cl){li._c=cl;li.className=cl;}});
+  if(MOBILE){ var cl=stepLis[Math.min(cur,4)-1]; setTxt(E.hStep,mode==='won'?'Mission complete!':'Step '+cur+' of 4 · '+(cl?cl.textContent:'')); }
   updateCoach();
 }
 
@@ -1169,21 +1425,20 @@ function applySettings(){
   r.setAttribute('data-theme',ST.theme); r.setAttribute('data-cb',ST.cb?'1':'0'); r.setAttribute('data-font',ST.font);
   r.setAttribute('data-focus',ST.focus==='strong'?'strong':'normal'); r.setAttribute('data-pat',ST.labels?'1':'0');
   r.setAttribute('data-motion',ST.reduceMotion?'reduce':'normal'); r.setAttribute('data-adv',ST.adv?'1':'0');
-  TSF=TSCALE[ST.text]||1; r.style.setProperty('--ts',TSF);
+  TSF=TSCALE[ST.text]||1; r.style.setProperty('--ts',TSF); if(typeof setupCanvas==='function') setupCanvas();
   r.style.setProperty('--panelw',PANELW[ST.viewSize]||'330px'); r.style.setProperty('--tbtn',TBTN[ST.touchSize]||'52px');
   var app=$('#app'); app.setAttribute('data-side',ST.side); app.setAttribute('data-density',ST.density);
-  TH=TH_ALL[ST.theme]||TH_ALL.light; readColors(); rebuildPatterns(); buildPitchChart();
+  TH=TH_ALL[ST.theme]||TH_ALL.light; readColors(); rebuildPatterns(); buildPitchChart(); buildSky(); buildClouds(); markDirty();
   var P=ST.panels;
   $('#gMeters').classList.toggle('hide',!P.meters);
   $('#gData').classList.toggle('hide',!P.data);
   $('#gChart').classList.toggle('hide',!(ST.adv&&P.chart));
-  $('#gCoach').classList.toggle('hide',!(P.coach&&ST.coachPos==='panel'));
-  $('#steps').classList.toggle('hide',!P.steps); $('#steps').style.display=P.steps?'':'none';
-  $('#steps2').style.display=P.steps?'':'none';
+  $('#gCoach').classList.toggle('hide',!(P.coach&&coachPlace()==='panel'));
+  $('#steps').style.display=P.steps?'':'none';
   coachContainer();
   $('#pause').title='Pause ('+keysAll('pause')+')'; fsBtn.title='Fullscreen ('+keyFirst('fullscreen')+')';
   $('#gear').title='Settings ('+keyFirst('settings')+')'; $('#restart').title='Restart ('+keyFirst('restart')+')';
-  updateUnitLabels(); updateStepLabels(); renderKeyLists(); fillLevelSelect();
+  updateUnitLabels(); updateStepLabels(); updateLevelLabel();
   if(S){ updatePanel(); }
   if(S&&S.cfg) applyAngRange();
   if(typeof updateRestartNote==='function') updateRestartNote();
@@ -1192,12 +1447,18 @@ function applySettings(){
 /* ---------------- settings dialog ---------------- */
 var pctF=function(v){return Math.round(v*100)+'%';};
 var SCHEMA=[
- {id:'game',label:'Game',items:[
+ {id:'basics',label:'Basics',items:[
   {t:'lvl'},
   {t:'slow'},
   {t:'tog',k:'adv',l:'Advanced info',h:'Adds the lift-vs-pitch chart, ground speed, climb rate and the dashed marks on the meters.'},
-  {t:'sel',k:'tips',l:'Coaching tips',o:[['all','All tips'],['important','Important only'],['off','Off (no messages)']]},
+  {t:'sel',k:'text',l:'Text size',o:[['small','Small'],['medium','Medium'],['large','Large'],['xlarge','Extra large']]},
+  {t:'sel',k:'theme',l:'Theme',o:[['light','Light'],['dark','Dark'],['hc','High contrast']]},
+  {t:'rng',k:'master',l:'Volume',min:0,max:1,step:0.05,fmt:pctF},
   {t:'btn',id:'showIntroBtn',l:'Show intro again'},
+  {t:'note',l:'More options are in the other tabs.'}
+ ]},
+ {id:'game',label:'Game',items:[
+  {t:'sel',k:'tips',l:'Coaching tips',o:[['all','All tips'],['important','Important only'],['off','Off (no messages)']]},
   {t:'more'},
   {t:'sel',k:'gameSpeed',l:'Game speed',o:[['normal','Normal'],['slower','Slower (75%)']],h:'Works together with Slow motion.'},
   {t:'sel',k:'turb',l:'Turbulence strength',r:true,o:[['off','Off'],['light','Light'],['normal','Normal'],['strong','Strong']]},
@@ -1209,12 +1470,11 @@ var SCHEMA=[
   {t:'btn',id:'resetProgress',l:'Reset level progress and stars',c:true}
  ]},
  {id:'display',label:'Display',items:[
-  {t:'sel',k:'theme',l:'Theme',o:[['light','Light'],['dark','Dark'],['hc','High contrast']]},
-  {t:'sel',k:'text',l:'Text size',o:[['small','Small'],['medium','Medium'],['large','Large'],['xlarge','Extra large']]},
   {t:'sel',k:'forceUnits',l:'Show forces as',o:[['pct','% of weight'],['num','Plain numbers']]},
   {t:'more'},
   {t:'tog',k:'arrows',l:'Force arrows on the plane'},
   {t:'sel',k:'arrowSize',l:'Arrow size',o:[['small','Small'],['normal','Normal'],['large','Large']]},
+  {t:'tog',k:'fnum',l:'F1–F4 numbers on the force labels',h:'Phones hide them automatically to save space.'},
   {t:'tog',k:'labels',l:'Force labels and patterns',h:'Keeps the four forces apart without relying on colour. Turn off only if you do not need them.'},
   {t:'tog',k:'showTarget',l:'Target altitude line'},
   {t:'tog',k:'showRunway',l:'Runway length marker',h:'The end-of-runway sign and the runway left counter (short runway level).'},
@@ -1246,10 +1506,10 @@ var SCHEMA=[
   {t:'keys'}
  ]},
  {id:'access',label:'Sound & access',items:[
-  {t:'rng',k:'master',l:'Master volume',min:0,max:1,step:0.05,fmt:pctF},
   {t:'tog',k:'stallSound',l:'Stall warning sound'},
   {t:'tog',k:'cb',l:'Colour-blind friendly force colours',h:'Patterns and labels stay on as well.'},
-  {t:'tog',k:'reduceMotion',l:'Reduce motion',h:'Turns off screen shake, flashing and animated banners.'},
+  {t:'tog',k:'reduceMotion',l:'Reduce motion',h:'Turns off screen shake, flashing, vibration and animated banners.'},
+  {t:'tog',k:'haptics',l:'Vibration on touch screens',h:'Short buzzes for stalls and touchdowns (phones only).'},
   {t:'sel',k:'font',l:'Font',o:[['default','Handwriting (default)'],['readable','Easier to read']]},
   {t:'more'},
   {t:'rng',k:'sfxVol',l:'Effects volume (engine, touchdown)',min:0,max:1,step:0.05,fmt:pctF},
@@ -1261,7 +1521,7 @@ var SCHEMA=[
  ]}
 ];
 var sMore={};
-var sTab='game', sPrevFocus=null, sSnapshot=null;
+var sTab='basics', sPrevFocus=null, sSnapshot=null;
 function sid(k){return 's_'+k.replace(/\./g,'_');}
 function rowHTML(it){
   var rt=it.r?'<span class="rtag">↻ restart needed</span>':'', hp=it.h?'<small>'+esc(it.h)+'</small>':'';
@@ -1309,6 +1569,7 @@ function updateRestartNote(){
   $('#restartNow').onclick=function(){closeSettings();startFlight();};
 }
 function openSettings(tab){
+  closeSheet(true); closeMenu(); markDirty();
   if(settingsOpen){ if(tab){sTab=tab;renderTabs();renderBody();} return; }
   if(tab) sTab=tab;
   sPrevFocus=document.activeElement; settingsOpen=true; pressed={}; hold.thr=0; hold.pit=0;
@@ -1317,15 +1578,16 @@ function openSettings(tab){
   var t=$('#tab_'+sTab); if(t) t.focus();
 }
 function closeSettings(){
-  if(!settingsOpen) return; cancelCapture(true);
+  if(!settingsOpen) return; cancelCapture(true); markDirty();
   settingsOpen=false; $('#settings').classList.remove('show');
   if(sPrevFocus&&sPrevFocus.focus&&document.body.contains(sPrevFocus)){try{sPrevFocus.focus();}catch(e){}}
 }
 function toggleSettings(){ if(settingsOpen) closeSettings(); else openSettings(); }
-function trapTab(e){
-  var f=[].slice.call($('#sCard').querySelectorAll('button,select,input,[tabindex="0"]')).filter(function(x){return !x.disabled&&x.offsetParent!==null&&x.tabIndex>=0;});
+function trapTab(e,root){
+  var f=[].slice.call(root.querySelectorAll('button,select,input,summary,a[href],[tabindex="0"]')).filter(function(x){return !x.disabled&&!x.hidden&&x.tabIndex>=0&&x.getClientRects().length>0;});
   if(!f.length) return; var first=f[0], last=f[f.length-1];
-  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  if(!root.contains(document.activeElement)){e.preventDefault();first.focus();}
+  else if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
   else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
 }
 function beginCapture(btn){
@@ -1360,7 +1622,6 @@ function confirmBtn(b,fn){
     setPath(k,v);
     if(t.type==='range'){ var o=$('#'+t.id+'_o'); var it=SCHEMA.reduce(function(a,g){return a.concat(g.items);},[]).filter(function(x){return x.k===k;})[0]; if(o&&it) o.textContent=it.fmt(v); }
     saveSettings(); applySettings(); updateRestartNote();
-    if(k==='text'||k==='font'||k==='theme') {}
   }
   body.addEventListener('input',fromControl); body.addEventListener('change',fromControl);
   body.addEventListener('toggle',function(e){ if(e.target.classList&&e.target.classList.contains('smore')) sMore[e.target.dataset.tab]=e.target.open; },true);
@@ -1373,7 +1634,7 @@ function confirmBtn(b,fn){
       case 'testSound': audioInit(); tone(640,0.14,'warn','square',0.2); thump(0.5); tone(523,0.2,'sfx','triangle',0.25,0.3); break;
       case 'showIntroBtn': closeSettings(); if(mode==='fly') showIntro(1,true); else showIntro(1,false); break;
       case 'resetSettings': confirmBtn(b,function(){ var keep=ST.adv; ST=merge(DEF,null); try{ST.reduceMotion=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(x){} ACTIONS.forEach(function(a){while(ST.keys[a.id].length<2)ST.keys[a.id].push('');}); saveSettings(); applySettings(); renderBody(); updateRestartNote(); }); break;
-      case 'resetProgress': confirmBtn(b,function(){ PR={}; saveProgress(); fillLevelSelect(); b.textContent='Progress cleared'; }); break;
+      case 'resetProgress': confirmBtn(b,function(){ PR={}; saveProgress(); updateLevelLabel(); b.textContent='Progress cleared'; }); break;
     }
   });
   $('#sTabs').addEventListener('click',function(e){var b=e.target.closest('.tab'); if(!b) return; sTab=b.dataset.tab; renderTabs(); renderBody(); $('#tab_'+sTab).focus();});
@@ -1393,7 +1654,7 @@ function openModal(html,keep){
   overlay=keep?'intro':''; introOpen=false; endOpen=false;
   card.innerHTML=html; modal.classList.add('show'); card.scrollTop=0;
 }
-function closeModal(){modal.classList.remove('show');overlay='';introOpen=false;}
+function closeModal(){modal.classList.remove('show');overlay='';introOpen=false;markDirty();}
 function xBtn(id,label){return '<button class="xbtn" id="'+id+'" type="button" aria-label="'+label+'" title="'+label+'">✕</button>';}
 
 function showKeys(){ openSettings('controls'); }
@@ -1443,14 +1704,14 @@ function showIntro(pg,from){
   }
   var dots='<div class="dots" role="img" aria-label="Page '+introPage+' of 3">'+[1,2,3].map(function(n){return '<i class="'+(n===introPage?'on':'')+'"></i>';}).join('')+'</div>';
   var right;
-  if(introPage<3) right='<button class="btn arrow" id="pnext" type="button" aria-label="Next page">→</button>';
+  if(introPage<3) right='<button class="btn ghost" id="flynow" type="button">'+(introFrom?'Back to flight':'Skip to flight')+'</button><button class="btn arrow" id="pnext" type="button" aria-label="Next page">→</button>';
   else if(introFrom) right='<button class="btn ghost" id="go" type="button">Restart with warm-up</button><button class="btn" id="skip" type="button">Back to flight</button>';
   else right='<button class="btn ghost" id="skip" type="button">Skip warm-up</button><button class="btn" id="go" type="button">Start → Warm-up</button>';
   openModal(xBtn('xclose','Close intro (Esc)')+body+'<div class="pager"><button class="btn ghost arrow" id="pprev" type="button" aria-label="Previous page"'+(introPage===1?' disabled':'')+'>←</button>'+dots+'<div class="r">'+right+'</div></div>',introFrom);
   introOpen=true;
   $('#xclose').onclick=closeIntro;
   $('#pprev').onclick=function(){showIntro(introPage-1);};
-  if(introPage<3){ $('#pnext').onclick=function(){showIntro(introPage+1);}; $('#pnext').focus(); }
+  if(introPage<3){ $('#pnext').onclick=function(){showIntro(introPage+1);}; $('#flynow').onclick=closeIntro; $('#pnext').focus(); }
   else {
     bindPicker();
     $('#go').onclick=showMatch;
@@ -1465,7 +1726,7 @@ function showMatch(){
   openModal(
     xBtn('xclose','Close warm-up and start flying (Esc)')+
     '<h2><span>WARM-UP</span> · PUT THE FORCES IN THE RIGHT PLACES</h2>'+
-    '<p>Pick a force label below, then tap the arrow where it belongs. (You can also drag it.)</p>'+
+    '<p>Pick a force label below, then tap the arrow where it belongs.'+(IS_TOUCH?'':' (You can also drag it.)')+'</p>'+
     '<div class="pgrid">'+
       '<button class="slot up" data-dir="up" type="button" aria-label="Arrow pointing up">↑</button>'+
       '<button class="slot back" data-dir="back" type="button" aria-label="Arrow pointing backward">←</button>'+
@@ -1637,7 +1898,7 @@ function showEnd(won){
   if(won){
     c.sc=scoreFlight();
     var prev=PR[levelKey]?PR[levelKey].stars:0;
-    if(c.sc.total>prev){ PR[levelKey]={stars:c.sc.total,fpm:Math.round(S.fpm)}; saveProgress(); fillLevelSelect(); }
+    if(c.sc.total>prev){ PR[levelKey]={stars:c.sc.total,fpm:Math.round(S.fpm)}; saveProgress(); updateLevelLabel(); }
     sfxWin(c.sc.total);
     c.next=LKEYS[LKEYS.indexOf(levelKey)+1]||null;
   }
@@ -1656,7 +1917,7 @@ function endResultHTML(){
     ].join('');
     return '<h2><span>'+(g===3?'HARD LANDING':'MISSION COMPLETE!')+'</span> ✈</h2>'+
       '<p class="stars" aria-label="'+sc.total+' out of 5 stars">'+starRow(sc.total)+'</p>'+
-      '<p class="gname" style="color:'+['var(--thrust)','var(--lift)','#B87400','var(--weight)'][g]+'">'+NAMES[g]+'</p>'+
+      '<p class="gname" style="color:'+['var(--thrust)','var(--lift)','var(--amber)','var(--weight)'][g]+'">'+NAMES[g]+'</p>'+
       '<p>'+say+'</p><ul class="score">'+lines+'</ul>';
   }
   var over=(S.crashWhy==='overrun');
@@ -1718,7 +1979,8 @@ function renderEnd(pg){
 }
 
 function startFlight(){
-  reset(); closeModal(); mode='fly'; introFrom=false;
+  try{localStorage.setItem('flightSchoolSeen','1');}catch(e){}
+  closeSheet(true); closeMenu(); reset(); closeModal(); mode='fly'; introFrom=false;
   setPaused(false); coachCur={key:'',lvl:'',t:0}; updatePanel();
 }
 $('#restart').addEventListener('click',function(){ if(mode!=='modal') startFlight(); });
@@ -1738,22 +2000,29 @@ function loop(now){
     acc+=dt*sc;
     while(acc>=1/60 && mode==='fly' && !paused){
       step(1/60); acc-=1/60;
-      if(S.stallEvt){ S.stallEvt=false; if(ST.autoPause){ S.autoPaused=true; setPaused(true); S.autoPaused=true; } }
+      if(S.stallEvt){ S.stallEvt=false; buzz([60,40,60]); if(ST.autoPause){ S.autoPaused=true; setPaused(true); S.autoPaused=true; } }
     }
     prop+=dt*sc*(6+thrust*0.35);
   } else acc=0;
   audioTick(dt,running);
   if(S.msgT>0&&!halted()) S.msgT-=dt;
   if(S.shake>0) S.shake=Math.max(0,S.shake-dt);
-  draw(now/1000);
-  if(frame++%5===0) updatePanel();
+  var live=running||mode==='crashed'||mode==='won'||S.shake>0;
+  if(live||dirty){
+    draw(now/1000); dirty=false;
+    if(!live||frame++%5===0) updatePanel();
+  }
   requestAnimationFrame(loop);
 }
 reset();
+buildMeters();
+setupCanvas();
+applyLayout(true);
 applySettings();
 setLevel(levelKey);
 updatePanel();
-showIntro(1,false);
+var seenIntro=false; try{seenIntro=localStorage.getItem('flightSchoolSeen')==='1';}catch(e){}
+if(seenIntro) startFlight(); else showIntro(1,false);
 requestAnimationFrame(loop);
 })();
 </script>

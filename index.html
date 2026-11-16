@@ -540,26 +540,33 @@ html[data-layout="portrait"] .hold{min-height:56px}
 .achgrid li.on{opacity:1}
 .achgrid li small{display:block;color:var(--pencil);font-size:calc(15px*var(--ts));line-height:1.15}
 @media (max-width:640px){.modes,.achgrid{grid-template-columns:1fr}}
+/* ----- lessons ----- */
+.coachbar.lessonbar{pointer-events:auto;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:calc(20px*var(--ts));background:var(--card);border-color:var(--lift);opacity:1}
+.lessonbar .lbody{flex:1 1 240px;display:grid;gap:2px;min-width:0}
+.lessonbar .ln{font-size:calc(14px*var(--ts));letter-spacing:2px;color:var(--pencil)}
+.lessonbar .lh{font-size:calc(16px*var(--ts));color:var(--pencil)}
+.lessonbar .lbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lessonbar .btn.small{font-size:calc(16px*var(--ts))}
+html[data-mobile="1"] .coachbar.lessonbar{font-size:calc(15px*var(--ts));padding:5px 8px;gap:4px 8px}
+html[data-mobile="1"] .lessonbar .lbtns .btn{min-height:36px;padding:2px 8px}
+html[data-layout="cockpit"] .view .coachbar.lessonbar{max-width:min(70vw,600px);top:calc(74px + env(safe-area-inset-top))}
+.lspot{z-index:20;border-color:var(--lift);box-shadow:0 0 0 4px var(--ink);animation:lpulse 1.4s ease-in-out infinite}
+@keyframes lpulse{50%{box-shadow:0 0 0 9px var(--ink)}}
+:root[data-motion="reduce"] .lspot{animation:none}
+.lessons{margin:8px 0}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.lbtn{font:inherit;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 10px;border:3px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);text-align:left;line-height:1.1;font-size:calc(17px*var(--ts))}
+.lbtn .sn{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2.5px solid var(--ink);font-size:calc(15px*var(--ts))}
+.lbtn .lt{flex:1}
+.lbtn .ck{flex:none;font-weight:700;color:var(--thrust);min-width:1em}
+.lbtn.done{background:var(--thrust-t)}
+@media (hover:hover){.lbtn:hover{background:var(--ink);color:var(--paper)}.lbtn:hover .ck{color:var(--paper)}}
 </style>
 </head>
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <symbol id="plane" viewBox="0 0 440 140">
-    <g stroke="#1D2B44" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M22,50 L6,6 L58,6 L96,42 Z" fill="#DCE9FB"/>
-      <path d="M30,82 L6,104 L50,104 L84,86 Z" fill="#EFEADB"/>
-      <path d="M12,70 C16,48 60,40 130,40 L326,40 C384,40 420,58 428,72 C420,86 384,100 326,100 L130,100 C60,100 16,92 12,70 Z" fill="#FFFDF6"/>
-      <path d="M176,78 L112,132 L176,132 L270,84 Z" fill="#DCE9FB"/>
-      <path d="M334,52 L378,52 C396,56 408,62 414,70 L334,70 Z" fill="#BFD8F5"/>
-      <path d="M435,44 L435,98" stroke-width="6"/>
-      <circle cx="150" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
-      <circle cx="184" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
-      <circle cx="218" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
-      <circle cx="252" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
-      <circle cx="286" cy="62" r="7" fill="#BFD8F5" stroke-width="3"/>
-    </g>
-  </symbol>
+  <symbol id="plane" viewBox="0 0 440 140"><!-- filled from PLANE_DEF by planeSVG(), so it always matches the plane in the game --></symbol>
 </svg>
 
 <header class="top">
@@ -582,6 +589,7 @@ html[data-layout="portrait"] .hold{min-height:56px}
         <span class="lvlname" id="lvlname"></span>
         <button class="btn ghost small" id="mapbtn" type="button" aria-haspopup="dialog">🗺 Map</button>
         <button class="btn ghost small" id="pause" type="button" aria-pressed="false">❚❚ Pause</button>
+        <button class="btn ghost small" id="cambtn" type="button">🎥 Chase</button>
         <button class="btn ghost small" id="restart" type="button">↺ Restart</button>
         <button class="btn ghost small mobonly" id="details" type="button">▤ Flight details</button>
         <button class="btn ghost small" id="fs" type="button" aria-pressed="false">⤢ Fullscreen</button>
@@ -593,6 +601,10 @@ html[data-layout="portrait"] .hold{min-height:56px}
       <button class="hud" id="hud" type="button" aria-haspopup="dialog" aria-label="Open flight details: forces, speed and altitude"></button>
       <div class="rotate" id="rotateHint" role="note" hidden><span>↻ Turn your phone sideways for a bigger view</span><button id="rotateX" type="button" aria-label="Dismiss">✕</button></div>
       <div class="coachbar pos-top idle" id="coachBox" aria-hidden="true"><span class="ci" id="coachIcon"></span><span class="ct" id="coachText"></span></div>
+      <div class="coachbar lessonbar pos-top" id="lessonBox" role="region" aria-label="Lesson" hidden>
+        <div class="lbody"><small class="ln" id="lessonHead"></small><span id="lessonText"></span><small class="lh" id="lessonHint" hidden></small></div>
+        <div class="lbtns"><button class="btn small" id="lessonNext" type="button">Next →</button><button class="btn ghost small" id="lessonSkip" type="button">Skip step</button><button class="btn ghost small" id="lessonEnd" type="button">End lesson</button></div>
+      </div>
     </div>
     <div class="controls frame" id="controls">
       <div class="ctl f3"><label for="thr"><span>THRUST (engine)</span><b id="thrV">0%</b></label><input id="thr" type="range" min="0" max="100" step="any" value="0"></div>
@@ -632,6 +644,7 @@ html[data-layout="portrait"] .hold{min-height:56px}
 <div class="sr" id="srStep" aria-live="polite" role="status"></div>
 <div class="sr" id="srStat" aria-live="polite" role="status"></div>
 <div class="ftip" id="ftip" role="tooltip" hidden></div>
+<div class="tspot lspot" id="lspot" aria-hidden="true" hidden></div>
 <div id="tour" hidden><div class="tback" id="tback"></div><div class="tspot" id="tspot"></div>
   <div class="tcard" id="tourCard" role="dialog" aria-label="Quick tour"></div></div>
 
@@ -848,8 +861,7 @@ var RAW=[
 ];
 
 var SCN=[], SBY={};
-(function build(){
-  RAW.forEach(function(r,i){
+function makeScn(r,i){
     var L=LOCBY[r.loc], air=r.air||{}, pl=r.plane||{}, fd=r.field||{}, b=Math.round(r.grade?r.grade[0]:L.butter);
     var grade=r.grade||[b,b*2,Math.round(b*3.33/10)*10,b*8];
     var start=r.start||'ground', appr=(start!=='ground');
@@ -864,10 +876,99 @@ var SCN=[], SBY={};
       learn:r.teach, teach:r.teach, tip:r.tip||'', goalLine:r.goalLine||'', desc:r.desc||function(){return '';}
     };
     s.tkoGoal=!appr&&s.obst.length>0;                    /* an obstacle in the take-off climb: a retry from the approach would skip it */
-    SCN.push(s); SBY[s.id]=s;
-  });
-})();
+    return s;
+}
+RAW.forEach(function(r,i){ var s=makeScn(r,i); SCN.push(s); SBY[s.id]=s; });
 var SIDS=SCN.map(function(s){return s.id;});
+/* ---------------- lessons ----------------
+   Short guided flights, written as data like RAW: the same scenario fields (loc, start, air, field, ...) plus
+     steps   what to do, in order. Each step:
+       say    the instruction (text, or a function so it can name the player's own keys)
+       spot   what to highlight: 'thrust' | 'pitch' | 'meters' | 'm-lift' | 'm-weight' | 'm-thrust' | 'm-drag' | 'plane' | 'glide' | 'view'
+       read   true: the flight waits until the player presses Next (for explanations)
+       go     function(st): true once the player has done it (st.t = seconds into the step, st.v0 = speed at the start)
+       hold   seconds go() has to stay true      slow   slow motion during this step      hint   show the live coaching tip under it
+       mark   a height (ft) to draw as a dashed line       when   function: false skips the step
+     setup   runs once when the lesson's flight starts      recap   one line for the "lesson complete" card
+   Lessons give no stars and never change unlocks; a finished lesson gets a tick on the map (PG.lessons). */
+function kThr(){ return IS_TOUCH?'hold + or tap FULL':'press '+keyFirst('thrustUp')+', or '+keyFirst('thrustFull')+' for full'; }
+function kIdle(){ return IS_TOUCH?'tap IDLE':'press '+keyFirst('thrustIdle'); }
+function kUp(){ return IS_TOUCH?'hold ▲':'press '+keyFirst(ST.invert?'pitchDown':'pitchUp'); }
+function kDown(){ return IS_TOUCH?'hold ▼':'press '+keyFirst(ST.invert?'pitchUp':'pitchDown'); }
+function ftNow(){ return S.alt*FT; }
+var LESSON_RAW=[
+{id:'lesson-forces',n:1,label:'The four forces',loc:'grass',goal:'approach',start:{alt:800,dist:40000},air:{wind:0,turb:0},
+  recap:'Lift against Weight decides up or down. Thrust against Drag decides faster or slower.',
+  steps:[
+  {read:true,spot:'plane',say:'This is your plane. Four forces push and pull on it all the time, and the arrows show how big each one is.'},
+  {read:true,spot:'m-weight',say:'WEIGHT (F2, the red arrow down): gravity pulls the plane toward the ground.'},
+  {read:true,spot:'m-lift',say:'LIFT (F1, the blue arrow up): the wings push the plane up. In level flight Lift is as big as Weight.'},
+  {spot:'thrust',say:function(){return 'THRUST (F3, green, forward) comes from the engine. Push thrust to 100%: '+kThr()+'.';},go:function(){return thrust>=99;}},
+  {spot:'m-drag',say:'DRAG (F4, orange, back) is the air pushing against you. Thrust beats Drag, so you speed up. Watch Drag grow with your speed.',
+    go:function(st){return S.v>=st.v0*1.1||st.t>8;}},
+  {spot:'thrust',say:function(){return 'Now cut thrust to idle ('+kIdle()+'). Drag beats Thrust and you slow down.';},go:function(){return thrust<=5;}},
+  {spot:'pitch',say:function(){return 'Raise the nose to about 8° ('+kUp()+'). Lift grows bigger than Weight, so you climb.';},go:function(){return angle>=7.5&&S.L>S.W*1.02;}},
+  {read:true,spot:'meters',say:'That is the whole idea: compare Lift with Weight, and Thrust with Drag. The meters show the same four forces.'}
+  ]},
+{id:'lesson-takeoff',n:2,label:'Thrust and taking off',loc:'grass',goal:'land',target:1000,field:{len:700,zone:.45},air:{wind:0,turb:0},
+  recap:'Full thrust, wait for Lift to nearly match Weight, then rotate to about 10°.',
+  steps:[
+  {spot:'thrust',say:function(){return 'You are on the runway. Push thrust to 100% ('+kThr()+').';},go:function(){return thrust>=99;}},
+  {spot:'m-lift',say:'Thrust beats Drag and rolling friction, so you roll faster and faster. Watch the Lift bar grow with speed.',go:function(){return S.L>=S.W*.7;}},
+  {spot:'pitch',slow:true,say:function(){return 'Lift is nearly as big as Weight. Raise the nose to 10° now ('+kUp()+'). Pilots call this rotating.';},go:function(){return angle>=9.5&&S.L>=S.W*.75;}},
+  {spot:'plane',say:'Lift is bigger than Weight: you are flying! Keep climbing to 300 ft.',mark:300,go:function(){return ftNow()>=300;}}
+  ]},
+{id:'lesson-stall',n:3,label:'Pitch, lift and stall',loc:'grass',goal:'approach',start:{alt:1500,dist:60000},air:{wind:0,turb:0},
+  recap:'More pitch means more lift, but only up to 15°. Past that the wing stalls: lower the nose to recover.',
+  steps:[
+  {read:true,spot:'pitch',say:'PITCH is the nose angle. Raising the nose makes more lift, but only up to 15°.'},
+  {spot:'pitch',say:function(){return 'Raise the nose to 8° ('+kUp()+'). Lift grows bigger than Weight and you climb.';},go:function(){return angle>=7.5&&S.L>S.W;}},
+  {spot:'pitch',slow:true,when:function(){return !S.cfg.stallProt;},say:'Keep raising the nose, past 15°. You are high up, so this is safe: you will feel a stall.',go:function(){return S.stalled;}},
+  {spot:'m-lift',slow:true,when:function(){return !S.cfg.stallProt;},say:function(){return 'STALL! The air tore away from the wing and Lift collapsed. Lower the nose below 12° ('+kDown()+') to get it back.';},go:function(){return !S.stalled&&angle<12;}},
+  {read:true,spot:'pitch',when:function(){return S.cfg.stallProt;},say:'Stall protection is on (Settings → Game), so the nose stops at 14.5° and you cannot stall. Turn it off to try a stall.'},
+  {read:true,spot:'plane',say:'Remember: the coach warns you at 11.5° and the wing stalls at 15°.'}
+  ]},
+{id:'lesson-climb',n:4,label:'Climbing and levelling off',loc:'grass',goal:'approach',start:{alt:300,dist:60000},air:{wind:0,turb:0},
+  recap:'Climb with full thrust and about 8°. Level off by lowering the nose and reducing thrust until Lift ≈ Weight.',
+  steps:[
+  {spot:'thrust',say:function(){return 'Climb: full thrust ('+kThr()+') and the nose at about 8°.';},go:function(){return thrust>=95&&angle>=7&&S.vsm*FPM>300;}},
+  {spot:'m-lift',say:'Lift is bigger than Weight, so you climb. Keep going up to 1,000 ft.',mark:1000,go:function(){return ftNow()>=1000;}},
+  {spot:'pitch',hint:true,mark:1000,say:'Level off: lower the nose to about 3° and bring thrust back to about 60%. Hold it level for 3 seconds.',go:function(){return Math.abs(S.vsm*FPM)<200;},hold:3},
+  {read:true,spot:'meters',say:'Level flight: Lift ≈ Weight and Thrust ≈ Drag. The forces balance, so your height and speed stay the same.'}
+  ]},
+{id:'lesson-papi',n:5,label:'Reading the glide-path lights',loc:'grass',goal:'approach',start:{alt:480,dist:7600},air:{wind:0,turb:0},
+  recap:'2 white + 2 red = on the path. More white: too high. More red: too low.',
+  steps:[
+  {read:true,spot:'glide',say:'These are the glide-path lights. 2 white + 2 red means you are on the path down to the runway.'},
+  {spot:'glide',hint:true,say:'More white = too high: cut thrust and lower the nose a little. More red = too low: add thrust. Hold 2 white + 2 red for 3 seconds.',go:function(){var g=glideInfo();return !!g&&!g.far&&g.whites===2;},hold:3},
+  {spot:'glide',hint:true,say:'Good. Stay on the path down to 200 ft.',mark:200,go:function(){return ftNow()<=200;}},
+  {read:true,spot:'view',say:'You flew the path. The next lessons do the flare and the stop.'}
+  ]},
+{id:'lesson-flare',n:6,label:'Flare and touchdown',loc:'grass',goal:'approach',start:{alt:220,dist:3500},air:{wind:0,turb:0},
+  recap:'Fly the path down to about 60 ft, raise the nose to about 6° (the flare), and cut thrust as the wheels touch.',
+  steps:[
+  {read:true,spot:'plane',say:'Just before the wheels touch, you raise the nose a little. This FLARE slows your sink so you touch down gently.'},
+  {spot:'glide',slow:true,hint:true,mark:60,say:'Stay on the path (2 white + 2 red) down to 60 ft.',go:function(){return ftNow()<=65;}},
+  {spot:'pitch',slow:true,say:function(){return 'Flare now: raise the nose to about 6° ('+kUp()+'). Keep a little thrust.';},go:function(){return angle>=5.5||!S.airborne;}},
+  {spot:'thrust',slow:true,say:function(){return 'Hold it. As the wheels touch, cut thrust to idle ('+kIdle()+').';},go:function(){return S.ev.touch!==null&&thrust<=5;}},
+  {read:true,spot:'plane',say:function(){return 'Touchdown at '+vsStr(S.tdFpm||S.fpm)+'. Anything under '+vsStr(LV.grade[1])+' counts as gentle.';}}
+  ]},
+{id:'lesson-brake',n:7,label:'Braking',loc:'grass',goal:'approach',start:{alt:150},field:{len:700,zone:.45},air:{wind:0,turb:0},
+  recap:'Thrust to idle the moment the wheels touch. Drag, friction and the brakes then stop you.',
+  setup:function(){                                                /* start on the runway just after touchdown, still fast */
+    LG=landGeo(S.x-30); resolveObst();
+    S.alt=0; S.vy=0; S.vsm=0; S.airborne=false; S.phase='rollout'; S.reached=true; S.ev.touch=0; S.v=46; S.tdX=S.x; S.tdRel=30;
+    thrust=40; angle=4; syncSliders();
+  },
+  steps:[
+  {spot:'thrust',say:function(){return 'You have just touched down and you are still fast. Cut thrust to idle ('+kIdle()+'): the brakes only work with the engine at idle.';},go:function(){return thrust<=5;}},
+  {spot:'view',say:'Keep thrust at 0. Drag, rolling friction and the brakes slow you down. Stop before the runway ends.',go:function(){return mode==='won';}}
+  ]}
+];
+var LESSONS=LESSON_RAW.map(function(r){
+  var s=makeScn(r,-1); s.lesson=true; s.num='L'+r.n; s.locName='Lessons'; s.steps=r.steps; s.setup=r.setup||null; s.recap=r.recap; return s;
+}), LBY={};
+LESSONS.forEach(function(s){ LBY[s.id]=s; });
 /* the five levels of the first version live on as scenarios; their saved stars move with them */
 var OLDKEYS={calm:'grass-1',headwind:'grass-3',gusts:'coast-2',cargo:'coast-6',runway:'mountain-1'};
 /* ---------------- keyboard actions (all rebindable) ---------------- */
@@ -880,6 +981,7 @@ var ACTIONS=[
   {id:'thrustFull',l:'Thrust to full (100%)',d:['x','']},
   {id:'pause',l:'Pause / resume',d:['p',' ']},
   {id:'slow',l:'Slow motion',d:['m','']},
+  {id:'camera',l:'Camera view (next view)',d:['c','']},
   {id:'fullscreen',l:'Fullscreen',d:['f','']},
   {id:'restart',l:'Restart / replay',d:['r','']},
   {id:'advanced',l:'Advanced info on / off',d:['v','']},
@@ -896,7 +998,7 @@ var DEF={
   adv:false,
   theme:'light', text:'medium', arrows:true, arrowSize:'normal', labels:true, showTarget:true, showRunway:true, forceUnits:'pct',
   altU:'ft', spdU:'kt', vsU:'fpm',
-  panels:{meters:true,data:true,steps:true,chart:true,coach:true}, side:'right', density:'spacious', viewSize:'balanced', coachPos:'top',
+  panels:{meters:true,data:true,steps:true,chart:true,coach:true}, side:'right', density:'spacious', viewSize:'balanced', coachPos:'top', camera:'chase',
   thrSens:1, pitchSens:1, invert:false, touchSize:'medium', repeat:'normal', keys:defKeys(),
   gameSpeed:'normal', turb:'normal', stallProt:false, fuel:true, tips:'all', autoPause:false, autoCharts:true,
   master:0.7, music:0.5, sfxVol:0.8, warnVol:1, stallSound:true,
@@ -925,7 +1027,7 @@ function saveSettings(){ try{localStorage.setItem(SKEY,JSON.stringify(ST));}catc
 /* ---- saved progress, version 3: stars per scenario id, plus achievements, the daily approach, endless best and a small attempt log ----
    The first version saved stars per level name (calm, headwind, ...) in flightSchoolProgress. They are copied over once, not deleted. */
 var PKEY3='flightSchoolProgress3';
-var PR={}, PG={ach:{},daily:{},endless:{best:0,runs:0},log:{},counts:{charts:0},ns:{},openAll:false,streakDays:[]};
+var PR={}, PG={ach:{},daily:{},endless:{best:0,runs:0},log:{},counts:{charts:0},ns:{},openAll:false,streakDays:[],lessons:{}};
 (function loadProgress(){
   var raw=null; try{ raw=JSON.parse(localStorage.getItem(PKEY3)); }catch(e){}
   if(raw&&raw.v===3&&raw.s){
@@ -989,7 +1091,8 @@ function setupCanvas(){
   CS=cw?Math.min(cw/W,ch?ch/H:9):1;
   /* enough pixels for the size it is shown at (never fewer than 1 per logical px), in 0.25 steps so a resize does not rebuild every frame */
   var nr=Math.min(Math.ceil(capDpr()*Math.max(1,CS)*4)/4,4);
-  if(nr!==RS||cvs.width!==Math.round(W*nr)){ RS=nr; cvs.width=Math.round(W*RS); cvs.height=Math.round(H*RS); buildClouds(); buildLayers(); rebuildPatterns(); }
+  if(typeof CK==='object') CK.measure=true;
+  if(nr!==RS||cvs.width!==Math.round(W*nr)){ RS=nr; cvs.width=Math.round(W*RS); cvs.height=Math.round(H*RS); skyGrad=null; buildClouds(); buildLayers(); rebuildPatterns(); buildPlaneSprite(); }
   markDirty();
 }
 /* desktop: the flight view is the largest 16:9 box that fits beside the panel (or above it on narrow screens)
@@ -1090,7 +1193,7 @@ function reset(opts){
      obj:{stage:0},deckV:LV.deck,minSink:0,glideSum:0,glideN:0,tdRelV:null,peakSink:0,
      rec:new Float32Array(REC_CAP*REC_W),recN:0,recTd:null,recStop:null,seed:0};
   S.seed=(opts&&opts.seed!=null)?(opts.seed>>>0):((Math.random()*4294967296)>>>0); seedRng(S.seed);
-  thrust=0; angle=5;
+  thrust=0; angle=5; PARTS.length=0;
   if(retry||LV.appr) startApproach(retry); else resolveObst();
   applyAngRange(); syncSliders(); setThrustLock(false); updateStepLabels();
 }
@@ -1300,7 +1403,7 @@ function shortcutRows(){
     [keyFirst('thrustDown')+' '+keyFirst('thrustUp'),'Thrust less / more'],
     [keyFirst('pitchUp')+' '+keyFirst('pitchDown'),'Pitch up / down'],
     [keyFirst('thrustIdle')+' / '+keyFirst('thrustFull'),'Thrust idle / full'],
-    [keysAll('pause'),'Pause'],[keyFirst('slow'),'Slow motion'],[keyFirst('fullscreen'),'Fullscreen'],
+    [keysAll('pause'),'Pause'],[keyFirst('slow'),'Slow motion'],[keyFirst('camera'),'Camera view'],[keyFirst('fullscreen'),'Fullscreen'],
     [keyFirst('advanced'),'Advanced info'],[keyFirst('settings'),'Settings'],
     [keyFirst('restart'),'Restart / replay'],[lvTxt,'Previous / next scenario'],[keyFirst('map'),'Map'],
     [keyFirst('intro'),'Intro again'],[keyFirst('shortcuts'),'This list']
@@ -1314,7 +1417,7 @@ function setPaused(v){paused=v; if(!v&&S) S.autoPaused=false; updatePauseUI(); m
 function togglePause(){ if(mode!=='fly'||overlay) return; setPaused(!paused); }
 function toggleSlow(){slow=!slow; markDirty(); var c=$('#s_slow'); if(c) c.checked=slow;}
 function toggleAdv(){ST.adv=!ST.adv;saveSettings();applySettings();}
-function halted(){return paused||settingsOpen||overlay!==''||sheetOpen||menuOpen;}
+function halted(){return paused||settingsOpen||overlay!==''||sheetOpen||menuOpen||(typeof lessonHold==='function'&&lessonHold());}
 function buzz(p){ if(!ST.haptics||ST.reduceMotion||!IS_TOUCH||!navigator.vibrate) return; try{navigator.vibrate(p);}catch(e){} }
 
 /* ---------------- fullscreen (falls back to a full-window layout when the browser refuses) ---------------- */
@@ -1340,6 +1443,7 @@ function updateFsBtn(){ fsBtn.hidden=IS_IPHONE||(MOBILE&&!fsSupported); }
 document.addEventListener('fullscreenchange',fsChanged);
 document.addEventListener('webkitfullscreenchange',fsChanged);
 $('#pause').addEventListener('click',togglePause);
+$('#cambtn').addEventListener('click',function(){ cycleCamera(); });
 $('#gear').addEventListener('click',function(){toggleSettings();});
 
 /* ---------------- keyboard handling ---------------- */
@@ -1347,6 +1451,7 @@ function doAction(act){
   switch(act){
     case 'pause': togglePause(); break;
     case 'slow': toggleSlow(); break;
+    case 'camera': cycleCamera(); break;
     case 'fullscreen': toggleFullscreen(); break;
     case 'advanced': toggleAdv(); break;
     case 'settings': toggleSettings(); break;
@@ -1356,7 +1461,7 @@ function doAction(act){
     case 'thrustFull': if(mode==='fly'&&!halted()){thrust=100;syncSliders();} break;
     case 'restart':
       if(mode==='fly'||mode==='crashed'||mode==='won') startFlight();
-      else if(modal.classList.contains('show')&&$('#again')) $('#again').click();
+      else if(modal.classList.contains('show')&&($('#again')||$('#lagain'))) ($('#again')||$('#lagain')).click();
       break;
     case 'map': if(!overlay&&!settingsOpen) showMap(); break;
     case 'nextScn': stepScenario(1); break;
@@ -1469,7 +1574,7 @@ sheetBack.addEventListener('click',function(){closeSheet();});
 document.addEventListener('pointerdown',function(e){ if(menuOpen&&!stepsbar.contains(e.target)){ closeMenu(); e.stopPropagation(); e.preventDefault(); } },true);
 $('#rotateX').addEventListener('click',function(){ rotateGone=true; try{localStorage.setItem('flightSchoolRotateSeen','1');}catch(e){} updateRotateHint(); });
 var resizeRaf=0;
-function onResize(){ if(resizeRaf) return; resizeRaf=requestAnimationFrame(function(){ resizeRaf=0; applyLayout(); setupCanvas(); if(tourOpen) placeTour(); hideTip(); }); }
+function onResize(){ if(resizeRaf) return; resizeRaf=requestAnimationFrame(function(){ resizeRaf=0; applyLayout(); setupCanvas(); if(tourOpen) placeTour(); if(LESSON) placeLessonSpot(); hideTip(); }); }
 window.addEventListener('resize',onResize); window.addEventListener('orientationchange',onResize);
 if(window.ResizeObserver){ var ro=new ResizeObserver(function(){ setupCanvas(); }); ro.observe(cvs); ro.observe($('#app')); ro.observe(stepsbar); ro.observe($('#controls')); }
 document.addEventListener('visibilitychange',function(){ if(document.hidden&&mode==='fly'&&!halted()) setPaused(true); });
@@ -1729,36 +1834,43 @@ function drawLamps(cx,cy,gap,vertical,w,r){
     ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.stroke();      /* white = open light, red = solid light: the shape also tells them apart */
   }
 }
-function drawGlide(){
+function drawGlide(Ps){
   var gi=glideInfo(); if(!gi||gi.far) return;
   var f1=parseInt(fsz(17),10), f2=parseInt(fsz(21),10), title=MOBILE?'GLIDE PATH':'GLIDE PATH LIGHTS', lab=(gi.whites===2?'✓ ':'')+PAPI_TXT[gi.whites];
   ctx.font=fsz(17)+fontf(); var w1=ctx.measureText(title).width; ctx.font=fsz(21)+fontf(); var w2=ctx.measureText(lab).width;
-  var r=Math.max(11,Math.round(f1*0.62)), gap=r*3.3, bw=Math.max(w1,w2,gap*3+r*2)+24, bh=f1+f2+r*2+34, bx=W-16-bw, by=MOBILE?150:172;
+  var r=Math.max(11,Math.round(f1*0.62)), gap=r*3.3, bw=Math.max(w1,w2,gap*3+r*2)+24, bh=f1+f2+r*2+34, bx=W-16-bw, by=MOBILE?160:172;
+  if(Ps&&Ps.x+110*Ps.z>bx-10&&Ps.x-110*Ps.z<bx+bw+10&&Ps.y+70*Ps.z>by-10&&Ps.y-70*Ps.z<by+bh+10) bx=16;   /* the camera put the plane under the box: move it to the left */
+  if(viewKind(CAM.eff)==='cockpit') by=Math.max(8,Math.min(by,CK.py-bh-40));        /* above the instrument panel */
+  GLIDE_RECT={x:bx,y:by,w:bw,h:bh};
   ctx.save(); ctx.globalAlpha=.94; ctx.fillStyle=FC.card; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.fillRect(bx,by,bw,bh); ctx.strokeRect(bx,by,bw,bh); ctx.globalAlpha=1;
   ctx.textAlign='center'; ctx.fillStyle=FC.pencil; ctx.font=fsz(17)+fontf(); ctx.fillText(title,bx+bw/2,by+f1+6);
   drawLamps(bx+bw/2,by+f1+14+r,gap,false,gi.whites,r);
   ctx.fillStyle=FC.ink; ctx.font=fsz(21)+fontf(); ctx.fillText(lab,bx+bw/2,by+bh-10);
   ctx.restore();
 }
-function drawSign(ex,gy){
-  if(ex<-70||ex>W+70) return;
-  ctx.fillStyle=FC.weight; ctx.fillRect(ex-3,gy-46,6,46);
-  ctx.fillStyle=TH.signBg; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.beginPath(); ctx.rect(ex-60,gy-86,120,40); ctx.fill(); ctx.stroke();
-  ctx.font=fsz(21)+fontf(); ctx.textAlign='center'; ctx.fillStyle=TH.signText; ctx.fillText('RUNWAY END',ex,gy-59);
+function drawSign(ex,gy){                                          /* drawn in the world (the plane passes in front), at a readable size for any zoom */
+  var k=clamp(CAM.z,.75,1.15)/CAM.z;
+  if(ex+70*k<VB.x0||ex-70*k>VB.x1) return;
+  ctx.save(); ctx.translate(ex,gy); ctx.scale(k,k);
+  ctx.fillStyle=FC.weight; ctx.fillRect(-3,-46,6,46);
+  ctx.fillStyle=TH.signBg; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.beginPath(); ctx.rect(-60,-86,120,40); ctx.fill(); ctx.stroke();
+  ctx.font=fsz(21)+fontf(); ctx.textAlign='center'; ctx.fillStyle=TH.signText; ctx.fillText('RUNWAY END',0,-59);
+  ctx.restore();
 }
 function drawRunwayExtras(gy,sxOf){
   if(!LG.placed) return;
   var thr=sxOf(LG.thr), end=sxOf(LG.end), c1=sxOf(LG.end+CUSH), za=sxOf(LG.za), zb=sxOf(LG.zb), i;
-  if(c1<-100||thr>W+100) return;
+  if(c1<VB.x0-100||thr>VB.x1+100) return;
   ctx.save(); ctx.beginPath(); ctx.rect(end,gy,c1-end,20); ctx.clip();                    /* overrun cushion: hatched, not for landing */
   ctx.strokeStyle=FC.pencil; ctx.lineWidth=2;
   for(i=end-24;i<c1+24;i+=12){ ctx.beginPath(); ctx.moveTo(i,gy+20); ctx.lineTo(i+20,gy); ctx.stroke(); }
   ctx.restore(); ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.strokeRect(end,gy,c1-end,20);
   ctx.fillStyle=TH.dash; for(i=0;i<5;i++) ctx.fillRect(thr+6+i*7,gy+3,4,14);              /* threshold bars */
   ctx.globalAlpha=.32; ctx.fillRect(za,gy,zb-za,20); ctx.globalAlpha=1; ctx.fillRect(za,gy,4,20); ctx.fillRect(zb-4,gy,4,20);   /* touchdown zone */
-  if(ST.showRunway&&S.phase!=='rollout'&&zb>0&&za<W) tag('TOUCHDOWN ZONE',clamp((za+zb)/2,90,W-90),gy+44);
+  var sza=scrX(za), szb=scrX(zb);
+  if(ST.showRunway&&S.phase!=='rollout'&&szb>0&&sza<W) WTAGS.push(['TOUCHDOWN ZONE',clamp((sza+szb)/2,90,W-90),scrY(gy+20)+26]);
   if(ST.showRunway) drawSign(end,gy);
-  var pp=thr-34; if(pp>-20&&pp<W+20){                                                    /* the light post beside the runway */
+  var pp=thr-34; if(pp>VB.x0-20&&pp<VB.x1+20){                                          /* the light post beside the runway */
     var gi=glideInfo(); ctx.fillStyle=FC.ink; ctx.fillRect(pp-2,gy-34,4,34);
     drawLamps(pp,gy-52,14,true,(gi&&!gi.far)?gi.whites:null,6);
   }
@@ -1792,14 +1904,53 @@ function rebuildPatterns(){
   else PAT={lift:FC.lift,weight:FC.weight,thrust:FC.thrust,drag:FC.drag};
 }
 
-var clouds=[]; for(var ci=0;ci<9;ci++) clouds.push({x:ci*150+Math.random()*80,y:30+Math.random()*230,s:.6+Math.random()*.8});
-var planeParts=[
-  ['M22,50 L6,6 L58,6 L96,42 Z','#DCE9FB'],
-  ['M30,82 L6,104 L50,104 L84,86 Z','#EFEADB'],
-  ['M12,70 C16,48 60,40 130,40 L326,40 C384,40 420,58 428,72 C420,86 384,100 326,100 L130,100 C60,100 16,92 12,70 Z','#FFFDF6'],
-  ['M176,78 L112,132 L176,132 L270,84 Z','#DCE9FB'],
-  ['M334,52 L378,52 C396,56 408,62 414,70 L334,70 Z','#BFD8F5']
-].map(function(p){return [new Path2D(p[0]),p[1]];});
+/* clouds: two depths (far = small, faint, slow; near = big, slow parallax 0.3) and four shapes. They are spread over a 2,600 px strip
+   and from 400 px above the top of the view, so a zoomed-out camera or a climb still finds clouds. */
+var CLOUD_WR=2600, clouds=[];
+(function(){ var r=lcg(4242), i; for(i=0;i<34;i++){ var far=i%5<2; clouds.push({x:i*76+r()*60,y:-420+r()*670,s:far?.45+r()*.3:.65+r()*.75,far:far,k:far?.12:.3,v:i%4}); }
+  clouds.sort(function(a,b){ return (b.far?1:0)-(a.far?1:0); }); })();      /* far ones first, so the near ones cover them */
+/* ---------------- the airplane: a high-wing, single-engine trainer seen from the left ----------------
+   Drawn in a 440 x 140 box, nose to the right, centred on (220,70) (the anchor of the force arrows).
+   Each part: [SVG path, fill, line weight (1 = outline, 0 = thin detail, -1 = stroke only)].
+   The same list draws the canvas sprite and the warm-up SVG (#plane), so they always match. */
+var PLANE_COL={body:'#FFFDF6',wing:'#F3F1E8',glass:'#BFD8F5',stripe:'#46607E',tyre:'#2B2F3A',metal:'#C3C9D4'};
+var PLANE_DEF=[
+  ['M152,50 Q116,44 96,30 L68,6 L50,6 L48,58 Z','body',1],                                           /* fin */
+  ['M50,6 L40,6 Q32,8 30,16 L24,62 Q26,71 36,73 L48,71 Z','body',1],                                  /* rudder */
+  ['M402,52 C398,46 384,43 352,42 L340,42 L304,25 L224,26 C212,30 186,40 150,48 L104,55 L48,62 L30,66 L38,73 C110,82 170,90 232,94 L338,96 C372,96 394,90 402,78 Z','body',1],  /* fuselage + cowling */
+  ['M401,65 L232,71 L44,65 L40,68 L232,77 L401,72 Z','stripe',0],                                     /* cheat line */
+  ['M339,43 L306,28 L302,31 L326,52 Z','glass',0],                                                   /* windshield */
+  ['M300,31 L270,31 L270,54 L322,54 Z','glass',0],                                                   /* front side window */
+  ['M264,31 L226,31 Q214,36 204,46 L204,54 L264,54 Z','glass',0],                                     /* rear side window */
+  ['M267,30 L267,90 M340,44 L346,94 M384,62 L398,62','',-1],                                          /* door and cowling seams */
+  ['M310,21 C308,11 292,9 276,10 L224,17 L212,22 L224,25 L282,27 C298,28 308,27 310,21 Z','wing',1], /* wing (seen end-on) */
+  ['M252,26 L258,26 L274,90 L268,90 Z','metal',0],                                                   /* wing strut */
+  ['M116,71 Q102,65 72,66 L50,67 L50,73 L72,74 Q102,76 116,72 Z','wing',1],                             /* horizontal stabiliser */
+  ['M262,92 L272,92 L262,122 L254,122 Z','metal',0],                                                 /* main gear leg */
+  ['M246,122.3 A12,12 0 1,0 270,122.3 A12,12 0 1,0 246,122.3 Z','tyre',0],                          /* main wheel */
+  ['M236,120 Q238,106 258,105 Q278,106 282,118 L278,124 L240,125 Z','body',0],                        /* wheel fairing */
+  ['M372,92 L380,92 L381,122 L375,122 Z','metal',0],                                                 /* nose gear leg */
+  ['M369,125.3 A9,9 0 1,0 387,125.3 A9,9 0 1,0 369,125.3 Z','tyre',0],                              /* nose wheel */
+  ['M364,124 Q366,113 378,112 Q390,113 392,123 L388,128 L368,128 Z','body',0]                         /* nose fairing */
+];
+var planeParts=PLANE_DEF.map(function(p){return [new Path2D(p[0]),p[1],p[2]];});
+var ELEV_D='M50,67 L16,69.5 L16,71.5 L50,73 Z', SPIN_D='M402,54 Q420,56 424,64 Q420,72 402,74 Z', PROP_X=405, PROP_R=46;
+var elevPath=new Path2D(ELEV_D), spinPath=new Path2D(SPIN_D);
+/* The wing is mounted at an angle, so the fuselage looks level at a wing angle (pitch) of about ATT0 degrees.
+   CONTACTS = the bottoms of the wheels and the tail [x, y, radius]: the lowest one, after rotating, touches the ground. */
+var ATT0=4, CONTACTS=[[258,122.3,12],[378,125.3,9],[36,74,0]], PLANE_SC=0.42;
+function planeRot(pitch){ return -(pitch-ATT0)*0.8*Math.PI/180; }
+function wheelDrop(pitch){
+  var r=planeRot(pitch), s=Math.sin(r), c=Math.cos(r), m=-1e9;
+  CONTACTS.forEach(function(p){ m=Math.max(m,(p[0]-220)*s+(p[1]-70)*c+p[2]); });
+  return m*PLANE_SC;                                    /* base px from the plane centre down to the ground (PLANE_H when level) */
+}
+function planeSVG(){
+  var s='<g stroke="#1D2B44" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">';
+  PLANE_DEF.forEach(function(p){ s+='<path d="'+p[0]+'" fill="'+(p[1]?PLANE_COL[p[1]]:'none')+'"'+(p[2]<1?' stroke-width="2.5"':'')+'/>'; });
+  return s+'<path d="'+ELEV_D+'" fill="'+PLANE_COL.wing+'" stroke-width="2.5"/><path d="M'+PROP_X+','+(64-PROP_R)+' L'+PROP_X+','+(64+PROP_R)+'" stroke-width="6"/><path d="'+SPIN_D+'" fill="'+PLANE_COL.stripe+'"/></g>';
+}
+var elev=0, elevAng=5;                                 /* elevator deflection -1..1, follows how fast the pitch is changing */
 function resumeTxt(){return IS_TOUCH?'tap anywhere to resume':'press Resume ('+keyFirst('pause')+')';}
 function fontf(){return ST.font==='readable'?'"Atkinson Hyperlegible",Verdana,"Trebuchet MS",sans-serif':'"Patrick Hand","Segoe Print","Comic Sans MS",cursive';}
 function fsz(n){
@@ -1808,28 +1959,82 @@ function fsz(n){
   return Math.round(px)+'px ';
 }
 
-function drawCloudShape(g,x,y,s){
-  var c=[[-26,0,18],[0,-10,24],[28,0,17],[0,6,20]],i;
-  g.fillStyle=TH.cloud;g.strokeStyle=FC.ink;g.lineWidth=5;
+/* puffs [dx,dy,r] per shape: classic cumulus, long flat stratus, tall tower, small pair */
+var CLOUD_V=[[[-26,0,18],[0,-10,24],[28,0,17],[0,6,20]],
+  [[-44,4,13],[-22,-2,17],[2,-5,19],[26,-1,16],[46,4,12],[0,7,15]],
+  [[-18,8,17],[0,-8,20],[4,-26,16],[20,4,17],[0,10,17]],
+  [[-12,2,13],[8,-3,15],[22,4,10]]];
+function drawCloudShape(g,x,y,s,v,far){
+  var c=CLOUD_V[v||0],i, top=y-36*s, bot=y+26*s, tk=themeKey();
+  var gr=g.createLinearGradient(0,top,0,bot);                      /* soft shading: bright top, a little shadow underneath */
+  gr.addColorStop(0,TH.cloud); gr.addColorStop(.6,TH.cloud); gr.addColorStop(1,tk==='light'?'#DDE6F2':tk==='dark'?'#2E3F63':'#1E1E1E');
+  g.strokeStyle=FC.ink; g.lineWidth=far?3.5:5; g.globalAlpha=far?.45:1;
   for(i=0;i<c.length;i++){g.beginPath();g.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);g.stroke();}
+  g.globalAlpha=1; g.fillStyle=gr;
   for(i=0;i<c.length;i++){g.beginPath();g.arc(x+c[i][0]*s,y+c[i][1]*s,c[i][2]*s,0,7);g.fill();}
+  if(tk!=='hc'){ g.fillStyle='rgba(255,255,255,.45)'; g.beginPath(); g.arc(x+c[1][0]*s-4*s,y+c[1][1]*s-6*s,c[1][2]*s*.45,0,7); g.fill(); }
 }
 function buildClouds(){      /* each cloud is drawn once into a small sprite */
   clouds.forEach(function(c){
-    var w=Math.ceil(104*c.s), h=Math.ceil(84*c.s), cn=document.createElement('canvas');
+    var w=Math.ceil(124*c.s), h=Math.ceil(90*c.s), cn=document.createElement('canvas');
     cn.width=Math.ceil(w*RS); cn.height=Math.ceil(h*RS); c.w=w; c.h=h;
-    var g=cn.getContext('2d'); g.scale(RS,RS); drawCloudShape(g,w/2,h/2,c.s); c.spr=cn;
+    var g=cn.getContext('2d'); g.scale(RS,RS); drawCloudShape(g,w/2,h/2+4*c.s,c.s,c.v,c.far); c.spr=cn;
   });
 }
-function drawPlane(x,y,pitch,sc){
+/* the static airframe is drawn once into a sprite, big enough for the close-up camera, with soft shading */
+var PSPR=null, PSPR_KEY='', PSPR_M=8, PLANE_ZMAX=1.8;
+function planeFill(g,key){
+  var col=PLANE_COL[key]; if(themeKey()==='hc'||key==='stripe'||key==='tyre') return col;
+  var gr;
+  if(key==='glass'){ gr=g.createLinearGradient(0,26,0,56); gr.addColorStop(0,'#E6F1FC'); gr.addColorStop(1,'#7FA4D2'); return gr; }
+  if(key==='metal'){ gr=g.createLinearGradient(0,26,0,124); gr.addColorStop(0,'#E1E5EC'); gr.addColorStop(1,'#9EA6B4'); return gr; }
+  gr=g.createLinearGradient(0,10,0,96); gr.addColorStop(0,'#FFFFFF'); gr.addColorStop(.45,col); gr.addColorStop(1,mixc(col,'#5B6275',.28)); return gr;
+}
+function buildPlaneSprite(){
+  if(!ctx) return;
+  var k=PLANE_SC*PLANE_ZMAX*RS, m=PSPR_M, cn=PSPR||document.createElement('canvas');
+  cn.width=Math.ceil((440+2*m)*k); cn.height=Math.ceil((140+2*m)*k);
+  var g=cn.getContext('2d'); g.setTransform(k,0,0,k,m*k,m*k);
+  g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=TH.planeOut;
+  planeParts.forEach(function(p,i){
+    if(p[2]>=0){ g.fillStyle=planeFill(g,p[1]); g.fill(p[0]); }
+    if(i===2&&themeKey()!=='hc'){                                    /* shadow of the wing on the cabin roof, and a highlight on the cowling */
+      g.save(); g.clip(p[0]); g.fillStyle='rgba(29,43,68,.13)'; g.fillRect(214,24,96,10);
+      g.strokeStyle='rgba(255,255,255,.8)'; g.lineWidth=3; g.beginPath(); g.moveTo(396,52); g.quadraticCurveTo(380,46,350,46); g.stroke(); g.restore();
+    }
+    if(p[1]==='glass'&&themeKey()!=='hc'){ g.save(); g.clip(p[0]); g.strokeStyle='rgba(255,255,255,.75)'; g.lineWidth=3; g.beginPath(); g.moveTo(240,58); g.lineTo(272,24); g.moveTo(286,58); g.lineTo(318,24); g.stroke(); g.restore(); }
+    if(p[1]==='tyre'){ var cx=i===12?258:378, cy=i===12?122.3:125.3; g.beginPath(); g.arc(cx,cy,i===12?5:4,0,7); g.fillStyle=PLANE_COL.metal; g.fill(); }
+    g.lineWidth=(p[2]===1?2.4:1.5)/PLANE_SC; g.stroke(p[0]);
+  });
+  PSPR=cn; PSPR_KEY=themeKey()+'|'+RS;
+}
+/* lights: a red nav light on the left wing tip with a white strobe, a red beacon on the fin, a white tail light.
+   They glow at dusk and night; the beacon and strobe blink unless motion is reduced. */
+function planeLight(x,y,col,on,glow){
+  if(glow&&on){ var gr=ctx.createRadialGradient(x,y,0,x,y,28); gr.addColorStop(0,col.replace('A',.7)); gr.addColorStop(1,col.replace('A',0)); ctx.fillStyle=gr; ctx.fillRect(x-28,y-28,56,56); }
+  ctx.beginPath(); ctx.arc(x,y,3.6,0,7); ctx.fillStyle=on?col.replace('A',1):'#7A7F8C'; ctx.fill(); ctx.lineWidth=1.2/PLANE_SC; ctx.strokeStyle=TH.planeOut; ctx.stroke();
+}
+function drawPlane(x,y,pitch,sc,t){
+  if(!PSPR||PSPR_KEY!==themeKey()+'|'+RS) buildPlaneSprite();
+  var m=PSPR_M, tod=LV.tod||'day', glow=tod!=='day', still=ST.reduceMotion; t=t||0;
   ctx.save();
-  ctx.translate(x,y); ctx.rotate(-pitch*Math.PI/180*0.8); ctx.scale(sc,sc); ctx.translate(-220,-70);
-  ctx.lineWidth=3.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=TH.planeOut;
-  planeParts.forEach(function(p){ctx.fillStyle=p[1];ctx.fill(p[0]);ctx.stroke(p[0]);});
-  ctx.fillStyle='#BFD8F5';
-  for(var i=0;i<5;i++){ctx.beginPath();ctx.arc(150+i*34,62,7,0,7);ctx.fill();ctx.lineWidth=2.4/sc;ctx.stroke();}
-  var bl=26*Math.abs(Math.cos(prop));
-  ctx.strokeStyle=TH.blade; ctx.lineWidth=6/sc; ctx.beginPath(); ctx.moveTo(435,70-bl-4); ctx.lineTo(435,70+bl+4); ctx.stroke();
+  ctx.translate(x,y); ctx.rotate(planeRot(pitch)); ctx.scale(sc,sc); ctx.translate(-220,-70);
+  ctx.drawImage(PSPR,-m,-m,440+2*m,140+2*m);
+  ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=TH.planeOut;
+  ctx.save(); ctx.translate(50,70); ctx.rotate(clamp(elev,-1,1)*.35); ctx.translate(-50,-70);   /* elevator: trailing edge up = nose up */
+  ctx.fillStyle=PLANE_COL.wing; ctx.fill(elevPath); ctx.lineWidth=2/PLANE_SC; ctx.stroke(elevPath); ctx.restore();
+  var blur=clamp((thrust-25)/75,0,1), bl=PROP_R*Math.abs(Math.cos(prop));          /* propeller: blades, plus a soft disc at high thrust */
+  if(blur>0){ ctx.beginPath(); ctx.ellipse(PROP_X,64,5.5,PROP_R+2,0,0,7); ctx.fillStyle='rgba(120,130,150,'+(.38*blur)+')'; ctx.fill(); ctx.globalAlpha=.35*blur; ctx.lineWidth=1.2/PLANE_SC; ctx.stroke(); ctx.globalAlpha=1; }
+  ctx.globalAlpha=1-.7*blur; ctx.fillStyle=TH.blade;
+  ctx.beginPath(); ctx.moveTo(PROP_X-3,64); ctx.lineTo(PROP_X-2,64-bl); ctx.lineTo(PROP_X+2,64-bl); ctx.lineTo(PROP_X+3,64); ctx.lineTo(PROP_X+2,64+bl); ctx.lineTo(PROP_X-2,64+bl); ctx.closePath(); ctx.fill();
+  if(bl>8){ ctx.fillStyle='#E8C547'; ctx.fillRect(PROP_X-2,64-bl,4,6); ctx.fillRect(PROP_X-2,64+bl-6,4,6); }
+  ctx.globalAlpha=1;
+  ctx.fillStyle=PLANE_COL.stripe; ctx.fill(spinPath); ctx.lineWidth=2/PLANE_SC; ctx.stroke(spinPath);
+  var ph=t%1.4, strobe=!still&&(ph<.06||(ph>.18&&ph<.24)), beacon=still||(t*.9)%1<.18;
+  planeLight(306,20,'rgba(255,70,60,A)',true,glow);
+  if(strobe&&glow) planeLight(306,20,'rgba(255,255,255,A)',true,true);
+  planeLight(58,4,'rgba(255,60,50,A)',beacon,glow);
+  planeLight(28,24,'rgba(255,250,235,A)',true,glow);
   ctx.restore();
 }
 function arrow(x,y,an,len,fill,t,h,hw){
@@ -1865,11 +2070,11 @@ function statusOf(){
   var v=S.vsm*FPM;
   return v>150?{t:'▲ CLIMBING',w:'Climbing',warn:0}:v<-150?{t:'▼ SINKING',w:'Sinking',warn:0}:{t:'▬ LEVEL',w:'Level',warn:0};
 }
-function drawStatus(py){
+function drawStatus(Ps){
   var st=statusOf();
   ctx.font=fsz(24)+fontf(); ctx.textAlign='left';
   var fs=parseFloat(ctx.font)||24, tw=ctx.measureText(st.t).width, pw=tw+28, ph=Math.round(fs*1.6);
-  var x1=PX-34, x0=Math.max(8,x1-pw), y0=Math.min(py+38,H-6-ph);
+  var x1=Ps.x-34*Ps.z, x0=Math.max(8,x1-pw), y0=clamp(Ps.y+38*Ps.z,6,H-6-ph);
   ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x0,y0,pw,ph,ph/2); else ctx.rect(x0,y0,pw,ph);
   ctx.fillStyle=FC.card; ctx.fill();
   ctx.lineWidth=st.warn?5:3; ctx.strokeStyle=st.warn?FC.amber:FC.ink; if(st.warn) ctx.setLineDash([9,5]); ctx.stroke(); ctx.setLineDash([]);
@@ -1880,10 +2085,10 @@ function drawTerrain(gy,sxOf){
   if(!S.obst.length) return;
   S.obst.forEach(function(o){
     var xl=sxOf(o.cx-o.hw), xr=sxOf(o.cx+o.hw), xc=sxOf(o.cx), hp=(o.h/FT)*PXM;
-    if(xr<-20||xl>W+20) return;
+    if(xr<VB.x0-20||xl>VB.x1+20) return;
     ctx.beginPath(); ctx.moveTo(xl,gy); ctx.lineTo(xc,gy-hp); ctx.lineTo(xr,gy); ctx.closePath();
     ctx.fillStyle=TH.hill||TH.grass; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.lineJoin='round'; ctx.stroke();
-    if(xc>40&&xc<W-40) tag((LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),xc,gy-hp-10);
+    var sc=scrX(xc); if(sc>40&&sc<W-40) tagW((LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),xc,gy-hp-10);
   });
 }
 /* fuel bar and engine-out label */
@@ -1899,110 +2104,178 @@ function drawFuel(){
   }
   if(S.noThrust){ tag('ENGINE OUT · THRUST LOCKED AT 0',16,S.fuelMax>0?186:150,'left'); }
 }
+/* ---------------- camera ----------------
+   The world is drawn in "base" coordinates: the classic chase view (plane at PX, ground line at GROUND, 3 px per x-unit,
+   the view sliding up when the plane climbs past CAM_TOP). A camera is a zoom z and an offset (tx,ty): screen = z*base + t.
+   Every view works out its exact transform each frame; a switch blends from the old view's transform to the new one,
+   so nothing jumps. Text, force arrows and boxes are drawn afterwards in screen space at the projected positions,
+   so they keep their size (readable) at every zoom. */
+var CAMS=['chase','wide','close','runway','cockpit','path','auto'], CAMNAME={chase:'Chase',wide:'Wide',close:'Close-up',runway:'Runway cam',cockpit:'Cockpit (challenge)',path:'Flight path',auto:'Automatic'};
+var CAM={z:1,tx:0,ty:0,eff:'chase',prev:'chase',snap:null,b:1,lastT:0,instant:true,msgT:0};
+var WTAGS=[], GLIDE_RECT=null, PLANE_SCR={x:PX,y:GROUND-PLANE_H,z:1};
+function scrX(bx){ return CAM.z*bx+CAM.tx; }
+function scrY(by){ return CAM.z*by+CAM.ty; }
+function tagW(txt,bx,by,align){ WTAGS.push([txt,scrX(bx),scrY(by),align]); }          /* a label on something in the world */
+function camFor(v,gy,py,sxOf){
+  var z, ax, ay, fx=PX, fy=py;
+  if(v==='wide'){ z=.4; ax=150; ay=clamp(H-46-(gy-py)*z,120,H-70); }
+  else if(v==='close'){ z=MOBILE?1.5:1.7; ax=W*.44; ay=H*(layout==='cockpit'?.62:MOBILE?.56:.52); }
+  else if(v==='runway'&&LG.placed){ z=.62; fx=sxOf(LG.thr+30); fy=gy; ax=W*.62; ay=H-74; }    /* fixed beside the threshold */
+  else return {z:1,tx:0,ty:0};
+  return {z:z,tx:ax-z*fx,ty:ay-z*fy};
+}
+/* which view is really used: the runway cam only while the plane is in its picture, Automatic picks by flight phase */
+function camResolve(gy,py,sxOf){
+  var v=ST.camera, p=S.phase;
+  if((v==='cockpit'||v==='path')&&replaying) return 'chase';         /* the touchdown replay is always seen from the side */
+  if(v==='cockpit'){ var ls=lessonStep(); return ls&&ls.spot==='plane'?'chase':'cockpit'; }   /* a lesson step about the plane needs to show it */
+  if(v!=='runway'&&v!=='auto') return CAMS.indexOf(v)>=0?v:'chase';
+  if(mode!=='fly'&&!replaying) return CAM.eff;                      /* hold the picture while a result is on screen */
+  var rw=false;
+  if(LG.placed&&(p==='landing'||p==='rollout')){ var c=camFor('runway',gy,py,sxOf), sx=c.z*PX+c.tx; rw=(sx>=70&&sx<=W*.8); }
+  if(v==='runway') return rw?'runway':'chase';
+  if(rw&&S.alt*FT<300) return 'runway';
+  if(p==='landing'&&S.airborne){ var gi=glideInfo(); if(gi&&!gi.far) return 'wide'; }
+  return 'chase';
+}
+function camUpdate(gy,py,sxOf,dt){
+  var e=camResolve(gy,py,sxOf);
+  if(e!==CAM.eff){
+    CAM.snap=CAM.b<1?{z:CAM.z,tx:CAM.tx,ty:CAM.ty}:null;          /* switched again mid-blend: start from where the camera is now */
+    var newKind=viewKind(e)!==viewKind(CAM.eff);
+    CAM.prev=CAM.eff; CAM.eff=e; CAM.b=(ST.reduceMotion||CAM.instant||newKind)?1:0;   /* cockpit and flight path cross-fade instead (draw) */
+    if(newKind) cvs.setAttribute('aria-label',VIEW_LABEL[viewKind(e)]);
+  }
+  CAM.instant=false;
+  var to=camFor(e,gy,py,sxOf);
+  if(CAM.b<1){
+    CAM.b=Math.min(1,CAM.b+dt/.9);
+    var f=CAM.snap||camFor(CAM.prev,gy,py,sxOf), k=CAM.b*CAM.b*(3-2*CAM.b);
+    CAM.z=f.z+(to.z-f.z)*k; CAM.tx=f.tx+(to.tx-f.tx)*k; CAM.ty=f.ty+(to.ty-f.ty)*k;
+  } else { CAM.z=to.z; CAM.tx=to.tx; CAM.ty=to.ty; }
+  VB.x0=-CAM.tx/CAM.z-30; VB.x1=(W-CAM.tx)/CAM.z+30; VB.y0=-CAM.ty/CAM.z-30; VB.y1=(H-CAM.ty)/CAM.z+30;
+}
+/* logical px at the top of the view that the HUD (cockpit) or the coaching bar may cover */
+function topSafe(){ return layout==='cockpit'?Math.round(96/Math.max(CS,.3)):24; }
+function camBusy(){ return CAM.b<1||CAM.msgT>0||FADE.a>0; }
+function setCamera(v,quiet){
+  if(CAMS.indexOf(v)<0) v='chase';
+  ST.camera=v; saveSettings(); updateCamBtn(); markDirty();
+  if(!quiet){ CAM.msgT=v==='cockpit'?3:1.8; if(ST.announce){ srLive.textContent=''; setTimeout(function(){ srLive.textContent='Camera: '+CAMNAME[v]+(v==='cockpit'?'. A challenge view: harder, because you cannot see the plane from outside.':''); },30); } }
+  var s=$('#s_camera'); if(s) s.value=v;
+}
+function cycleCamera(){ setCamera(CAMS[(CAMS.indexOf(ST.camera)+1)%CAMS.length]); }
+function updateCamBtn(){ if(!CAMNAME[ST.camera]) ST.camera='chase'; var b=$('#cambtn'); if(!b) return; b.textContent='🎥 '+CAMNAME[ST.camera]; b.title='Camera view ('+keyFirst('camera')+')'; b.setAttribute('aria-label','Camera view: '+CAMNAME[ST.camera]+'. Press to change.'); }
+/* wide view: the 3.5 degree path drawn back from the aim point, so you can see where it goes */
+function drawPathGuide(gy,sxOf){
+  if(!LG.placed||S.phase!=='landing'||(CAM.eff!=='wide'&&CAM.prev!=='wide')) return;
+  var ax=sxOf(LG.aim), sl=Math.tan(GS/57.2958)*FTPERU/FT*PXM/3, x0=Math.max(VB.x0,ax-6000);
+  if(ax<VB.x0) return;
+  ctx.save(); ctx.globalAlpha=CAM.eff==='wide'?Math.min(1,CAM.b*1.5):1-CAM.b; ctx.setLineDash([10,8]); ctx.lineWidth=3/CAM.z; ctx.strokeStyle=FC.pencil;
+  ctx.beginPath(); ctx.moveTo(ax,gy); ctx.lineTo(x0,gy-(ax-x0)*sl); ctx.stroke(); ctx.restore();
+  if(CAM.eff==='wide'){ var lx=clamp(ax-500,VB.x0+300,Math.min(ax-60,VB.x1-260)); if(lx<ax) tagW('GLIDE PATH '+GS+'°',lx,gy-(ax-lx)*sl-14); }
+}
+function drawWind(t){
+  var wk=WIND*KT;                                                  /* knots, + = headwind, - = tailwind (changes with height in a shear) */
+  if(Math.abs(wk)<=0.5) return;
+  ctx.save(); ctx.strokeStyle=TH.streak; ctx.lineWidth=2.5; ctx.lineCap='round';
+  var mv=ST.reduceMotion?0:t, dirw=wk>0?1:-1, aw=Math.abs(wk);
+  for(var k=0;k<7;k++){
+    var wx=((k*163+(mv*aw*7))%(W+200)); var sx=dirw>0?W+60-wx:wx-60, sy=60+((k*97)%330);
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx-dirw*(46+aw),sy); ctx.stroke();
+  }
+  ctx.restore();
+  tag(wk>0?'◀ HEADWIND '+spdStrKt(Math.round(aw)):'TAILWIND '+spdStrKt(Math.round(aw))+' ▶',16,122,'left');
+}
+/* a dashed line across the view at a height, with its label at the right edge */
+function heightLine(by,col,dash,lw,txt){
+  if(by<VB.y0-10||by>VB.y1+10) return;
+  ctx.save(); ctx.setLineDash(dash); ctx.lineWidth=lw/Math.max(CAM.z,.6); ctx.strokeStyle=col;
+  ctx.beginPath(); ctx.moveTo(VB.x0,by); ctx.lineTo(VB.x1,by); ctx.stroke(); ctx.restore();
+  WTAGS.push([txt,W-12,scrY(by)-8,'right']);
+}
+/* three ways to draw the flight: the side views (chase, wide, close-up, runway cam), the cockpit and the flight path.
+   A switch between two side views slides (the CAM blend); a switch to or from the cockpit or the flight path cross-fades. */
+function viewKind(v){ return v==='cockpit'?'cockpit':v==='path'?'path':'side'; }
+var FADE={cn:null,a:0};
+function startFade(){
+  if(ST.reduceMotion||!cvs.width) return;
+  var c=FADE.cn||(FADE.cn=document.createElement('canvas'));
+  if(c.width!==cvs.width||c.height!==cvs.height){ c.width=cvs.width; c.height=cvs.height; }
+  var g=c.getContext('2d'); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,c.width,c.height); g.drawImage(cvs,0,0); FADE.a=1;
+}
+function drawFade(dt){
+  if(FADE.a<=0) return;
+  FADE.a=ST.reduceMotion?0:Math.max(0,FADE.a-dt/.35);
+  if(FADE.a>0){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=FADE.a; ctx.drawImage(FADE.cn,0,0); ctx.restore(); }
+}
+var VIEW_LABEL={side:'Flight view: your airplane from the side, with arrows for the four forces',
+  cockpit:'Cockpit view: the runway ahead through the window, with the instruments and the four force meters below',
+  path:'Flight path view: the whole flight from far away, with your path so far, the ideal glide path and the force arrows'};
+/* the four force arrows on the plane at screen point (X,Y); zs = plane size, az = arrow size. Also builds HIT for the tips. */
+function drawForceArrows(X,Y,zs,az){
+  if(!ST.arrows) return;
+  var ka=Math.min(az,1.35);
+  var AU=ARROW_UP*zs, AD=ARROW_DN*zs, AF=ARROW_FWD*zs, tw=12*ka, hh=22*ka, hw=17*ka, hb=22*ka;
+  var U=ARROWK[ST.arrowSize]*az, cap=130*ARROWK[ST.arrowSize]/0.6*az;
+  var Lv=Math.max(0,S.L)*U, Wv=S.W*U, Tv=S.T*U, Dv=S.D*U;
+  var Lc=Math.min(Lv,cap,zs>1.05?Math.max(30,Y-AU-topSafe()):Math.max(30,Y-AU-8)), Dc=Math.min(Dv,cap);     /* the lift arrow stops below the top edge (and the HUD in the close-up) */
+  arrow(X,Y-AU,-Math.PI/2,Lc,PAT.lift,tw,hh,hw);
+  arrow(X,Y+AD,Math.PI/2,Wv,PAT.weight,tw,hh,hw);
+  arrow(X+AF,Y,0,Tv,PAT.thrust,tw,hh,hw);
+  arrow(X-AF,Y,Math.PI,Dc,PAT.drag,tw,hh,hw);
+  HIT=[{k:'lift',x0:X-hb,x1:X+hb,y0:Y-AU-Math.max(Lc,26),y1:Y-AU+4},
+       {k:'weight',x0:X-hb,x1:X+hb,y0:Y+AD-4,y1:Y+AD+Math.max(Wv,26)},
+       {k:'thrust',x0:X+AF-4,x1:X+AF+Math.max(Tv,26),y0:Y-hb,y1:Y+hb},
+       {k:'drag',x0:X-AF-Math.max(Dc,26),x1:X-AF+4,y0:Y-hb,y1:Y+hb}];
+  if(ST.labels){
+    var fp=(ST.fnum&&CS>=0.55);                       /* F1..F4 prefixes are dropped on small screens */
+    if(Lc>14) tag((fp?'F1 ':'')+'LIFT '+fForce(S.L),X,Math.max(topSafe()-4,Y-AU-Lc-6));
+    var wy=Y+AD+Wv+22; if(wy>H-8) tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),X+18,H-10,'left'); else tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),X,wy);
+    if(Tv>14) tag((fp?'F3 ':'')+'THRUST '+fForce(S.T),X+AF+Tv+8,Y-16*ka,'left');
+    if(Dc>14) tag((fp?'F4 ':'')+'DRAG '+fForce(S.D),X-AF-Dc-8,Y-16*ka,'right');
+  }
+}
 function draw(t){
-  ctx.setTransform(RS,0,0,RS,0,0);
-  var sh=ST.reduceMotion?0:S.shake+(S.stalled&&mode==='fly'&&!halted()?0.18:0);
-  if(sh>0) ctx.translate((Math.random()-.5)*16*sh,(Math.random()-.5)*16*sh);
+  var dtc=CAM.lastT?clamp(t-CAM.lastT,0,.1):0; CAM.lastT=t;
+  if(CAM.msgT>0) CAM.msgT-=dtc;
+  var sh=ST.reduceMotion?0:S.shake+(S.stalled&&mode==='fly'&&!halted()?0.18:0), shx=0, shy=0;
+  if(sh>0){ shx=(Math.random()-.5)*16*sh; shy=(Math.random()-.5)*16*sh; }
   var rawY=GROUND-PLANE_H-S.alt*PXM;
   var cam=rawY<CAM_TOP?CAM_TOP-rawY:0;
-  var py=rawY+cam, gy=GROUND+cam;
-  var scroll=S.x*3;
-
-  if(!skyGrad) buildSky();
-  ctx.fillStyle=skyGrad; ctx.fillRect(-20,-20,W+40,H+40);
-  drawSkyExtras(t);
-
-  for(var i=0;i<clouds.length;i++){
-    var c=clouds[i], cx=((c.x-scroll*0.25)%(W+300)+(W+300))%(W+300)-150;
-    if(c.spr) ctx.drawImage(c.spr,cx-c.w/2,c.y+cam*0.5-c.h/2,c.w,c.h);
-  }
-  drawLayers(gy,cam,scroll);
-
-  var wk=WIND*KT;                                                  /* knots, + = headwind, - = tailwind (changes with height in a shear) */
-  if(Math.abs(wk)>0.5){
-    ctx.save(); ctx.strokeStyle=TH.streak; ctx.lineWidth=2.5; ctx.lineCap='round';
-    var mv=ST.reduceMotion?0:t, dirw=wk>0?1:-1, aw=Math.abs(wk);
-    for(var k=0;k<7;k++){
-      var wx=((k*163+(mv*aw*7))%(W+200)); var sx=dirw>0?W+60-wx:wx-60, sy=60+((k*97)%330);
-      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx-dirw*(46+aw),sy); ctx.stroke();
-    }
-    ctx.restore();
-    tag(wk>0?'◀ HEADWIND '+spdStrKt(Math.round(aw)):'TAILWIND '+spdStrKt(Math.round(aw))+' ▶',16,122,'left');
-  }
-  if(LV.shear&&S.reached){                                         /* the height where the wind flips */
-    var sy2=gy-(LV.shear.alt/FT)*PXM;
-    if(sy2>-10&&sy2<H){ ctx.save(); ctx.setLineDash([4,10]); ctx.lineWidth=2.5; ctx.strokeStyle=FC.amber; ctx.beginPath(); ctx.moveTo(0,sy2); ctx.lineTo(W,sy2); ctx.stroke(); ctx.restore(); tag('WIND FLIPS BELOW '+altStrFt(LV.shear.alt),W-12,sy2-8,'right'); }
-  }
-
-  if(!S.reached && ST.showTarget){
-    var ty=gy-TARGET_M*PXM;
-    if(ty>-20 && ty<H+20){
-      ctx.save(); ctx.setLineDash([14,10]); ctx.lineWidth=3; ctx.strokeStyle=FC.lift;
-      ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(W,ty); ctx.stroke(); ctx.restore();
-      tag('TARGET: '+altStrFt(LV.target),W-12,ty-8,'right');
-    }
-  }
-
+  var gy=GROUND+cam, py=gy-S.alt*PXM-wheelDrop(angle);           /* the lowest wheel sits exactly on the ground line when alt = 0 */
   var sxOf=function(xu){return PX+(xu-S.x)*3;};
-  if(gy<H+40){
-    drawGround(gy,sxOf,t);
-    var segs=[[-40,sxOf(S.stripEnd)]]; if(LG.placed) segs.push([sxOf(LG.thr),sxOf(LG.end)]);     /* take-off strip + the landing runway; grass in between */
-    ctx.fillStyle=TH.run;
-    if(LV.deck&&LG.placed) drawHull(gy,sxOf);
-    segs.forEach(function(s){ if(s[1]>s[0]) ctx.fillRect(s[0],gy,s[1]-s[0],20); });
-    ctx.strokeStyle=FC.ink; ctx.lineWidth=3;
-    segs.forEach(function(s){ if(s[1]>s[0]){ctx.beginPath();ctx.moveTo(s[0],gy);ctx.lineTo(s[1],gy);ctx.moveTo(s[0],gy+20);ctx.lineTo(s[1],gy+20);ctx.stroke();} });
-    ctx.fillStyle=TH.dash; var off=scroll%90;
-    for(var x=-off;x<W;x+=90){ var inside=segs.some(function(s){return x>=s[0]&&x+46<=s[1];}); if(inside) ctx.fillRect(x,gy+8,46,4); }
-    ctx.strokeStyle=FC.thrust; ctx.lineWidth=2.5;
-    var off2=(scroll*1.0)%140;
-    if(!LV.water) for(var x2=-off2;x2<W;x2+=140){ctx.beginPath();ctx.moveTo(x2,gy+60);ctx.lineTo(x2-4,gy+50);ctx.moveTo(x2,gy+60);ctx.lineTo(x2+4,gy+50);ctx.stroke();}
-    if(LV.runway && ST.showRunway && S.stripEnd===LV.runway) drawSign(sxOf(LV.runway),gy);
-    drawTerrain(gy,sxOf);
-  }
-  drawTodShade();
-  if(gy<H+40){ drawRunwayLights(gy,sxOf); drawRunwayExtras(gy,sxOf); }
+  var was=CAM.eff, inst=CAM.instant;
+  camUpdate(gy,py,sxOf,dtc);
+  var kind=viewKind(CAM.eff);
+  if(kind!==viewKind(was)&&!inst) startFade();
+  WTAGS.length=0; HIT=[]; GLIDE_RECT=null;
+  var Ps;
+  if(kind==='cockpit') Ps=drawCockpitView(t,dtc,shx,shy);
+  else if(kind==='path') Ps=drawPathView(t,dtc,shx,shy);
+  else Ps=drawSideView(t,gy,py,cam,sxOf,shx,shy);
+  PLANE_SCR=Ps;
+
+  /* ---- screen space, the same in every view: counters, labels, the glide-path box, the arrows and messages ---- */
+  ctx.setTransform(RS,0,0,RS,RS*shx,RS*shy);
+  if(kind!=='side') drawWind(t);
   if(LV.runway && ST.showRunway && S.phase==='takeoff' && mode==='fly')
     tag('RUNWAY LEFT: '+altStrFt(Math.max(0,(LV.runway-S.x)*FTPERU)),W-16,150,'right');
   if(mode==='fly'&&ST.showRunway){
     if(S.phase==='landing'&&LG.placed&&S.x<LG.thr) tag('RUNWAY IN: '+altStrFt((LG.thr-S.x)*FTPERU),W-16,150,'right');
     else if(S.phase==='rollout') tag('RUNWAY LEFT: '+altStrFt(Math.max(0,(LG.end-S.x)*FTPERU)),W-16,150,'right');
   }
-  if(mode==='fly'&&S.phase==='landing'&&S.airborne) drawGlide();
-
-  if(mode==='crashed'){ S.boom+=1; }
-  drawGusts(py,t); drawLandingLight(py);
-  drawPlane(PX,py,angle,0.42);
-
-  HIT=[];
-  if(ST.arrows){
-    var U=ARROWK[ST.arrowSize], cap=130*U/0.6;
-    var Lv=Math.max(0,S.L)*U, Wv=S.W*U, Tv=S.T*U, Dv=S.D*U;
-    var Lc=Math.min(Lv,cap), Dc=Math.min(Dv,cap);
-    arrow(PX,py-ARROW_UP,-Math.PI/2,Lc,PAT.lift,12,22,17);
-    arrow(PX,py+ARROW_DN,Math.PI/2,Wv,PAT.weight,12,22,17);
-    arrow(PX+ARROW_FWD,py,0,Tv,PAT.thrust,12,22,17);
-    arrow(PX-ARROW_FWD,py,Math.PI,Dc,PAT.drag,12,22,17);
-    HIT=[{k:'lift',x0:PX-22,x1:PX+22,y0:py-ARROW_UP-Math.max(Lc,26),y1:py-ARROW_UP+4},
-         {k:'weight',x0:PX-22,x1:PX+22,y0:py+ARROW_DN-4,y1:py+ARROW_DN+Math.max(Wv,26)},
-         {k:'thrust',x0:PX+ARROW_FWD-4,x1:PX+ARROW_FWD+Math.max(Tv,26),y0:py-22,y1:py+22},
-         {k:'drag',x0:PX-ARROW_FWD-Math.max(Dc,26),x1:PX-ARROW_FWD+4,y0:py-22,y1:py+22}];
-    if(ST.labels){
-      var fp=(ST.fnum&&CS>=0.55);                       /* F1..F4 prefixes are dropped on small screens */
-      if(Lc>14) tag((fp?'F1 ':'')+'LIFT '+fForce(S.L),PX,py-ARROW_UP-Lc-6);
-      var wy=py+ARROW_DN+Wv+22; if(wy>H-8) tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),PX+18,H-10,'left'); else tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),PX,wy);
-      if(Tv>14) tag((fp?'F3 ':'')+'THRUST '+fForce(S.T),PX+ARROW_FWD+Tv+8,py-16,'left');
-      if(Dc>14) tag((fp?'F4 ':'')+'DRAG '+fForce(S.D),PX-ARROW_FWD-Dc-8,py-16,'right');
-    }
-  }
-
-  if(mode==='fly') drawStatus(py);
+  WTAGS.forEach(function(w){ tag(w[0],w[1],w[2],w[3]); });
+  if(mode==='fly'&&S.phase==='landing'&&S.airborne) drawGlide(Ps);
+  if(kind==='side'){ drawForceArrows(Ps.x,Ps.y,Ps.z,clamp(Ps.z,.75,1.8)); if(mode==='fly') drawStatus(Ps); }   /* arrows grow with the zoom but never get tiny */
+  else if(kind==='path') drawForceArrows(Ps.x,Ps.y,Ps.z,.85);                                                 /* a small plane, but arrows big enough to read */
   drawFuel();
-  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,FC[S.msgCol]||FC.ink,200);
+  if(S.msgT>0 && mode!=='crashed') banner(S.msg,S.msg2,FC[S.msgCol]||FC.ink,kind==='cockpit'?Math.min(200,CK.py*.42):200);
   if(mode==='crashed'){
-    bigText(CRASHTXT[S.crashWhy]?CRASHTXT[S.crashWhy][0]:'CRASH!',py-70,60,FC.weight);
+    bigText(CRASHTXT[S.crashWhy]?CRASHTXT[S.crashWhy][0]:'CRASH!',clamp(Ps.y-70*Ps.z,70,H-40),60,FC.weight);
   }
-  if(slow&&mode==='fly') tag('SLOW-MO ×0.25',W-16,H-12,'right');
+  if((slow||lessonSlowOn())&&mode==='fly') tag('SLOW-MO ×'+(slow?'0.25':'0.35'),W-16,kind==='cockpit'?CK.py-20:H-12,'right');
+  if(CAM.msgT>0) tag('CAMERA: '+CAMNAME[ST.camera].toUpperCase()+(ST.camera==='cockpit'?' · harder: you cannot see the plane':ST.camera!==CAM.eff&&ST.camera!=='auto'?' (waiting for the runway)':''),W/2,kind==='cockpit'?CK.py-46:H-14);
   if(paused && mode==='fly'){
     ctx.fillStyle='rgba(10,16,30,.45)'; ctx.fillRect(-20,-20,W+40,H+40);
     if(S.autoPaused){
@@ -2017,8 +2290,404 @@ function draw(t){
       ctx.strokeText(l3,W/2,H/2+34); ctx.fillText(l3,W/2,H/2+34);
     }
   }
+  drawFade(dtc);
+}
+/* the side views: the world through the camera transform, then the plane */
+function drawSideView(t,gy,py,cam,sxOf,shx,shy){
+  var scroll=S.x*3, zs=CAM.z, Ps={x:scrX(PX),y:scrY(py),z:zs};
+  function screen(){ ctx.setTransform(RS,0,0,RS,RS*shx,RS*shy); }
+  function world(){ ctx.setTransform(RS*zs,0,0,RS*zs,RS*(CAM.tx+shx),RS*(CAM.ty+shy)); }
+  var ground=gy<VB.y1+40;
+
+  screen();
+  if(!skyGrad) buildSky();
+  ctx.drawImage(skySpr,-20,-20,W+40,H+40);
+  drawSkyExtras(t);
+
+  world();
+  drawClouds(scroll,cam);
+  drawLayers(gy,cam,scroll);
+  drawHaze(gy,.3);
+  screen(); drawWind(t); world();
+  if(LV.shear&&S.reached) heightLine(gy-(LV.shear.alt/FT)*PXM,FC.amber,[4,10],2.5,'WIND FLIPS BELOW '+altStrFt(LV.shear.alt));   /* the height where the wind flips */
+  if(!S.reached&&ST.showTarget) heightLine(gy-TARGET_M*PXM,FC.lift,[14,10],3,'TARGET: '+altStrFt(LV.target));
+  var lm=lessonMark(); if(lm) heightLine(gy-lm/FT*PXM,FC.lift,[14,10],3,'LESSON GOAL: '+altStrFt(lm));
+
+  if(ground){
+    drawGround(gy,sxOf,t);
+    var segs=[[-40,sxOf(S.stripEnd)]]; if(LG.placed) segs.push([sxOf(LG.thr),sxOf(LG.end)]);     /* take-off strip + the landing runway; grass in between */
+    if(LV.deck&&LG.placed) drawHull(gy,sxOf);
+    segs[0][0]=Math.min(segs[0][0],VB.x0-40);
+    drawRunwaySurface(gy,segs);
+    ctx.fillStyle=TH.dash; var off=scroll%90;
+    for(var x=VB.x0-off-90;x<VB.x1;x+=90){ var inside=segs.some(function(s){return x>=s[0]&&x+46<=s[1];}); if(inside) ctx.fillRect(x,gy+8,46,4); }
+    ctx.strokeStyle=FC.thrust; ctx.lineWidth=2.5;
+    var off2=(scroll*1.0)%140;
+    if(!LV.water) for(var x2=VB.x0-off2-140;x2<VB.x1;x2+=140){ctx.beginPath();ctx.moveTo(x2,gy+60);ctx.lineTo(x2-4,gy+50);ctx.moveTo(x2,gy+60);ctx.lineTo(x2+4,gy+50);ctx.stroke();}
+    if(LV.runway && ST.showRunway && S.stripEnd===LV.runway) drawSign(sxOf(LV.runway),gy);
+    drawTerrain(gy,sxOf);
+  }
+  drawTodShade(); world();
+  if(ground){ drawRunwayLights(gy,sxOf); drawRunwayExtras(gy,sxOf); }
+  drawPathGuide(gy,sxOf);
+
+  if(mode==='crashed'){ S.boom+=1; }
+  if(ground){ drawShadow(gy,PX); drawParts(gy); }
+  drawGusts(py,t); drawLandingLight(py,gy);
+  drawPlane(PX,py,angle,PLANE_SC,t);
+  return Ps;
 }
 
+/* ---------------- cockpit view (challenge view) ----------------
+   A first-person, pseudo-3D picture: nothing here changes the physics. Ground points are projected from real distances
+   (metres ahead, metres to the side, height) seen from the pilot's eye (altitude + 1.9 m). The nose angle is the same one
+   the side view uses ((pitch - ATT0) x 0.8), so the horizon moves exactly as the plane in the side view tilts.
+   The frame, the panel and the dial faces are one sprite (CK.spr); needles, the horizon ball and the meters are drawn live. */
+var M_PER_U=FTPERU/FT, CK_NEAR=2.5, CK_FAR=14000;
+var CK={py:360,key:'',lay:null,spr:null,measure:true,roll:0,bob:0,P:null};
+var CKV={cx:W/2,cy:170,f:680,th:0,eye:2};
+function ckProj(d,l,h){ var dep=Math.atan2(CKV.eye-h,d); return {x:CKV.cx+CKV.f*l/d,y:CKV.cy+CKV.f*Math.tan(clamp(CKV.th+dep,-1.45,1.45))}; }
+/* a flat patch on the ground from x-unit u0 to u1, between lateral offsets l0 and l1 (metres) */
+function ckQuad(u0,u1,l0,l1,fill,line){
+  var d0=(u0-S.x)*M_PER_U, d1=(u1-S.x)*M_PER_U;
+  if(d1<=CK_NEAR||d0>=CK_FAR) return false;
+  d0=Math.max(d0,CK_NEAR); d1=Math.min(d1,CK_FAR);
+  var a=ckProj(d0,l0,0), b=ckProj(d0,l1,0), c=ckProj(d1,l1,0), e=ckProj(d1,l0,0);
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.lineTo(c.x,c.y); ctx.lineTo(e.x,e.y); ctx.closePath();
+  if(fill){ ctx.fillStyle=fill; ctx.fill(); }
+  if(line){ ctx.strokeStyle=line; ctx.lineWidth=2; ctx.stroke(); }
+  return true;
+}
+function ckDot(u,l,h,r0,col,glowA){
+  var d=(u-S.x)*M_PER_U; if(d<=CK_NEAR||d>CK_FAR) return null;
+  var p=ckProj(d,l,h), r=clamp(r0/d,1.2,10);
+  if(glowA) glow(p.x,p.y,r*2.6,col,glowA); else if(col){ ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7); ctx.fillStyle=col; ctx.fill(); }
+  return {x:p.x,y:p.y,r:r,d:d};
+}
+/* the parts of the panel that do not move: palette per theme */
+function ckPal(){
+  var tk=themeKey();
+  if(tk==='dark') return {panel:'#232C45',panel2:'#121A2E',face:'#141B2D',tick:'#E9EDF6',text:'#E9EDF6',frame:'#0C1122',edge:'#5B6A92',box:'#0A0F1E',sky:'#2D5C9E',gnd:'#6B4A2A'};
+  if(tk==='hc') return {panel:'#000000',panel2:'#000000',face:'#000000',tick:'#FFFFFF',text:'#FFFFFF',frame:'#000000',edge:'#FFFFFF',box:'#000000',sky:'#0060A8',gnd:'#704000'};
+  return {panel:'#646B80',panel2:'#41475A',face:'#FFFDF6',tick:'#1D2B44',text:'#FFFDF6',frame:'#3A4052',edge:'#1D2B44',box:'#2A3042',sky:'#79B3EA',gnd:'#B9874F'};
+}
+/* the control buttons of the phone cockpit layout sit over the canvas edges: keep the instruments clear of them */
+function ckInsets(){
+  if(layout!=='cockpit') return [0,0];
+  var a=$('.tgrp.f3'), b=$('.tgrp.f1'); if(!shown(a)||!shown(b)) return [0,0];
+  var r=cvs.getBoundingClientRect(), cw=cvs.clientWidth, ch=cvs.clientHeight, sc=Math.min(cw/W,ch/H), ox=r.left+cvs.clientLeft+(cw-W*sc)/2;
+  var ra=a.getBoundingClientRect(), rb=b.getBoundingClientRect();
+  return [clamp((ra.right+6-ox)/sc,0,W/3),clamp((ox+W*sc-(rb.left-6))/sc,0,W/3)];
+}
+/* where everything goes: one row (4 dials + meters) when it fits, else dials on top and the meters below.
+   Instruments shrink before anything is hidden; the force meters always stay. */
+function cockpitGeom(){
+  var key=[layout,RS,CS.toFixed(3),TSF,ST.font,themeKey(),ST.cb,ST.altU,ST.spdU,ST.vsU].join('|');
+  if(CK.lay&&CK.key===key&&!CK.measure) return CK.lay;
+  CK.measure=false; CK.key=key;
+  var ins=ckInsets(), L=ins[0]+8, R=W-ins[1]-8, aw=R-L, ts=parseInt(fsz(17),10), gap=Math.max(8,Math.round(ts*.4));
+  var rd=Math.round(ts*1.35), barH=Math.max(10,Math.round(ts*.55)), rowH=Math.round(ts*1.2)+barH+8, mW=Math.max(250,ts*12), r, i, y, ph;
+  var lay={L:L,R:R,ts:ts,rd:rd,dials:[],m:[]};
+  r=Math.min(64,(aw-mW-6*gap)/8);
+  if(r>=Math.max(34,ts*1.5)&&2*r+gap>=ts*4.2){
+    ph=Math.max(2*r+rd+3*gap,4*rowH+2*gap)+8; lay.py=H-ph; y=lay.py+gap+10+r;
+    for(i=0;i<4;i++) lay.dials.push({x:L+gap+r+i*(2*r+gap),y:y,r:r});
+    var mx=L+4*(2*r+gap)+gap;
+    for(i=0;i<4;i++) lay.m.push({x:mx,y:lay.py+gap+12+i*rowH,w:R-mx-gap,bh:barH});
+  } else {
+    r=Math.max(24,Math.min(70,(aw-5*gap)/8));
+    var cols=(aw/4>=ts*6.2)?4:2, cw=(aw-(cols+1)*gap)/cols;
+    ph=2*r+rd+(4/cols)*rowH+4*gap+8; lay.py=H-ph; y=lay.py+gap+10+r;
+    var x0=L+(aw-(8*r+3*gap))/2+r;
+    for(i=0;i<4;i++) lay.dials.push({x:x0+i*(2*r+gap),y:y,r:r});
+    for(i=0;i<4;i++) lay.m.push({x:L+gap+(i%cols)*(cw+gap),y:y+r+rd+gap+Math.floor(i/cols)*rowH,w:cw,bh:barH});
+  }
+  CK.lay=lay; CK.py=lay.py; CK.P=ckPal(); buildCockpitSprite(lay);
+  return lay;
+}
+/* dial scales in the player's units */
+function ckAsiMax(){ return ST.spdU==='kmh'?360:ST.spdU==='mph'?240:200; }
+function ckVsiMax(){ return ST.vsU==='ms'?10:2000; }
+function ckAsiAng(v){ return Math.PI*.75+clamp(v/ckAsiMax(),0,1)*Math.PI*1.5; }
+function ckVsiAng(v){ return Math.PI+clamp(v/ckVsiMax(),-1,1)*Math.PI*.85; }
+function ckAltSpan(){ return ST.altU==='m'?500:1000; }
+function buildCockpitSprite(lay){
+  var cn=CK.spr||(CK.spr=document.createElement('canvas')); cn.width=Math.round(W*RS); cn.height=Math.round(H*RS);
+  var g=cn.getContext('2d'); g.setTransform(RS,0,0,RS,0,0); g.clearRect(0,0,W,H);
+  var P=ckPal(), py=lay.py, i, a, d;
+  g.lineJoin='round'; g.lineCap='round';
+  /* frame: roof, the two window posts and the thin centre post */
+  g.fillStyle=P.frame; g.strokeStyle=P.edge; g.lineWidth=3;
+  g.beginPath(); g.moveTo(-5,-5); g.lineTo(W+5,-5); g.lineTo(W+5,16); g.quadraticCurveTo(W/2,26,-5,16); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(-5,10); g.lineTo(34,14); g.lineTo(78,py+4); g.lineTo(-5,py+4); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(W+5,10); g.lineTo(W-34,14); g.lineTo(W-78,py+4); g.lineTo(W+5,py+4); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(W/2-5,20); g.lineTo(W/2+5,20); g.lineTo(W/2+3,58); g.lineTo(W/2-3,58); g.closePath(); g.fill(); g.stroke();
+  /* panel with the glare shield on top */
+  var gr=g.createLinearGradient(0,py-12,0,H); gr.addColorStop(0,P.panel); gr.addColorStop(1,P.panel2);
+  g.beginPath(); g.moveTo(-5,py+8); g.quadraticCurveTo(W/2,py-28,W+5,py+8); g.lineTo(W+5,H+5); g.lineTo(-5,H+5); g.closePath();
+  g.fillStyle=gr; g.fill(); g.lineWidth=3; g.strokeStyle=P.edge; g.stroke();
+  g.beginPath(); g.moveTo(-5,py+8); g.quadraticCurveTo(W/2,py-28,W+5,py+8); g.lineWidth=9; g.strokeStyle=P.frame; g.stroke(); g.lineWidth=2; g.strokeStyle=P.edge; g.stroke();
+  /* dial faces */
+  var names=['SPEED '+spdUnit(),'','ALT ×'+(ST.altU==='m'?'50 m':'100 ft'),''];      /* the climb dial's unit is in its readout */
+  lay.dials.forEach(function(c,k){
+    var r=c.r, fs=Math.max(9,Math.round(r*.24));
+    g.beginPath(); g.arc(c.x,c.y,r+4,0,7); g.fillStyle=P.box; g.fill();
+    g.beginPath(); g.arc(c.x,c.y,r,0,7); g.fillStyle=P.face; g.fill(); g.lineWidth=3; g.strokeStyle=P.edge; g.stroke();
+    g.strokeStyle=P.tick; g.fillStyle=P.tick; g.font=fs+'px '+fontf(); g.textAlign='center'; g.textBaseline='middle';
+    if(k===0){ var vm=ckAsiMax(), st=vm/20;
+      for(i=0;i<=20;i++){ a=ckAsiAng(i*st); d=i%2?.86:.78; g.lineWidth=i%2?1.5:2.5; g.beginPath(); g.moveTo(c.x+Math.cos(a)*r*d,c.y+Math.sin(a)*r*d); g.lineTo(c.x+Math.cos(a)*r*.95,c.y+Math.sin(a)*r*.95); g.stroke();
+        if(i%4===0) g.fillText(Math.round(i*st),c.x+Math.cos(a)*r*.6,c.y+Math.sin(a)*r*.6); } }
+    if(k===2){ for(i=0;i<50;i++){ a=-Math.PI/2+i/50*Math.PI*2; d=i%5?.88:.78; g.lineWidth=i%5?1.3:2.5; g.beginPath(); g.moveTo(c.x+Math.cos(a)*r*d,c.y+Math.sin(a)*r*d); g.lineTo(c.x+Math.cos(a)*r*.95,c.y+Math.sin(a)*r*.95); g.stroke();
+        if(i%5===0) g.fillText(i/5,c.x+Math.cos(a)*r*.62,c.y+Math.sin(a)*r*.62); } }
+    if(k===3){ var vm2=ckVsiMax();
+      for(i=-4;i<=4;i++){ a=ckVsiAng(i/4*vm2); g.lineWidth=2.5; g.beginPath(); g.moveTo(c.x+Math.cos(a)*r*.78,c.y+Math.sin(a)*r*.78); g.lineTo(c.x+Math.cos(a)*r*.95,c.y+Math.sin(a)*r*.95); g.stroke();
+        if(i%2===0) g.fillText(Math.abs(Math.round(i/4*vm2/(ST.vsU==='ms'?1:100))),c.x+Math.cos(a)*r*.6,c.y+Math.sin(a)*r*.6); }
+      g.font=Math.max(8,Math.round(r*.15))+'px '+fontf(); g.fillText('UP',c.x+r*.22,c.y-r*.24); g.fillText('DOWN',c.x+r*.22,c.y+r*.26); }
+    if(names[k]){ g.font=Math.max(8,Math.round(r*.17))+'px '+fontf(); g.fillText(names[k],c.x,c.y+r*.36); }
+    g.fillStyle=P.box; g.strokeStyle=P.edge; g.lineWidth=2;                            /* readout window under the dial */
+    var bw=Math.min(2*r+6,lay.ts*6.2); g.beginPath(); if(g.roundRect) g.roundRect(c.x-bw/2,c.y+r+5,bw,lay.rd-4,6); else g.rect(c.x-bw/2,c.y+r+5,bw,lay.rd-4); g.fill(); g.stroke();
+  });
+  g.textBaseline='alphabetic';
+}
+/* the live parts: needles, the artificial horizon, readouts, the force meters and the stall light */
+function drawInstruments(lay){
+  var P=CK.P, d=lay.dials, ts=lay.ts, thDeg=(angle-ATT0)*0.8, i;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  function needle(c,a,len,w,col){ ctx.strokeStyle=col; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(c.x-Math.cos(a)*c.r*.12,c.y-Math.sin(a)*c.r*.12); ctx.lineTo(c.x+Math.cos(a)*c.r*len,c.y+Math.sin(a)*c.r*len); ctx.stroke(); }
+  function hub(c){ ctx.beginPath(); ctx.arc(c.x,c.y,Math.max(3,c.r*.08),0,7); ctx.fillStyle=P.tick; ctx.fill(); }
+  function readout(c,txt,warn,short){                                /* shrinks to fit its column; drops the extra part first */
+    var room=2*c.r+6, px=parseInt(fsz(17),10); ctx.font=px+'px '+fontf();
+    if(short&&ctx.measureText(txt).width>room){ txt=short; }
+    var w=ctx.measureText(txt).width; if(w>room){ px=Math.max(9,Math.floor(px*room/w)); ctx.font=px+'px '+fontf(); }
+    ctx.textAlign='center'; ctx.fillStyle=warn?'#FFB32B':P.text; ctx.fillText(txt,c.x,c.y+c.r+5+lay.rd*.72); }
+  var spd=spdFromU(S.v+WIND), al=altFromM(S.alt), vs=ST.vsU==='ms'?S.vsm:S.vsm*FPM;
+  needle(d[0],ckAsiAng(spd),.88,Math.max(2.5,d[0].r*.06),P.tick); hub(d[0]); readout(d[0],nf(spd)+' '+spdUnit());
+  /* artificial horizon: sky and ground move with the nose angle, a fixed amber plane symbol in the middle */
+  var c=d[1], ppd=c.r/20;
+  ctx.save(); ctx.beginPath(); ctx.arc(c.x,c.y,c.r-2,0,7); ctx.clip();
+  ctx.translate(c.x,c.y); ctx.rotate(CK.roll); var hy=thDeg*ppd;
+  ctx.fillStyle=P.sky; ctx.fillRect(-c.r*2,-c.r*3,c.r*4,c.r*3+hy); ctx.fillStyle=P.gnd; ctx.fillRect(-c.r*2,hy,c.r*4,c.r*3);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-c.r*2,hy); ctx.lineTo(c.r*2,hy); ctx.stroke();
+  ctx.lineWidth=1.5; for(i=-3;i<=3;i++){ if(!i) continue; var ly=hy-i*5*ppd, lw=c.r*(i%2?.18:.32); ctx.beginPath(); ctx.moveTo(-lw,ly); ctx.lineTo(lw,ly); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle='#E8A53A'; ctx.lineWidth=Math.max(3,c.r*.07); ctx.beginPath(); ctx.moveTo(c.x-c.r*.55,c.y); ctx.lineTo(c.x-c.r*.2,c.y); ctx.lineTo(c.x-c.r*.1,c.y+c.r*.12); ctx.moveTo(c.x+c.r*.55,c.y); ctx.lineTo(c.x+c.r*.2,c.y); ctx.lineTo(c.x+c.r*.1,c.y+c.r*.12); ctx.stroke();
+  ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,7); ctx.lineWidth=3; ctx.strokeStyle=P.edge; ctx.stroke();
+  var a1=Math.round(angle*10)/10, at=(a1>0?'+':'')+a1.toFixed(1)+'°'; readout(c,'PITCH '+at,angle>=AOA_SOFT,at);
+  /* altimeter: long needle = one turn per 1,000 ft (500 m), short needle = ten times slower; amber bug = the goal height */
+  c=d[2]; var sp=ckAltSpan(), goal=lessonMark()?(ST.altU==='m'?lessonMark()/FT:lessonMark()):(!S.reached?(ST.altU==='m'?LV.target/FT:LV.target):0);
+  if(goal){ var ba=-Math.PI/2+(goal%sp)/sp*Math.PI*2; ctx.fillStyle='#E8A53A'; ctx.beginPath(); ctx.moveTo(c.x+Math.cos(ba)*c.r*.98,c.y+Math.sin(ba)*c.r*.98); ctx.lineTo(c.x+Math.cos(ba-.09)*c.r*1.14,c.y+Math.sin(ba-.09)*c.r*1.14); ctx.lineTo(c.x+Math.cos(ba+.09)*c.r*1.14,c.y+Math.sin(ba+.09)*c.r*1.14); ctx.fill(); }
+  needle(c,-Math.PI/2+al/(sp*10)*Math.PI*2,.5,Math.max(4,c.r*.1),P.tick);
+  needle(c,-Math.PI/2+(al%sp)/sp*Math.PI*2,.88,Math.max(2.5,c.r*.06),P.tick); hub(c);
+  readout(c,nf(al)+' '+altUnit()+(goal?' → '+nf(goal):''),false,nf(al)+' '+altUnit());
+  c=d[3]; needle(c,ckVsiAng(vs),.88,Math.max(2.5,c.r*.06),P.tick); hub(c);
+  readout(c,(vs>0?'+':'')+(ST.vsU==='ms'?vs.toFixed(1):nf(Math.round(vs/10)*10))+' '+vsUnit());
+  /* the four force meters: same colours, patterns, F1-F4 and scale (0-200%) as the side panel */
+  var defs=[['lift','F1','LIFT',Math.max(0,S.L)],['weight','F2','WEIGHT',S.W],['thrust','F3','THRUST',S.T],['drag','F4','DRAG',S.D]];
+  lay.m.forEach(function(m,k){
+    var df=defs[k], col=FC[df[0]], dr=Math.round(ts*.62), ly=m.y+Math.round(ts*.55);
+    ctx.beginPath(); ctx.arc(m.x+dr,ly,dr,0,7); ctx.fillStyle=col; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle=P.edge; ctx.stroke();
+    var rgb=hex2rgb(col.charAt(0)==='#'?col:'#888888'); ctx.fillStyle=(rgb[0]*.3+rgb[1]*.59+rgb[2]*.11)>150?'#1D2B44':'#fff';
+    ctx.font=Math.round(ts*.62)+'px '+fontf(); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(df[1],m.x+dr,ly+1);
+    ctx.font=fsz(17)+fontf(); ctx.fillStyle=P.text; ctx.textAlign='left';
+    var val=fForce(df[3]), nm=df[2]+' '; ctx.textAlign='right'; ctx.fillText(val,m.x+m.w,ly+1); var vw=ctx.measureText(val).width;
+    ctx.textAlign='left'; if(ctx.measureText(nm).width<m.w-2*dr-vw-12) ctx.fillText(nm,m.x+2*dr+6,ly+1);
+    ctx.textBaseline='alphabetic';
+    var by=m.y+Math.round(ts*1.2)+2;
+    ctx.fillStyle=FC.card; ctx.fillRect(m.x,by,m.w,m.bh);
+    ctx.fillStyle=PAT[df[0]]; ctx.fillRect(m.x,by,m.w*clamp(df[3]/200,0,1),m.bh);
+    if(ST.adv&&(k===0||k===3)){ var mk=clamp((k===0?S.W:S.T)/200,0,1)*m.w+m.x; ctx.setLineDash([4,3]); ctx.strokeStyle=FC.ink; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(mk,by-4); ctx.lineTo(mk,by+m.bh+4); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.lineWidth=2; ctx.strokeStyle=P.edge; ctx.strokeRect(m.x,by,m.w,m.bh);
+    HIT.push({k:df[0],x0:m.x,x1:m.x+m.w,y0:m.y,y1:by+m.bh});
+  });
+  /* stall warning light on the glare shield: amber = too steep (warning), red and blinking = stalled */
+  var lw=ts*4.6, lh=Math.round(ts*1.35), lx=W/2-lw/2, lyy=lay.py-lh-4, st=S.stalled&&mode==='fly', wn=S.warn&&mode==='fly';
+  var on=st?(ST.reduceMotion||(performance.now()/1000*4)%1<.6):wn;
+  ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(lx,lyy,lw,lh,lh/2); else ctx.rect(lx,lyy,lw,lh);
+  ctx.fillStyle=on?(st?'#E0352B':'#E8A53A'):P.box; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=on?'#fff':P.edge; ctx.stroke();
+  ctx.font=fsz(17)+fontf(); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=on?'#fff':P.edge; ctx.fillText(st?'⚠ STALL':'STALL',W/2,lyy+lh/2+1); ctx.textBaseline='alphabetic';
+  if(mode==='fly'){ var so=statusOf(); tag(so.t,lx+lw+12,lyy+lh-4,'left'); }
+}
+/* clouds coming towards you: each cloud gets a distance ahead, a side offset and a height, all from its sprite data */
+function ckClouds(me){
+  var list=[], span=CLOUD_WR*9;
+  clouds.forEach(function(c){
+    if(!c.spr) return;
+    var d=((c.x*9-me)%span+span)%span; if(d<80) return;
+    var lat=((c.x*37+c.v*911)%9000)-4500, h=300+((c.y+420)/670)*1800;
+    var p=ckProj(d,lat,h), w=c.w*clamp(2600/d,.12,7);
+    if(p.x+w<-100||p.x-w>W+100||p.y<-300||p.y>CK.py+200) return;
+    list.push({c:c,d:d,x:p.x,y:p.y,w:w});
+  });
+  list.sort(function(a,b){ return b.d-a.d; });
+  list.forEach(function(o){ var h=o.w*o.c.h/o.c.w; ctx.globalAlpha=clamp((span*.55-o.d)/(span*.2),0,1)*clamp((o.d-80)/400,0,1); ctx.drawImage(o.c.spr,o.x-o.w/2,o.y-h/2,o.w,h); });
+  ctx.globalAlpha=1;
+}
+function drawCockpitView(t,dt,shx,shy){
+  var lay=cockpitGeom(), py=lay.py, tk=themeKey(), tod=LV.tod||'day', LC=LAND_COL[tk], me=S.x*M_PER_U;
+  var run=mode==='fly'&&!halted(), gust=S.airborne&&mode==='fly'?S.gust:0, tb=LV.turb*(TURBF[S.cfg.turb]||0);
+  /* gusts and stalls move the picture: a smooth bob and roll always, plus a small shake unless motion is reduced */
+  CK.roll+=((S.stalled&&mode==='fly'?.07:0)+clamp(gust,-1.5,1.5)*.025-CK.roll)*Math.min(1,dt*3);
+  CK.bob+=(clamp(gust,-1.5,1.5)*7-CK.bob)*Math.min(1,dt*4);
+  var jx=0, jy=0;
+  if(!ST.reduceMotion){ jx=shx; jy=shy; if(run&&tb>0&&S.airborne){ jx+=(Math.random()-.5)*Math.abs(gust)*3; jy+=(Math.random()-.5)*Math.abs(gust)*5; } }
+  CKV.cx=W/2; CKV.cy=py*.46+CK.bob; CKV.f=py*1.95; CKV.th=(angle-ATT0)*0.8*Math.PI/180; CKV.eye=Math.max(0,S.alt)+1.9;
+  var hy=CKV.cy+CKV.f*Math.tan(CKV.th), i, u;
+  ctx.setTransform(RS,0,0,RS,RS*jx,RS*jy);
+  ctx.save(); ctx.beginPath(); ctx.rect(-20,-20,W+40,py+30); ctx.clip();
+  ctx.translate(CKV.cx,CKV.cy); ctx.rotate(CK.roll); ctx.translate(-CKV.cx,-CKV.cy);
+  /* sky (the side view's sky sprite, its horizon put on ours), sun or moon, clouds */
+  if(!skyGrad) buildSky();
+  var sc=skyColors(); ctx.fillStyle=sc[0]; ctx.fillRect(-300,-600,W+600,hy+600);
+  ctx.drawImage(skySpr,-80,hy-GROUND,W+160,H);
+  ctx.save(); ctx.translate(0,hy-GROUND); drawSkyExtras(t); ctx.restore();
+  ckClouds(me);
+  /* ground or sea down to the bottom, a haze on the horizon, the location's far hills sitting on it */
+  var water=LV.water, gcol=water?LC.water:landColor();
+  var gg=ctx.createLinearGradient(0,hy,0,Math.max(hy+40,py+20));
+  gg.addColorStop(0,tk==='hc'?gcol:mixc(gcol,'#FFFFFF',water?.3:.18)); gg.addColorStop(1,tk==='hc'?gcol:mixc(gcol,'#000000',.08));
+  ctx.fillStyle=gg; ctx.fillRect(-300,hy,W+600,Math.max(10,py+400-hy));
+  if(LAYER_KEY!==LV.loc+'|'+themeKey()+'|'+RS) buildLayers();
+  [[0,.45,.02],[1,.5,.05]].forEach(function(q){ var Ly=LAYERS[q[0]]; if(!Ly) return; var lh=Ly.h*q[1], tw=LAYER_TW*q[1], ox=-((me*q[2])%tw), x;
+    for(x=ox-tw;x<W+tw;x+=tw) ctx.drawImage(Ly.spr,x,hy-lh+1,tw,lh); });
+  if(tk!=='hc'){ var hz=ctx.createLinearGradient(0,hy-26,0,hy+16); hz.addColorStop(0,rgba(sc[1],0)); hz.addColorStop(.6,rgba(sc[1],.5)); hz.addColorStop(1,rgba(sc[1],0)); ctx.fillStyle=hz; ctx.fillRect(-300,hy-26,W+600,42); }
+  /* stripes on the ground every 60 m: they rush towards you and show your speed */
+  ctx.strokeStyle=water?(tk==='light'?'rgba(29,43,68,.22)':'rgba(233,237,246,.22)'):(tk==='hc'?'rgba(255,255,255,.25)':'rgba(0,0,0,.08)'); ctx.lineWidth=2;
+  for(i=Math.floor(me/60)+1;i<Math.floor(me/60)+60;i++){ var dd=i*60-me; if(dd<CK_NEAR) continue; var sy=ckProj(dd,0,0).y; if(sy>py+30) continue; if(sy-hy<1.5) break; ctx.beginPath(); ctx.moveTo(-300,sy); ctx.lineTo(W+300,sy); ctx.stroke(); }
+  /* the island under the strip, the carrier, the take-off strip and the landing runway */
+  var RW=LV.deck?20:28, hw=RW/2;
+  if(LG.placed&&water&&!LV.deck) ckQuad(LG.thr-70,LG.end+CUSH+40,-140,140,LC.island,FC.ink);
+  if(LG.placed&&LV.deck){ ckQuad(LG.thr-10,LG.end+10,-hw-6,hw+6,LC.hull,FC.ink);
+    var t0=(LG.end-90-S.x)*M_PER_U; if(t0>CK_NEAR){ var b0=ckProj(t0,hw+8,0), b1=ckProj(t0,hw+18,0), c1=ckProj(t0,hw+18,14), c0=ckProj(t0,hw+8,14);
+      ctx.beginPath(); ctx.moveTo(b0.x,b0.y); ctx.lineTo(b1.x,b1.y); ctx.lineTo(c1.x,c1.y); ctx.lineTo(c0.x,c0.y); ctx.closePath(); ctx.fillStyle=LC.hull; ctx.fill(); ctx.strokeStyle=FC.ink; ctx.lineWidth=2; ctx.stroke(); } }
+  var strip=S.stripEnd>-1e8, segs=[];
+  if(strip) segs.push([S.x-50,S.stripEnd]);
+  if(LG.placed) segs.push([LG.thr,LG.end]);
+  segs.forEach(function(s){ ckQuad(s[0],s[1],-hw,hw,TH.run,FC.ink); });
+  if(LG.placed){ ctx.save(); ctx.globalAlpha=.55; ckQuad(LG.end,LG.end+CUSH,-hw,hw,TH.hill||TH.grass,FC.ink); ctx.restore(); }
+  var white=TH.dash, du=1/M_PER_U;
+  segs.forEach(function(s){                                          /* edge lines and centreline dashes, near ones only */
+    ckQuad(s[0],s[1],-hw+.6,-hw+1.4,white); ckQuad(s[0],s[1],hw-1.4,hw-.6,white);
+    var n0=Math.max(Math.ceil((S.x-s[0])*M_PER_U/50),0);
+    for(i=n0;i<n0+60;i++){ u=s[0]+i*50*du; if(u+24*du>s[1]) break; if(!ckQuad(u,u+24*du,-.6,.6,white)&&(u-S.x)*M_PER_U>CK_FAR) break; }
+  });
+  if(LG.placed){
+    for(i=0;i<8;i++){ var lo=-hw+2+i*(RW-4)/8; ckQuad(LG.thr+3*du,LG.thr+33*du,lo,lo+(RW-4)/8-1.2,white); }   /* threshold bars */
+    [LG.za,LG.zb].forEach(function(z){ ckQuad(z,z+20*du,-hw+3,-hw+6,white); ckQuad(z,z+20*du,hw-6,hw-3,white); });
+    ckQuad(LG.aim,LG.aim+45*du,-hw+4,-hw+8.5,white); ckQuad(LG.aim,LG.aim+45*du,hw-8.5,hw-4,white);      /* aim point */
+  }
+  /* hills and ridges ahead: a wide mound with its top at the real height */
+  S.obst.forEach(function(o){
+    var dp=(o.cx-S.x)*M_PER_U; if(dp<CK_NEAR*8) return;
+    var df=Math.max((o.cx-o.hw-S.x)*M_PER_U,CK_NEAR*4), hm=o.h/FT, ls=o.hw*M_PER_U*3;
+    var lf=ckProj(df,-ls,0), rf=ckProj(df,ls,0), pk=ckProj(dp,0,hm), sl=ckProj(dp,-ls*.45,hm*.62), sr=ckProj(dp,ls*.5,hm*.55);
+    ctx.beginPath(); ctx.moveTo(lf.x-400,lf.y); ctx.lineTo(sl.x,sl.y); ctx.lineTo(pk.x,pk.y); ctx.lineTo(sr.x,sr.y); ctx.lineTo(rf.x+400,rf.y); ctx.closePath();
+    ctx.fillStyle=TH.hill||TH.grass; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.stroke();
+    if(pk.y>30&&pk.y<py-20) WTAGS.push([(LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),clamp(pk.x,120,W-120),pk.y-12]);
+  });
+  drawTodShade();
+  /* lights: runway edges, green threshold, red end (dusk and night), and the glide-path lights beside the aim point */
+  var ga=tod==='night'?.5:.3;
+  if(tod!=='day'&&LG.placed){
+    for(u=LG.thr;u<=LG.end;u+=60*du){ ckDot(u,-hw-1,.3,260,'#FFE9A6',ga); ckDot(u,hw+1,.3,260,'#FFE9A6',ga); }
+    for(i=-3;i<=3;i++){ ckDot(LG.thr,i*hw/3,.3,300,'#3BD17F',ga*1.4); ckDot(LG.end,i*hw/3,.3,300,'#FF5A4E',ga*1.4); }
+    if(strip) for(u=Math.max(S.x,0);u<=S.stripEnd;u+=60*du){ ckDot(u,-hw-1,.3,260,'#FFE9A6',ga); ckDot(u,hw+1,.3,260,'#FFE9A6',ga); }
+  }
+  if(LG.placed){
+    var gi=glideInfo(), lit=gi&&!gi.far;
+    for(i=0;i<4;i++){ var lat=-(hw+15+(3-i)*9), dot=ckDot(LG.aim,lat,1,380,null,0);
+      if(!dot) continue; var colr=!lit?FC.hair:i<gi.whites?'#fff':PAPI_RED;
+      if(tod!=='day'&&lit) glow(dot.x,dot.y,dot.r*3,colr==='#fff'?'#FFFFFF':'#FF5A4E',ga);
+      ctx.beginPath(); ctx.arc(dot.x,dot.y,Math.max(2.2,dot.r),0,7); ctx.fillStyle=colr; ctx.fill(); ctx.lineWidth=1.5; ctx.strokeStyle=FC.ink; ctx.stroke(); }
+  }
+  /* the propeller seen from behind: a faint disc at high thrust */
+  var blur=clamp((thrust-25)/75,0,1);
+  if(blur>0&&tk!=='hc'){ ctx.globalAlpha=.045*blur; ctx.fillStyle='#8A93A6'; ctx.beginPath(); ctx.ellipse(W/2,py*.55,W*.42,py*.62,0,0,7); ctx.fill(); ctx.globalAlpha=1; }
+  ctx.restore();
+  /* frame, panel and instruments (they stay still) */
+  ctx.setTransform(RS,0,0,RS,0,0);
+  ctx.drawImage(CK.spr,0,0,W,H);
+  drawInstruments(lay);
+  return {x:W/2,y:py*.42,z:1};
+}
+/* ---------------- flight-path view ----------------
+   The whole flight in one picture, with its own scales (distance across, height up), like the result screen's path:
+   the take-off strip, the target height, the landing runway, hills, the ideal glide path (dashed) and your path so far
+   (dotted). The plane is small; the force arrows are drawn big enough to read. The scales glide when they grow. */
+var PV={x1:3000,a1:1200,ok:false};
+function niceStep(v,list){ for(var i=0;i<list.length;i++) if(list[i]>=v) return list[i]; return list[list.length-1]; }
+function drawPathView(t,dt,shx,shy){
+  ctx.setTransform(RS,0,0,RS,RS*shx,RS*shy);
+  var tk=themeKey(), mob=layout==='cockpit', LC=LAND_COL[tk], i;
+  ctx.font=fsz(15)+fontf();
+  var L=Math.max(mob?110:58,ctx.measureText(altStrFt(5000)).width+16), R=W-(mob?110:40), T=196, G=H-(mob?62:58), x0=-150;   /* T: below the wind, fuel and runway counters */
+  var icptU=LV.target/Math.tan(GS/57.2958)/FTPERU, predThr=null, x1, a1=Math.max(LV.target,400);
+  if(LG.placed) x1=LG.end+CUSH+120;
+  else { predThr=Math.max(S.x,0)+900+LEVEL_U+icptU; x1=predThr+LV.land.len+CUSH+120; }    /* where the runway will appear */
+  x1=Math.max(x1,S.x+200);
+  S.hist.forEach(function(p){ if(p.alt>a1) a1=p.alt; }); a1=Math.max(a1,S.alt*FT); S.obst.forEach(function(o){ a1=Math.max(a1,o.h); });
+  a1*=1.2;
+  if(!PV.ok||ST.reduceMotion){ PV.x1=x1; PV.a1=a1; PV.ok=true; }
+  else { var k=Math.min(1,dt*2.5); PV.x1+=(x1-PV.x1)*k; PV.a1+=(a1-PV.a1)*k; }
+  var X=function(xu){return L+(xu-x0)/(PV.x1-x0)*(R-L);}, Y=function(ft){return G-ft/PV.a1*(G-T);};
+  if(!skyGrad) buildSky();
+  ctx.drawImage(skySpr,-20,-20,W+40,H+40); drawSkyExtras(t);
+  /* height grid with labels */
+  var step=niceStep(PV.a1/4,[100,200,250,500,1000,2000,5000]);
+  ctx.font=fsz(15)+fontf(); ctx.textAlign='right'; ctx.lineWidth=1;
+  for(i=step;i<PV.a1;i+=step){ var gy=Y(i); ctx.strokeStyle=tk==='light'?'rgba(29,43,68,.12)':'rgba(233,237,246,.14)'; ctx.beginPath(); ctx.moveTo(L,gy); ctx.lineTo(R,gy); ctx.stroke(); ctx.fillStyle=FC.pencil; ctx.fillText(altStrFt(i),L-6,gy+5); }
+  /* ground or sea */
+  ctx.fillStyle=groundFill(G,LV.water?LC.water:landColor(),LV.water); ctx.fillRect(-20,G,W+40,H-G+20);
+  if(LV.water&&LG.placed&&!LV.deck){ ctx.fillStyle=LC.island; ctx.fillRect(X(LG.thr-70),G,X(LG.end+CUSH+40)-X(LG.thr-70),H-G+20); }
+  if(LV.water&&LG.placed&&LV.deck){ ctx.fillStyle=LC.hull; ctx.fillRect(X(LG.thr-10),G,X(LG.end+10)-X(LG.thr-10),16); }
+  ctx.strokeStyle=FC.ink; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(-20,G); ctx.lineTo(W+20,G); ctx.stroke();
+  function strip(a,b,label){ var xa=Math.max(X(a),-20), xb=X(b); if(xb<=xa) return; ctx.fillStyle=TH.run; ctx.fillRect(xa,G,xb-xa,8); ctx.strokeStyle=FC.ink; ctx.lineWidth=2; ctx.strokeRect(xa,G,xb-xa,8); if(label) WTAGS.push([label,clamp((xa+xb)/2,80,W-80),G+30]); }
+  if(S.stripEnd>-1e8) strip(x0,S.stripEnd,'TAKE-OFF');
+  if(LG.placed){
+    strip(LG.thr,LG.end,'RUNWAY');
+    ctx.fillStyle=FC.amber; ctx.fillRect(X(LG.za),G-4,Math.max(2,X(LG.zb)-X(LG.za)),4);
+    ctx.save(); ctx.globalAlpha=.6; ctx.strokeStyle=FC.pencil; ctx.strokeRect(X(LG.end),G,X(LG.end+CUSH)-X(LG.end),8); ctx.restore();
+  } else if(predThr!==null){                                          /* a dashed outline: the runway is placed when you reach the target */
+    ctx.save(); ctx.setLineDash([6,5]); ctx.strokeStyle=FC.ink; ctx.lineWidth=2; ctx.strokeRect(X(predThr),G,X(predThr+LV.land.len)-X(predThr),8); ctx.restore();
+    WTAGS.push(['RUNWAY APPEARS AT '+altStrFt(LV.target),clamp(X(predThr+LV.land.len/2),140,W-140),G+30]);
+  }
+  /* target, wind shear and lesson heights */
+  function hline(ft,col,dash,txt,dim){ var y=Y(ft); if(y<T-20) return; ctx.save(); ctx.globalAlpha=dim?.45:1; ctx.setLineDash(dash); ctx.lineWidth=3; ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(R,y); ctx.stroke(); ctx.restore(); WTAGS.push([txt,L+8,y-8,'left']); }
+  if(ST.showTarget) hline(LV.target,FC.lift,[14,10],(S.reached?'TARGET REACHED: ':'TARGET: ')+altStrFt(LV.target),S.reached);
+  if(LV.shear) hline(LV.shear.alt,FC.amber,[4,10],'WIND FLIPS BELOW '+altStrFt(LV.shear.alt));
+  var lm=lessonMark(); if(lm) hline(lm,FC.lift,[14,10],'LESSON GOAL: '+altStrFt(lm));
+  /* hills */
+  S.obst.forEach(function(o){
+    ctx.beginPath(); ctx.moveTo(X(o.cx-o.hw),G); ctx.lineTo(X(o.cx),Y(o.h)); ctx.lineTo(X(o.cx+o.hw),G); ctx.closePath();
+    ctx.fillStyle=TH.hill||TH.grass; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=FC.ink; ctx.stroke();
+    WTAGS.push([(LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),clamp(X(o.cx),100,W-100),Y(o.h)-10]);
+  });
+  /* the ideal glide path: 3.5 degrees up from the aim point (dashed), so you can compare your approach with it */
+  var aim=LG.placed?LG.aim:(predThr!==null?predThr+TZ0+Math.round(LV.land.len*LV.land.zone*.15):null);
+  if(aim!==null){
+    var sl=Math.tan(GS/57.2958)*FTPERU, xs=Math.max(x0,aim-LV.target/sl);           /* up to the target height: you fly level before that */
+    ctx.save(); ctx.globalAlpha=LG.placed?1:.5; ctx.setLineDash([12,8]); ctx.lineWidth=3; ctx.strokeStyle=FC.amber;
+    ctx.beginPath(); ctx.moveTo(X(aim),G); ctx.lineTo(X(xs),Y((aim-xs)*sl)); ctx.stroke(); ctx.restore();
+    var lx=clamp(aim-LV.target*.55/sl,x0,aim); WTAGS.push(['IDEAL GLIDE PATH '+GS+'°',clamp(X(lx),120,W-140),Y((aim-lx)*sl)-14]);
+  }
+  /* your path so far, dotted */
+  ctx.save(); ctx.setLineDash([1,7]); ctx.lineCap='round'; ctx.lineWidth=4; ctx.strokeStyle=FC.ink; ctx.beginPath();
+  var started=false; S.hist.forEach(function(p){ var px=X(p.x), pyy=Y(p.alt); if(!started){ ctx.moveTo(px,pyy); started=true; } else ctx.lineTo(px,pyy); });
+  if(started){ ctx.lineTo(X(S.x),Y(S.alt*FT)); ctx.stroke(); }
+  ctx.restore();
+  drawTodShade(); ctx.setTransform(RS,0,0,RS,RS*shx,RS*shy);
+  /* scale bars: distance (1 km or similar) across, height (1,000 ft or similar) up */
+  var pxKm=(R-L)/((PV.x1-x0)*M_PER_U/1000), km=niceStep(90/pxKm,[.25,.5,1,2,5,10,20]), bw=km*pxKm, bx=L, byy=H-14;
+  var hs=ST.altU==='m'?niceStep(PV.a1/FT/3,[50,100,200,500,1000,2000]):niceStep(PV.a1/3,[100,200,500,1000,2000,5000]), hpx=(ST.altU==='m'?hs*FT:hs)/PV.a1*(G-T);
+  ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(bx,byy-6); ctx.lineTo(bx,byy); ctx.lineTo(bx+bw,byy); ctx.lineTo(bx+bw,byy-6); ctx.stroke();
+  tag((km<1?Math.round(km*1000)+' m':km+' km'),bx+bw+8,byy+2,'left');
+  var vx=R-6; ctx.strokeStyle=FC.ink; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(vx-6,G-hpx); ctx.lineTo(vx,G-hpx); ctx.lineTo(vx,G); ctx.lineTo(vx-6,G); ctx.stroke();
+  tag(nf(hs)+' '+(ST.altU==='m'?'m':'ft'),vx-10,G-hpx/2+6,'right');
+  /* the plane, small, on its spot */
+  var pz=.38, ppx=X(S.x), ppy=Y(S.alt*FT)-wheelDrop(angle)*pz;
+  drawPlane(ppx,ppy,angle,PLANE_SC*pz,t);
+  return {x:ppx,y:ppy,z:pz};
+}
 /* ---------------- scenery: per-location layers, time of day, water, gusts ----------------
    Each location has three hand-drawn layers that scroll at different speeds (far 0.1x, middle 0.3x, near 0.6x of the ground).
    Every layer is drawn once into a sprite canvas, the same way the clouds are, and only copied to the screen each frame.
@@ -2044,7 +2713,21 @@ function skyColors(){
   return c;
 }
 function landColor(){ var t=LAND_COL[themeKey()]; return t[LV.loc]||t.grass; }
-function buildSky(){ var c=skyColors(); skyGrad=ctx.createLinearGradient(0,0,0,H); skyGrad.addColorStop(0,c[0]); skyGrad.addColorStop(1,c[1]); }
+/* the sky is one sprite per theme + time of day: the gradient plus a soft sun glow, a warm dusk horizon or a moon halo */
+var skySpr=null;
+function radGlow(g,x,y,r,col,a){ var gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,col.replace('A',a)); gr.addColorStop(1,col.replace('A',0)); g.fillStyle=gr; g.fillRect(x-r,y-r,2*r,2*r); }
+function buildSky(){
+  var c=skyColors(), tod=LV.tod||'day', tk=themeKey();
+  skyGrad=ctx.createLinearGradient(0,0,0,H); skyGrad.addColorStop(0,c[0]); skyGrad.addColorStop(1,c[1]);
+  var cn=skySpr||document.createElement('canvas'); cn.width=Math.round(W*RS); cn.height=Math.round(H*RS);
+  var g=cn.getContext('2d'); g.setTransform(RS,0,0,RS,0,0); g.fillStyle=skyGrad; g.fillRect(0,0,W,H);
+  if(tk!=='hc'){
+    if(tod==='dusk'){ radGlow(g,170,GROUND-60,360,'rgba(255,184,110,A)',.55); var hb=g.createLinearGradient(0,GROUND-170,0,GROUND); hb.addColorStop(0,'rgba(255,170,120,0)'); hb.addColorStop(1,'rgba(255,170,120,.35)'); g.fillStyle=hb; g.fillRect(0,GROUND-170,W,170); }
+    else if(tod==='night') radGlow(g,W-150,86,150,'rgba(244,240,218,A)',tk==='light'?.28:.18);
+    else if(tk==='light') radGlow(g,W-120,74,190,'rgba(255,238,170,A)',.6);
+  }
+  skySpr=cn;
+}
 
 function lcg(seed){ var s=seed>>>0; return function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
 function layerFill(light,dark,hc){ var tk=themeKey(); return tk==='dark'?dark:tk==='hc'?hc:light; }
@@ -2053,7 +2736,13 @@ function layerFill(light,dark,hc){ var tk=themeKey(); return tk==='dark'?dark:tk
 function drawLayerShapes(g,loc,idx,h){
   var r=lcg(loc.length*977+idx*131+7), TW=LAYER_TW, i, x, y, w;
   g.lineWidth=3; g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=FC.ink;
-  function outline(fn,fill,alpha){ g.globalAlpha=1; g.beginPath(); fn(); g.fillStyle=fill; g.fill(); g.globalAlpha=alpha||.6; g.stroke(); g.globalAlpha=1; }
+  var shades={};
+  function shade(fill){                                         /* soft vertical shading: lighter top, deeper base (flat in high contrast) */
+    if(themeKey()==='hc'||fill.charAt(0)!=='#') return fill;
+    if(!shades[fill]){ var gr=g.createLinearGradient(0,0,0,h); gr.addColorStop(0,mixc(fill,'#FFFFFF',.22)); gr.addColorStop(.55,fill); gr.addColorStop(1,mixc(fill,'#000000',.12)); shades[fill]=gr; }
+    return shades[fill];
+  }
+  function outline(fn,fill,alpha){ g.globalAlpha=1; g.beginPath(); fn(); g.fillStyle=shade(fill); g.fill(); g.globalAlpha=alpha||.6; g.stroke(); g.globalAlpha=1; }
   function tile(fn){ fn(0); fn(-TW); fn(TW); }                  /* shapes near the edge are drawn again shifted so the tile wraps without a seam */
   var F=function(a,b,c){return layerFill(a,b,c);};
   if(loc==='grass'){
@@ -2092,15 +2781,83 @@ function buildLayers(){
   });
 }
 function buildScenery(){ buildSky(); buildLayers(); markDirty(); }
+/* VB = the part of the base drawing (the chase view's 960x540 coordinates) that the camera shows right now.
+   Anything that fills the width (ground, water, layers, clouds) covers VB instead of 0..W. */
+var VB={x0:0,x1:W,y0:0,y1:H};
+function rgba(hex,a){ var c=hex2rgb(hex); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
 function drawLayers(gy,cam,scroll){
   if(LAYER_KEY!==LV.loc+'|'+themeKey()+'|'+RS) buildLayers();
   var sc=ST.reduceMotion?0:scroll;
-  LAYERS.forEach(function(L){
-    var yb=GROUND+cam*L.kv, ox=-((sc*L.k)%LAYER_TW);
-    if(yb-L.h>H) return;
-    ctx.drawImage(L.spr,ox,yb-L.h,LAYER_TW,L.h); ctx.drawImage(L.spr,ox+LAYER_TW,yb-L.h,LAYER_TW,L.h);
+  LAYERS.forEach(function(L,i){
+    var yb=GROUND+cam*L.kv, ox=-((sc*L.k)%LAYER_TW), x;
+    if(yb-L.h<=VB.y1&&yb>=VB.y0){
+      for(x=ox+LAYER_TW*Math.floor((VB.x0-ox)/LAYER_TW);x<VB.x1;x+=LAYER_TW) ctx.drawImage(L.spr,x,yb-L.h,LAYER_TW,L.h);
+    }
+    if(i===0) drawHaze(yb,.55);                                   /* the far layer fades into the haze; the near ones stay crisp */
   });
 }
+/* soft haze near the horizon (not in high contrast) */
+function drawHaze(y,a){
+  if(themeKey()==='hc'||y-130>VB.y1||y<VB.y0) return;
+  var c=skyColors()[1], gr=ctx.createLinearGradient(0,y-130,0,y);
+  gr.addColorStop(0,rgba(c,0)); gr.addColorStop(1,rgba(c,a));
+  ctx.fillStyle=gr; ctx.fillRect(VB.x0-20,y-130,VB.x1-VB.x0+40,130);
+}
+function drawClouds(scroll,cam){
+  for(var i=0;i<clouds.length;i++){
+    var c=clouds[i]; if(!c.spr) continue;
+    var cx=((c.x-scroll*c.k)%CLOUD_WR+CLOUD_WR)%CLOUD_WR-500, cy=c.y+cam*(c.far?.3:.5);
+    if(cx+c.w/2<VB.x0||cx-c.w/2>VB.x1||cy+c.h/2<VB.y0||cy-c.h/2>VB.y1) continue;
+    ctx.drawImage(c.spr,cx-c.w/2,cy-c.h/2,c.w,c.h);
+  }
+}
+/* ---- plane shadow on the ground: a soft blurred disc (sprite) that shrinks and fades with height ---- */
+var shadowSpr=null;
+function drawShadow(gy,px){
+  var f=1-clamp(S.alt*PXM/240,0,1); if(f<=0||gy-10>VB.y1) return;
+  if(!shadowSpr){
+    shadowSpr=document.createElement('canvas'); shadowSpr.width=256; shadowSpr.height=64;
+    var g=shadowSpr.getContext('2d'); g.setTransform(1,0,0,.25,0,0);
+    var gr=g.createRadialGradient(128,128,0,128,128,128); gr.addColorStop(0,'rgba(0,0,0,.6)'); gr.addColorStop(.55,'rgba(0,0,0,.28)'); gr.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=gr; g.fillRect(0,0,256,256);
+  }
+  var w=170*(.4+.6*f), h=w*.17;
+  ctx.save(); ctx.globalAlpha=(themeKey()==='light'?.75:.9)*f; ctx.drawImage(shadowSpr,px+6-w/2,gy+4-h/2,w,h); ctx.restore();
+}
+/* ---- touchdown puffs: tyre smoke on a runway or deck, dust on grass and hills, spray on water. World-anchored, off with Reduce motion ---- */
+var PARTS=[];
+function spawnPuff(kind){
+  if(ST.reduceMotion) return;
+  var n=kind==='spray'?22:12, i, c={smoke:'#ECECEC',dust:'#C8B48A',spray:'#F4FAFF'}[kind];
+  for(i=0;i<n;i++) PARTS.push({x:S.x+5+(Math.random()-.5)*4,a:Math.random()*2,vx:(Math.random()-.75)*(kind==='spray'?14:6),va:(kind==='spray'?8:2)+Math.random()*(kind==='spray'?14:5),
+    age:0,life:.9+Math.random()*.8,r0:kind==='spray'?2+Math.random()*3:4+Math.random()*3,gr:kind==='spray'?6:16,col:c,drop:kind==='spray'});
+  if(PARTS.length>120) PARTS.splice(0,PARTS.length-120);
+}
+function updateParts(dt){
+  for(var i=PARTS.length-1;i>=0;i--){
+    var p=PARTS[i]; p.age+=dt; if(p.age>=p.life){ PARTS.splice(i,1); continue; }
+    p.x+=p.vx*dt; p.a=Math.max(0,p.a+p.va*dt); p.va-=(p.drop?30:4)*dt; p.vx*=Math.pow(.4,dt);
+  }
+}
+function drawParts(gy){
+  if(!PARTS.length) return;
+  ctx.save(); ctx.strokeStyle=FC.ink; ctx.lineWidth=1.5;
+  PARTS.forEach(function(p){
+    var k=p.age/p.life, bx=PX+(p.x-S.x)*3, by=gy-p.a*PXM-2, r=p.r0+p.gr*k;
+    ctx.globalAlpha=(1-k)*(p.drop?.9:.75); ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(bx,by,r,0,7); ctx.fill();
+    ctx.globalAlpha=(1-k)*.25; ctx.stroke();
+  });
+  ctx.restore();
+}
+/* what the wheels hit, called after every physics step (step() itself is unchanged) */
+function touchFx(wasAir,wasMode){
+  if(mode==='crashed'&&wasMode==='fly'){
+    var w=S.crashWhy; if(w==='missed') return;
+    spawnPuff(LV.water&&(w==='short'||w==='long'||w==='offend')?'spray':(w==='hard'&&onRunway())?'smoke':'dust'); return;
+  }
+  if(wasAir&&!S.airborne&&S.alt<=0) spawnPuff(onRunway()?'smoke':'dust');
+}
+function onRunway(){ return S.x<=S.stripEnd||(LG.placed&&S.x>=LG.thr-15&&S.x<=LG.end); }
 
 /* ---- sky extras: stars, sun or moon, rain ---- */
 function drawSkyExtras(t){
@@ -2125,23 +2882,53 @@ function drawSkyExtras(t){
 
 /* ---- ground, water and the carrier ---- */
 function drawWaves(gy,t,x0,x1){
-  var tk=themeKey(), col=tk==='light'?'rgba(29,43,68,.35)':'rgba(233,237,246,.35)', m=ST.reduceMotion?0:t, r, x;
+  var tk=themeKey(), col=tk==='light'?'rgba(29,43,68,.35)':'rgba(233,237,246,.35)', m=ST.reduceMotion?0:t, r, x, i;
   ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.lineCap='round';
-  for(r=0;r<4;r++){ var yy=gy+30+r*26; if(yy>H+10) break;
+  for(r=0;r<4;r++){ var yy=gy+30+r*26; if(yy>VB.y1+10) break;
     for(x=(((r*47)-S.x*3*(0.6+r*.1)-m*18*(1+r*.2))%110+110)%110+x0-110; x<x1; x+=110){ ctx.beginPath(); ctx.moveTo(x,yy); ctx.quadraticCurveTo(x+14,yy-8,x+28,yy); ctx.quadraticCurveTo(x+42,yy+8,x+56,yy); ctx.stroke(); } }
+  if(tk!=='hc'){                                                    /* sun glints on the water; they twinkle unless motion is reduced */
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+    for(i=0;i<14;i++){ var gx=(((i*173)-S.x*3*.7)%1400+1400)%1400+x0-200, gyy=gy+10+((i*37)%70); if(gx>x1) continue;
+      ctx.globalAlpha=.55*(ST.reduceMotion?.7:.5+.5*Math.sin(t*2.3+i*1.7)); ctx.beginPath(); ctx.moveTo(gx,gyy); ctx.lineTo(gx+12,gyy); ctx.stroke(); }
+  }
   ctx.restore();
 }
+/* ground and water: lighter near the horizon, deeper towards the viewer */
+function groundFill(gy,col,water){
+  if(themeKey()==='hc') return col;
+  var g=ctx.createLinearGradient(0,gy,0,gy+150); g.addColorStop(0,mixc(col,'#FFFFFF',water?.28:.14)); g.addColorStop(1,mixc(col,'#000000',water?.16:.1)); return g;
+}
 function drawGround(gy,sxOf,t){
-  var tk=themeKey(), LC=LAND_COL[tk];
+  var tk=themeKey(), LC=LAND_COL[tk], x0=VB.x0-20, w=VB.x1-VB.x0+40, h=Math.max(60,VB.y1-gy+30), x;
   if(LV.water){
-    ctx.fillStyle=LC.water; ctx.fillRect(-20,gy,W+40,H-gy+60);
-    drawWaves(gy,t,-20,W+20);
+    ctx.fillStyle=groundFill(gy,LC.water,true); ctx.fillRect(x0,gy,w,h);
+    drawWaves(gy,t,x0,x0+w);
     if(!LV.deck&&LG.placed){                                               /* a small island under the strip */
-      var a=sxOf(LG.thr)-70, b=sxOf(LG.end+CUSH)+40, bot=H+60;
+      var a=sxOf(LG.thr)-70, b=sxOf(LG.end+CUSH)+40, bot=VB.y1+60;
       ctx.beginPath(); ctx.moveTo(a-26,gy+2); ctx.lineTo(a,gy); ctx.lineTo(b,gy); ctx.lineTo(b+26,gy+2); ctx.lineTo(b+8,bot); ctx.lineTo(a-8,bot); ctx.closePath();
-      ctx.fillStyle=LC.island; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.stroke();
+      ctx.fillStyle=groundFill(gy,LC.island,false); ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.stroke();
     }
-  } else { ctx.fillStyle=landColor(); ctx.fillRect(-20,gy,W+40,H-gy+60); }
+  } else {
+    ctx.fillStyle=groundFill(gy,landColor(),false); ctx.fillRect(x0,gy,w,h);
+    if(tk!=='hc'){ ctx.fillStyle='rgba(0,0,0,.035)'; var off=((S.x*3)%180+180)%180;      /* mown stripes, so speed shows on the grass too */
+      for(x=x0-off;x<x0+w;x+=180) ctx.fillRect(x,gy+20,90,h); }
+  }
+}
+/* runway strips: asphalt with a light top edge, white edge lines and worn tyre marks in the touchdown zone */
+function drawRunwaySurface(gy,segs){
+  var hc=themeKey()==='hc', fill=TH.run;
+  if(!hc){ fill=ctx.createLinearGradient(0,gy,0,gy+20); fill.addColorStop(0,mixc(TH.run,'#FFFFFF',.16)); fill.addColorStop(1,mixc(TH.run,'#000000',.12)); }
+  ctx.fillStyle=fill;
+  segs.forEach(function(s){ if(s[1]>s[0]) ctx.fillRect(s[0],gy,s[1]-s[0],20); });
+  if(LG.placed){                                                  /* rubber left by earlier landings */
+    var a=PX+(LG.za-S.x)*3, zl=(LG.zb-LG.za)*3*1.4, i;
+    if(a+zl>VB.x0&&a<VB.x1){ ctx.fillStyle=hc?'rgba(0,0,0,.5)':'rgba(10,12,18,.42)';
+      for(i=0;i<16;i++){ var mx=a+((i*97)%Math.max(1,Math.round(zl))), ml=14+(i*29)%46; ctx.fillRect(mx,gy+4+(i%3)*5,ml,2.5); } }
+  }
+  ctx.strokeStyle=hc?'#fff':'rgba(255,255,255,.6)'; ctx.lineWidth=1.5;
+  segs.forEach(function(s){ if(s[1]>s[0]){ ctx.beginPath(); ctx.moveTo(s[0],gy+3.5); ctx.lineTo(s[1],gy+3.5); ctx.moveTo(s[0],gy+16.5); ctx.lineTo(s[1],gy+16.5); ctx.stroke(); } });
+  ctx.strokeStyle=FC.ink; ctx.lineWidth=3;
+  segs.forEach(function(s){ if(s[1]>s[0]){ctx.beginPath();ctx.moveTo(s[0],gy);ctx.lineTo(s[1],gy);ctx.moveTo(s[0],gy+20);ctx.lineTo(s[1],gy+20);ctx.stroke();} });
 }
 function drawHull(gy,sxOf){
   var a=sxOf(LG.thr)-10, b=sxOf(LG.end)+10, LC=LAND_COL[themeKey()], depth=46;
@@ -2158,21 +2945,23 @@ function drawTodShade(){
   var tod=LV.tod||'day'; if(tod==='day') return;
   var tk=themeKey(), a=tod==='night'?(tk==='light'?.40:tk==='dark'?.22:0):(tk==='light'?.16:tk==='dark'?.08:0);
   if(a<=0) return;
-  ctx.save(); ctx.fillStyle='rgba(8,12,34,'+a+')'; ctx.fillRect(-20,-20,W+40,H+40); ctx.restore();
+  var g=ctx.createLinearGradient(0,0,0,H), c=tod==='night'?'8,12,34':'40,18,46';      /* darker overhead, a little lighter at the horizon; dusk is tinted warm */
+  g.addColorStop(0,'rgba('+c+','+(a*1.15)+')'); g.addColorStop(.75,'rgba('+c+','+(a*.85)+')'); g.addColorStop(1,'rgba('+c+','+a+')');
+  ctx.save(); ctx.setTransform(RS,0,0,RS,0,0); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.restore();
 }
 function glow(x,y,r,col,a){ ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.globalAlpha=Math.min(1,a*2.4); ctx.beginPath(); ctx.arc(x,y,r*.45,0,7); ctx.fill(); ctx.restore(); }
 function drawRunwayLights(gy,sxOf){
   var tod=LV.tod||'day'; if(tod==='day'||!LG.placed) return;
   var segs=[]; if(S.stripEnd>-1e8) segs.push([-40,sxOf(S.stripEnd)]); segs.push([sxOf(LG.thr),sxOf(LG.end)]);
   var ga=tod==='night'?.38:.2, x;
-  segs.forEach(function(s){ var n0=Math.max(0,Math.ceil((-12-s[0])/36)); for(x=s[0]+n0*36;x<=Math.min(s[1],W+12);x+=36) glow(x,gy-3,9,'#FFE9A6',ga); });
+  segs.forEach(function(s){ var n0=Math.max(0,Math.ceil((VB.x0-12-s[0])/36)); for(x=s[0]+n0*36;x<=Math.min(s[1],VB.x1+12);x+=36) glow(x,gy-3,9,'#FFE9A6',ga); });
   glow(sxOf(LG.thr),gy-3,11,'#3BD17F',ga*1.4); glow(sxOf(LG.thr),gy+23,11,'#3BD17F',ga*1.4);
   glow(sxOf(LG.end),gy-3,11,'#FF5A4E',ga*1.4); glow(sxOf(LG.end),gy+23,11,'#FF5A4E',ga*1.4);
-  if(LG.placed){ var pp=sxOf(LG.thr)-34; if(pp>-20&&pp<W+20){ for(var i=0;i<4;i++) glow(pp,gy-52+(i-1.5)*14,13,i<(glideInfo()?glideInfo().whites:2)?'#FFFFFF':'#FF5A4E',ga*1.2); } }
+  if(LG.placed){ var pp=sxOf(LG.thr)-34; if(pp>VB.x0-20&&pp<VB.x1+20){ for(var i=0;i<4;i++) glow(pp,gy-52+(i-1.5)*14,13,i<(glideInfo()?glideInfo().whites:2)?'#FFFFFF':'#FF5A4E',ga*1.2); } }
 }
-function drawLandingLight(py){
+function drawLandingLight(py,gy){
   var tod=LV.tod||'day'; if(tod!=='night'||S.alt<=0&&S.phase==='takeoff') return;
-  ctx.save(); var x0=PX+70, y0=py+6, gyL=GROUND+Math.max(0,CAM_TOP-(GROUND-PLANE_H-S.alt*PXM))+14;
+  ctx.save(); var x0=PX+70, y0=py+6, gyL=gy+14;
   var g=ctx.createLinearGradient(x0,y0,x0+330,gyL); g.addColorStop(0,'rgba(255,244,190,.30)'); g.addColorStop(1,'rgba(255,244,190,0)');
   ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0+360,Math.min(gyL,H)+12); ctx.lineTo(x0+260,Math.min(gyL,H)+60); ctx.closePath(); ctx.fill(); ctx.restore();
 }
@@ -2194,7 +2983,7 @@ function drawGusts(py,t){
     var up=g>0, ax=PX-60, dir=up?-1:1, n=ag>0.65?3:2, k;
     ctx.save(); ctx.strokeStyle=FC.amber; ctx.lineWidth=4; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.globalAlpha=.55+.4*ag;
     for(k=0;k<n;k++){ var y0=py+(up?-52:52)+dir*k*13; ctx.beginPath(); ctx.moveTo(ax-12,y0-dir*7); ctx.lineTo(ax,y0+dir*3); ctx.lineTo(ax+12,y0-dir*7); ctx.stroke(); }
-    ctx.restore(); tag(up?'GUST: UP':'GUST: DOWN',ax-34,py+(up?-62:70),'right');
+    ctx.restore(); tagW(up?'GUST: UP':'GUST: DOWN',ax-34,py+(up?-62:70),'right');
   }
 }
 /* ---------------- coaching message (banner near the plane) ---------------- */
@@ -2281,6 +3070,7 @@ function coachContainer(){
   var wantPanel=(coachPlace()==='panel');
   var host=wantPanel?$('#gCoach'):$('#view');
   if(coachBox.parentNode!==host) host.appendChild(coachBox);
+  var lb=$('#lessonBox'); if(lb){ if(lb.parentNode!==host||lb.previousSibling!==coachBox) host.insertBefore(lb,coachBox.nextSibling); lb.className='coachbar lessonbar '+(wantPanel?'inpanel':'pos-'+coachPlace()); }
   coachBox.classList.toggle('inpanel',wantPanel);
   coachBox.classList.toggle('pos-top',!wantPanel&&coachPlace()==='top');
   coachBox.classList.toggle('pos-bottom',!wantPanel&&coachPlace()==='bottom');
@@ -2293,7 +3083,7 @@ function flashCoach(){
   coachFlashT=setTimeout(function(){coachBox.classList.remove('flash');},1300);
 }
 function updateCoach(){
-  var show=ST.panels.coach&&ST.tips!=='off'&&mode==='fly';
+  var show=ST.panels.coach&&ST.tips!=='off'&&mode==='fly'&&!LESSON;
   var c=show?computeCoach():null;
   if(c&&ST.tips==='important'&&RANK[c.lvl]<1) c=null;
   var now=performance.now();
@@ -2434,7 +3224,7 @@ function announceStatus(){
   if(w!==lastStat&&now-lastStatT>2500){ lastStat=w; lastStatT=now; var r=$('#srStat'); r.textContent=''; setTimeout(function(){r.textContent=w;},30); }
 }
 function renderKeysCard(){
-  var rows=[[keyFirst('thrustDown')+' '+keyFirst('thrustUp'),'Thrust less / more'],[keyFirst('pitchUp')+' '+keyFirst('pitchDown'),'Nose up / down'],[keyFirst('restart'),'Restart'],[keysAll('pause'),'Pause / resume']];
+  var rows=[[keyFirst('thrustDown')+' '+keyFirst('thrustUp'),'Thrust less / more'],[keyFirst('pitchUp')+' '+keyFirst('pitchDown'),'Nose up / down'],[keyFirst('restart'),'Restart'],[keysAll('pause'),'Pause / resume'],[keyFirst('camera'),'Camera view']];
   $('#kgrid').innerHTML=rows.map(function(r){return '<div><kbd>'+esc(r[0])+'</kbd><span>'+esc(r[1])+'</span></div>';}).join('');
 }
 
@@ -2457,10 +3247,11 @@ function applySettings(){
   coachContainer();
   $('#pause').title='Pause ('+keysAll('pause')+')'; fsBtn.title='Fullscreen ('+keyFirst('fullscreen')+')';
   $('#gear').title='Settings ('+keyFirst('settings')+')'; $('#restart').title='Restart ('+keyFirst('restart')+')';
-  updateUnitLabels(); updateStepLabels(); updateLevelLabel(); renderKeysCard();
+  updateUnitLabels(); updateStepLabels(); updateLevelLabel(); renderKeysCard(); updateCamBtn();
   if(S){ updatePanel(); }
   if(S&&S.cfg) applyAngRange();
   if(typeof updateRestartNote==='function') updateRestartNote();
+  if(endOpen&&endPage===2&&flightAdv!==ST.adv) refreshFlightArea();     /* Advanced info changed while page 2 is open */
 }
 
 /* ---------------- settings dialog ---------------- */
@@ -2469,7 +3260,7 @@ var SCHEMA=[
  {id:'basics',label:'Basics',items:[
   {t:'lvl'},
   {t:'slow'},
-  {t:'tog',k:'adv',l:'Advanced info',h:'Adds the lift-vs-pitch chart and the dashed marks on the meters.'},
+  {t:'tog',k:'adv',l:'Advanced info',h:'Adds the lift-vs-pitch chart, the dashed marks on the meters and the flight charts after landing.'},
   {t:'sel',k:'text',l:'Text size',o:[['small','Small'],['medium','Medium'],['large','Large'],['xlarge','Extra large']]},
   {t:'sel',k:'theme',l:'Theme',o:[['light','Light'],['dark','Dark'],['hc','High contrast']]},
   {t:'rng',k:'master',l:'Volume',min:0,max:1,step:0.05,fmt:pctF},
@@ -2491,6 +3282,7 @@ var SCHEMA=[
  ]},
  {id:'display',label:'Display',items:[
   {t:'sel',k:'forceUnits',l:'Show forces as',o:[['pct','% of weight'],['num','Plain numbers']]},
+  {t:'sel',k:'camera',l:'Camera view',o:[['chase','Chase (follows the plane)'],['wide','Wide (runway and glide path ahead)'],['close','Close-up (big force arrows)'],['runway','Runway cam (watch the landing)'],['cockpit','Cockpit (challenge view)'],['path','Flight path (the whole flight)'],['auto','Automatic (switches by itself)']],h:'Change it any time with the camera key (C) or the 🎥 button. Cockpit is a challenge view: harder, because you cannot see the plane from outside.'},
   {t:'more'},
   {t:'tog',k:'arrows',l:'Force arrows on the plane'},
   {t:'sel',k:'arrowSize',l:'Arrow size',o:[['small','Small'],['normal','Normal'],['large','Large']]},
@@ -2528,7 +3320,7 @@ var SCHEMA=[
  {id:'access',label:'Sound & access',items:[
   {t:'tog',k:'stallSound',l:'Stall warning sound'},
   {t:'tog',k:'cb',l:'Colour-blind friendly force colours',h:'Patterns and labels stay on as well.'},
-  {t:'tog',k:'reduceMotion',l:'Reduce motion',h:'Turns off screen shake, flashing, vibration and animated banners.'},
+  {t:'tog',k:'reduceMotion',l:'Reduce motion',h:'Turns off screen shake (also in the cockpit), flashing, vibration, animated banners, touchdown dust, blinking lights and camera glides and fades.'},
   {t:'tog',k:'haptics',l:'Vibration on touch screens',h:'Short buzzes for stalls and touchdowns (phones only).'},
   {t:'sel',k:'font',l:'Font',o:[['default','Handwriting (default)'],['readable','Easier to read']]},
   {t:'more'},
@@ -2640,6 +3432,7 @@ function confirmBtn(b,fn){
     if(t.type!=='range'&&e.type!=='change') return;
     var v=t.type==='checkbox'?t.checked:t.type==='range'?+t.value:t.value;
     setPath(k,v);
+    if(k==='camera'){ setCamera(v,true); CAM.msgT=0; }
     if(t.type==='range'){ var o=$('#'+t.id+'_o'); var it=SCHEMA.reduce(function(a,g){return a.concat(g.items);},[]).filter(function(x){return x.k===k;})[0]; if(o&&it) o.textContent=it.fmt(v); }
     saveSettings(); applySettings(); updateRestartNote();
   }
@@ -2656,7 +3449,7 @@ function confirmBtn(b,fn){
       case 'showTourBtn': closeSettings(); if(mode!=='fly') startFlight(); openTour(true); break;
       case 'showIntroBtn': closeSettings(); if(mode==='fly') showIntro(1,true); else showIntro(1,false); break;
       case 'resetSettings': confirmBtn(b,function(){ var keep=ST.adv; ST=merge(DEF,null); try{ST.reduceMotion=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(x){} ACTIONS.forEach(function(a){while(ST.keys[a.id].length<2)ST.keys[a.id].push('');}); saveSettings(); applySettings(); renderBody(); updateRestartNote(); }); break;
-      case 'resetProgress': confirmBtn(b,function(){ PR={}; PG={ach:{},daily:{},endless:{best:0,runs:0},log:{},counts:{charts:0},openAll:false,streakDays:[]}; saveProgress(); updateLevelLabel(); b.textContent='Progress cleared'; }); break;
+      case 'resetProgress': confirmBtn(b,function(){ PR={}; PG={ach:{},daily:{},endless:{best:0,runs:0},log:{},counts:{charts:0},ns:{},openAll:false,streakDays:[],lessons:{}}; saveProgress(); updateLevelLabel(); b.textContent='Progress cleared'; }); break;
     }
   });
   $('#sTabs').addEventListener('click',function(e){var b=e.target.closest('.tab'); if(!b) return; sTab=b.dataset.tab; renderTabs(); renderBody(); $('#tab_'+sTab).focus();});
@@ -2714,7 +3507,8 @@ function showIntro(pg,from){
       '<li>Forces are shown as a <b>% of normal weight</b>. Burning fuel makes the plane lighter.</li>'+
       '<li>To land: stay level until the <b>glide path lights</b> show up. <b>2 white + 2 red = on the path</b> (more white = too high, more red = too low). Cut thrust, <b>flare</b> (raise the nose a little just before touchdown), and touch down in the <b>touchdown zone</b>.</li>'+
       '<li>Three stars need <b>five checks</b>: gentle touchdown, in the zone, good nose angle, stopped on the runway, and no stall.</li>'+
-      '<li>New to this? Keep <b>Advanced info</b> off. Turn it on in Settings (or press '+esc(keyFirst('advanced'))+') for the lift-vs-pitch chart, ground speed and climb rate.</li></ul>';
+      '<li>New to this? Try the <b>Lessons</b> on the map, and keep <b>Advanced info</b> off. Turn it on in Settings (or press '+esc(keyFirst('advanced'))+') for the lift-vs-pitch chart and the flight charts after landing.</li>'+
+      '<li>Press <b>'+esc(keyFirst('camera'))+'</b> (or 🎥) to change the camera: chase, wide, close-up, runway cam or automatic.</li></ul>';
   } else {
     body='<h2><span>READY?</span> · SCENARIO &amp; KEYS</h2><h3>YOUR FLIGHT</h3>'+levelPicker()+
       '<h3>KEYBOARD SHORTCUTS <small style="font-size:16px;color:var(--pencil)">(press '+esc(keyFirst('shortcuts'))+' to see them in Settings)</small></h3><div class="keygrid">'+keyGridHTML()+'</div>';
@@ -2728,11 +3522,11 @@ function showIntro(pg,from){
   introOpen=true;
   $('#xclose').onclick=closeIntro;
   $('#pprev').onclick=function(){showIntro(introPage-1);};
-  if(introPage<3){ $('#pnext').onclick=function(){showIntro(introPage+1);}; $('#flynow').onclick=closeIntro; $('#pnext').focus(); }
+  if(introPage<3){ $('#pnext').onclick=function(){showIntro(introPage+1);}; $('#flynow').onclick=introFrom?closeIntro:introStart; $('#pnext').focus(); }
   else {
     bindPicker();
     $('#go').onclick=showMatch;
-    $('#skip').onclick=introFrom?closeIntro:startFlight;
+    $('#skip').onclick=introFrom?closeIntro:introStart;
     (introFrom?$('#skip'):$('#go')).focus();
   }
 }
@@ -2785,7 +3579,7 @@ function showMatch(){
     s.addEventListener('dragover',function(e){e.preventDefault();});
     s.addEventListener('drop',function(e){e.preventDefault();var k=e.dataTransfer.getData('text/plain');var c=chips.filter(function(x){return x.dataset.k===k;})[0];if(c){pick(c);place(s);}});
   });
-  $('#go').onclick=startFlight; $('#skip').onclick=startFlight; $('#xclose').onclick=startFlight;
+  $('#go').onclick=introStart; $('#skip').onclick=introStart; $('#xclose').onclick=introStart;
 }
 
 /* ---------------- map screen + briefing card ---------------- */
@@ -2814,6 +3608,7 @@ function showMap(){
   var html=xBtn('xclose','Close the map (Esc)')+
     '<h2><span>FLIGHT MAP</span> <span class="tot" aria-label="'+tot+' of '+max+' stars">★ '+tot+' / '+max+'</span></h2>'+
     '<p class="mapnote">Pick a scenario. Each one opens when you have earned at least 1 star on the one before it. New locations open at '+LOCS.slice(1).map(function(l){return l.need;}).join(', ')+' stars.</p>'+
+    lessonsHTML()+
     '<div class="mapgrid">'+LOCS.map(mapLocHTML).join('')+'</div>'+
     (typeof modesHTML==='function'?modesHTML():'')+
     '<div class="row"><button class="btn ghost small" id="teacher" type="button">'+(PG.openAll?'Teacher mode is on: lock scenarios again':'Teacher mode: open every scenario')+'</button><button class="btn" id="mapdone" type="button">'+(introFrom?'Back to flight':'Fly '+esc(LV.num)+' · '+esc(LV.label)+' →')+'</button></div>';
@@ -2829,6 +3624,7 @@ function showMap(){
     };
   });
   if(typeof bindModes==='function') bindModes();
+  bindLessons();
   var cur=card.querySelector('.sdot.cur')||card.querySelector('.sdot:not(.locked)'); if(cur) cur.focus({preventScroll:true});
 }
 function mapToast(t){
@@ -2948,7 +3744,7 @@ var ACH=[
   {id:'deadstick',g:'Skill',n:'Dead-stick',d:'Get 3 stars on a scenario where the engine stops and you glide.'},
   {id:'deckhand',g:'Skill',n:'Deck hand',d:'Get 3 stars on a carrier landing.'},
   {id:'nostall',g:'Skill',n:'Stall-free location',d:'Land all 6 scenarios of one location without a stall.'},
-  {id:'charts',g:'Teaching',n:'Read the charts',d:'Open the flight data page 10 times.'},
+  {id:'charts',g:'Teaching',n:'Read the charts',d:'Look at the flight charts (Advanced info) after 10 flights.'},
   {id:'shear',g:'Teaching',n:'Wind shear survivor',d:'Pass the sink-rate check in a wind shear scenario.'},
   {id:'heavy',g:'Teaching',n:'Heavy lifter',d:'Get 3 stars on a scenario with a heavy plane.'},
   {id:'daily3',g:'Coming back',n:'Three days running',d:'Fly the daily approach on 3 days in a row.'},
@@ -3153,14 +3949,30 @@ function flightBlock(){
   var h1=chartHTML({title:'Lift vs Weight',a:'L',b:'W',nameA:'Lift',nameB:'Weight',colA:FC.lift,colB:FC.weight,shadeNote:'shaded = lift bigger than weight (climbing)',flare:true,stalls:true});
   var h2=chartHTML({title:'Thrust vs Drag',a:'T',b:'D',nameA:'Thrust',nameB:'Drag',colA:FC.thrust,colB:FC.drag,shadeNote:'shaded = thrust bigger than drag (speeding up)',flare:false,stalls:false});
   if(!h1) return '<p class="cnote">This flight was too short to draw charts.</p>';
+  chartsSeen();
   var note='<p class="cnote">Where the lines cross, the plane switches between climbing and sinking, or between speeding up and slowing down.'+(S.ev.stalls.length?' Red triangles are stalls.':'')+'</p>';
   var rows='<tr><th>Time (s)</th><th>Lift</th><th>Weight</th><th>Thrust</th><th>Drag</th><th>Altitude ('+altUnit()+')</th></tr>';
   S.hist.forEach(function(p,i){ if(i%40===0) rows+='<tr><td>'+Math.round(p.t)+'</td><td>'+nf(p.L)+'</td><td>'+nf(p.W)+'</td><td>'+nf(p.T)+'</td><td>'+nf(p.D)+'</td><td>'+nf(ST.altU==='m'?p.alt/FT:p.alt)+'</td></tr>'; });
   return h1+h2+note+'<details class="ctable"><summary>Show the flight data as a table</summary><table>'+rows+'</table></details>';
 }
+/* the charts and the table are Advanced info: without it, page 2 keeps the stat boxes and says how to see them */
+var flightAdv=null;                                                /* the Advanced info setting page 2 was drawn with */
 function flightSection(){
+  flightAdv=ST.adv;
+  if(!ST.adv) return '<div id="flightArea"><p class="cnote advnote">Turn on Advanced info in Settings (or press '+esc(keyFirst('advanced'))+') to see the flight charts.</p></div>';
   if(ST.autoCharts) return '<div id="flightArea">'+flightBlock()+'</div>';
   return '<div id="flightArea"><div class="row" style="justify-content:flex-start"><button class="btn ghost small" id="showcharts" type="button">Show flight charts</button></div></div>';
+}
+/* "Read the charts" counts a result screen once, and only when its charts were really drawn */
+function chartsSeen(){
+  var c=endCtx; if(!c||c.ch) return; c.ch=true; PG.counts.charts=(PG.counts.charts||0)+1;
+  var ga=checkAch(null); saveProgress();
+  if(ga.length){ var m=$('#srLive'); if(m){ m.textContent=''; setTimeout(function(){ m.textContent='New achievement: '+ga[0].n; },30); } }
+}
+/* Advanced info switched while page 2 is open: swap the flight area in place (focus stays where it is) */
+function refreshFlightArea(){
+  var a=$('#flightArea'); if(!a||!endOpen||endPage!==2) return;
+  var d=document.createElement('div'); d.innerHTML=flightSection(); a.parentNode.replaceChild(d.firstChild,a); bindFlightSection();
 }
 function bindFlightSection(){
   bindCharts(card);
@@ -3208,6 +4020,7 @@ function logAttempt(won,c){
 }
 function showEnd(won){
   endTimer=0; if(mode!==(won?'won':'crashed')) return;   /* only for the run that just ended */
+  if(RUN&&RUN.kind==='lesson'&&lessonFailed(won)) return;  /* lessons: no stars, no log, their own card */
   var c={won:won}, real=!!SBY[levelKey]&&!RUN, before=openLocIds();
   if(won){
     c.sc=scoreFlight();
@@ -3387,7 +4200,6 @@ function renderEnd(pg){
   [].forEach.call(card.querySelectorAll('.dotb'),function(b){b.onclick=function(){renderEnd(+b.dataset.p);};});
   if($('#again')) $('#again').onclick=function(){startFlight();};
   bindRunButtons(c);
-  if(endPage===2&&!c.ch){ c.ch=true; PG.counts.charts=(PG.counts.charts||0)+1; var ga=checkAch(null); saveProgress(); if(ga.length){ var m=$('#srLive'); if(m){ m.textContent=''; setTimeout(function(){ m.textContent='New achievement: '+ga[0].n; },30); } } }
   if($('#retry')) $('#retry').onclick=function(){startFlight(true);};
   if($('#tomap')) $('#tomap').onclick=function(){showMap();};
   if(!last){ $('#pnext').onclick=function(){renderEnd(endPage+1);}; (c.canRetry&&!c.won?$('#retry'):($('#again')||$('#runnext')||$('#runagain')||$('#share')||$('#pnext'))).focus({preventScroll:true}); }
@@ -3397,6 +4209,7 @@ function renderEnd(pg){
 
 /* startFlight(true) = retry the landing: the same scenario, but from the approach (no climb) */
 function startFlight(retry,run){
+  if(run===undefined&&retry!==true&&RUN&&RUN.kind==='lesson'&&LV.lesson) run={kind:'lesson',id:RUN.id};   /* Restart during a lesson restarts the lesson */
   try{localStorage.setItem('flightSchoolSeen','1');}catch(e){}
   clearTimeout(endTimer); endTimer=0;                       /* a result screen that was still due must not appear on the new run */
   closeSheet(true); closeMenu(); hideTip();
@@ -3404,7 +4217,9 @@ function startFlight(retry,run){
   mode='fly'; introFrom=false; introOpen=false; endOpen=false; endCtx=null; endPage=1;
   pressed={}; hold.thr=0; hold.pit=0; acc=0; warnT=0;
   [].forEach.call(document.querySelectorAll('.hold.down'),function(b){b.classList.remove('down');});
-  setPaused(false); coachCur={key:'',lvl:'',t:0,terms:[]}; lastStat=''; updatePanel();
+  setPaused(false); coachCur={key:'',lvl:'',t:0,terms:[]}; lastStat=''; CAM.instant=true; elev=0; elevAng=angle; PV.ok=false;
+  if(RUN&&RUN.kind==='lesson') lessonBegin(); else if(LESSON||!lessonBox.hidden) lessonStop();
+  updatePanel();
   focusGame(); maybeTour();
 }
 function focusGame(){ try{cvs.focus({preventScroll:true});}catch(e){} }
@@ -3430,7 +4245,7 @@ function startReplay(){
   if(replaying||!canReplay()) return;
   var rg=replayRange();
   replaying={i0:rg.i0,i1:rg.i1,td:rg.td,pos:rg.i0,hold:0,held:false,fpm:(S.recTd!==null&&S.rec[(rg.td%REC_CAP)*REC_W+8]<0)?-S.rec[(rg.td%REC_CAP)*REC_W+8]*FPM:(S.crashFpm||0)};
-  modal.classList.remove('show'); endOpen=false; markDirty();
+  modal.classList.remove('show'); endOpen=false; CAM.instant=true; markDirty();
   window.addEventListener('keydown',replayKey,true);
   cvs.addEventListener('pointerdown',replayStop);
   var m=$('#srLive'); if(m){ m.textContent=''; setTimeout(function(){ m.textContent='Replay of the touchdown at quarter speed. Press any key to stop.'; },30); }
@@ -3439,7 +4254,7 @@ function replayKey(e){ e.preventDefault(); e.stopPropagation(); replayStop(); }
 function replayStop(){ endReplay(true); }
 function endReplay(show){
   if(!replaying) return;
-  replaying=null;
+  replaying=null; CAM.instant=true;
   window.removeEventListener('keydown',replayKey,true);
   cvs.removeEventListener('pointerdown',replayStop);
   markDirty();
@@ -3563,43 +4378,188 @@ function closeTour(){
   markDirty(); focusGame();
 }
 function maybeTour(){
-  if(tourSeen()) return;
+  if(tourSeen()||(RUN&&RUN.kind==='lesson')) return;
   setTimeout(function(){ if(mode==='fly'&&!overlay&&!settingsOpen) openTour(false); },400);
 }
 
+/* ---------------- lesson runner ----------------
+   A lesson is a normal flight (RUN.kind 'lesson') with LESSON = {L, i (step), st (step state)}.
+   The lesson bar takes the coaching bar's place (same position in every layout), a pulsing ring (the tour's .tspot)
+   marks the control or meter, and each new step is read out through srLive. The flight never waits on hidden input:
+   every step can be skipped, and "End lesson" opens the map. */
+var LESSON=null, lessonBox=$('#lessonBox'), lspot=$('#lspot'), lessonSpotN=0;
+function lessonStep(){ return (LESSON&&!LESSON.done&&LESSON.i>=0)?LESSON.L.steps[LESSON.i]:null; }
+function lessonSlowOn(){ var s=lessonStep(); return !!(s&&s.slow&&mode==='fly'); }
+function lessonHold(){ var s=lessonStep(); return !!(s&&s.read&&mode==='fly'); }
+function lessonSay(s){ return typeof s.say==='function'?s.say():s.say; }
+function startLesson(id){ var L=LBY[id]; if(!L) return; setLevel(L,true); startFlight(false,{kind:'lesson',id:id}); }
+function lessonBegin(){
+  var L=LBY[RUN.id]; if(!L){ lessonStop(); return; }
+  LESSON={L:L,i:-1,st:null,done:false};
+  if(L.setup) L.setup();
+  coachBox.hidden=true; lessonBox.hidden=false; coachContainer();
+  lessonNext(true);
+}
+function lessonStop(){
+  LESSON=null; lessonBox.hidden=true; coachBox.hidden=false; lspot.hidden=true; markDirty();
+}
+function lessonNext(first,skipped){
+  if(!LESSON) return;
+  var L=LESSON.L, i=LESSON.i+1;
+  while(i<L.steps.length&&L.steps[i].when&&!L.steps[i].when()) i++;
+  if(i>=L.steps.length){ lessonFinish(); return; }
+  LESSON.i=i; LESSON.st={t:0,h:0,v0:S.v}; lessonSpotN=5;          /* the ring is placed again on the next frame */
+  var s=L.steps[i]; if(s.setup) s.setup(LESSON.st);
+  renderLesson();
+  if(ST.announce){ var n=lessonCount(); srLive.setAttribute('aria-live','polite'); srLive.textContent=''; setTimeout(function(){ srLive.textContent=(skipped?'Step skipped. ':'')+(first?'Lesson '+L.n+', '+L.label+'. ':'')+'Step '+n[0]+' of '+n[1]+': '+lessonSay(s); },30); }
+  if(s.read) try{ $('#lessonNext').focus({preventScroll:true}); }catch(e){} else if(!first&&lessonBox.contains(document.activeElement)) focusGame();
+  markDirty();
+}
+function lessonCount(){                                             /* step number among the steps that apply */
+  var L=LESSON.L, n=0, k=0, i;
+  for(i=0;i<L.steps.length;i++){ if(L.steps[i].when&&!L.steps[i].when()) continue; n++; if(i<=LESSON.i) k=n; }
+  return [k,n];
+}
+function renderLesson(){
+  var s=lessonStep(); if(!s) return; var n=lessonCount();
+  $('#lessonHead').textContent='LESSON '+LESSON.L.n+' · '+LESSON.L.label.toUpperCase()+' · STEP '+n[0]+' OF '+n[1];
+  $('#lessonText').textContent=lessonSay(s);
+  $('#lessonHint').textContent=''; $('#lessonHint').hidden=!s.hint;
+  $('#lessonNext').hidden=!s.read; $('#lessonSkip').hidden=!!s.read;
+  placeLessonSpot();
+}
+/* the ring: around a control or meter, or around something drawn on the canvas (the plane, the glide-path box) */
+function canvasRect(x,y,w,h){
+  var r=cvs.getBoundingClientRect(), cw=cvs.clientWidth, ch=cvs.clientHeight, sc=Math.min(cw/W,ch/H);
+  var ox=r.left+cvs.clientLeft+(cw-W*sc)/2, oy=r.top+cvs.clientTop+(ch-H*sc)/2;
+  return {left:ox+x*sc,top:oy+y*sc,width:w*sc,height:h*sc};
+}
+function lessonSpotRect(k){
+  var sel={thrust:MOBILE?'.tgrp.f3':'.controls .ctl.f3',pitch:MOBILE?'.tgrp.f1':'.controls .ctl.f1',meters:MOBILE?'#hud':'#gMeters',view:'#view'}[k], el;
+  if(k&&k.indexOf('m-')===0){ var c=FCLS[k.slice(2)]; sel=MOBILE?'#hud .hm.'+c:'#meterHost .meter.'+c; }
+  if(sel){ el=$(sel); return shown(el)?el.getBoundingClientRect():null; }
+  if(k==='glide') return GLIDE_RECT?canvasRect(GLIDE_RECT.x,GLIDE_RECT.y,GLIDE_RECT.w,GLIDE_RECT.h):null;
+  if(k==='plane'){ var p=PLANE_SCR; return canvasRect(p.x-100*p.z,p.y-45*p.z,200*p.z,85*p.z); }
+  return null;
+}
+function placeLessonSpot(){
+  var s=lessonStep(), r=s&&!sheetOpen&&!menuOpen?lessonSpotRect(s.spot):null;
+  if(!r||mode!=='fly'){ lspot.hidden=true; return; }
+  var pad=5; lspot.hidden=false;
+  lspot.style.left=(r.left-pad)+'px'; lspot.style.top=(r.top-pad)+'px'; lspot.style.width=(r.width+2*pad)+'px'; lspot.style.height=(r.height+2*pad)+'px';
+}
+/* called every frame from loop(): checks the step, keeps the hint and the ring up to date */
+function lessonTick(dt){
+  var s=lessonStep(); if(!s) return;
+  if(mode!=='fly'&&mode!=='won'){ lspot.hidden=true; return; }
+  if(++lessonSpotN%6===0){
+    placeLessonSpot();
+    if(s.hint){ var c=computeCoach(); var h=c?'Coach: '+(MOBILE?c.s:c.text):''; var e=$('#lessonHint'); if(e.textContent!==h) e.textContent=h; }
+  }
+  if(s.read||(halted()&&mode!=='won')) return;
+  var st=LESSON.st; st.t+=dt;
+  if(s.go&&s.go(st)){ st.h+=dt; if(st.h>=(s.hold||0)) lessonNext(); } else st.h=0;
+}
+function lessonMark(){ var s=lessonStep(); return s&&s.mark?s.mark:0; }
+function lessonFinish(){
+  var L=LESSON.L; LESSON.done=true; lspot.hidden=true;
+  PG.lessons=PG.lessons||{}; PG.lessons[L.id]=dateKey(); saveProgress();
+  clearTimeout(endTimer); endTimer=0;
+  if(ST.announce){ srLive.textContent=''; setTimeout(function(){ srLive.textContent='Lesson '+L.n+' complete. '+L.recap; },30); }
+  sfxWin(3);
+  var nx=LESSONS[LESSONS.indexOf(L)+1];
+  lessonCard('<h2><span>LESSON COMPLETE ✓</span></h2><p class="gname">'+esc(L.n+' · '+L.label)+'</p><p class="brtip">'+esc(L.recap)+'</p>'+
+    '<p class="bestline">Lessons give no stars. '+lessonsDone()+' of '+LESSONS.length+' lessons done.</p>',
+    (nx?'<button class="btn" id="lnext" type="button">Next lesson: '+esc(nx.label)+' →</button>':'<button class="btn" id="lfly" type="button">Fly 1.1 · '+esc(SBY['grass-1'].label)+' →</button>'),nx);
+}
+/* the lesson flight ended before the last step (a crash, a missed approach, or the player ended the lesson) */
+function lessonFailed(won){
+  var L=LBY[RUN.id]||LESSON&&LESSON.L; if(!L){ return false; }
+  var w=S.crashWhy, t=won?'STOPPED':(CRASHTXT[w]?CRASHTXT[w][0]:'CRASH!');
+  var nx=LESSONS[LESSONS.indexOf(L)+1];
+  lessonCard('<h2><span>'+esc(t)+'</span></h2><p class="gname">'+esc('Lesson '+L.n+' · '+L.label)+'</p><p>'+(RUN.quit?'You ended the lesson.':'The lesson is not finished yet. That is fine: everybody needs a few tries.')+'</p><p class="brtip">'+esc(L.recap)+'</p>',
+    '<button class="btn" id="lagain" type="button">↺ Try the lesson again</button>',nx);
+  return true;
+}
+function lessonCard(body,mainBtn,nx){
+  lessonStop();
+  var L=LBY[RUN&&RUN.id];
+  openModal(body+'<div class="row"><button class="btn ghost" id="lmap" type="button">🗺 Map</button>'+(nx&&mainBtn.indexOf('lnext')<0?'<button class="btn ghost" id="lskip" type="button">Skip to lesson '+nx.n+'</button>':'')+(L&&mainBtn.indexOf('lagain')<0?'<button class="btn ghost" id="lagain" type="button">↺ Again</button>':'')+mainBtn+'</div>');
+  endOpen=false;
+  var b;
+  if((b=$('#lmap'))) b.onclick=showMap;
+  if((b=$('#lagain'))) b.onclick=function(){ startLesson(L.id); };
+  if((b=$('#lnext'))) b.onclick=function(){ startLesson(nx.id); };
+  if((b=$('#lskip'))) b.onclick=function(){ startLesson(nx.id); };
+  if((b=$('#lfly'))) b.onclick=function(){ setLevel('grass-1'); showBriefing('grass-1',true); };
+  var f=$('#lnext')||$('#lagain')||$('#lfly'); if(f) f.focus({preventScroll:true});
+}
+function lessonQuit(){
+  if(!LESSON) return;
+  RUN.quit=true; lessonStop(); showMap();
+}
+function lessonsDone(){ return LESSONS.filter(function(L){ return PG.lessons&&PG.lessons[L.id]; }).length; }
+/* the Lessons section at the start of the map */
+function lessonsHTML(){
+  return '<section class="loc lessons" aria-label="Lessons"><h3>Lessons</h3><p class="lsub">Short guided flights · no stars · '+lessonsDone()+' / '+LESSONS.length+' done</p><div class="lgrid">'+
+    LESSONS.map(function(L){ var ok=!!(PG.lessons&&PG.lessons[L.id]);
+      return '<button type="button" class="lbtn'+(ok?' done':'')+'" data-lesson="'+L.id+'" aria-label="Lesson '+L.n+': '+esc(L.label)+(ok?', done':'')+'"><span class="sn" aria-hidden="true">'+L.n+'</span><span class="lt">'+esc(L.label)+'</span><span class="ck" aria-hidden="true">'+(ok?'✓':'')+'</span></button>'; }).join('')+
+    '</div></section>';
+}
+function bindLessons(){ [].forEach.call(card.querySelectorAll('.lbtn'),function(b){ b.onclick=function(){ startLesson(b.dataset.lesson); }; }); }
+/* new players: after the intro, offer Lesson 1 once */
+function introStart(){
+  var seen=false; try{ seen=localStorage.getItem('flightSchoolLessonOffer')==='1'; }catch(e){}
+  if(seen||lessonsDone()||totalStars()){ startFlight(); return; }
+  try{ localStorage.setItem('flightSchoolLessonOffer','1'); }catch(e){}
+  openModal(xBtn('xclose','Close and start flying (Esc)')+'<h2><span>NEW TO FLYING?</span></h2>'+
+    '<p>Try <b>Lesson 1: The four forces</b>. It shows you each force, one small step at a time, and takes about two minutes.</p>'+
+    '<p>Lessons give no stars and you can skip them at any time. All seven are on the map under <b>Lessons</b>.</p>'+
+    '<div class="row"><button class="btn ghost" id="lofSkip" type="button">Skip, just fly</button><button class="btn" id="lofGo" type="button">✈ Start lesson 1</button></div>');
+  introOpen=true; introPage=0; introFrom=false;
+  $('#xclose').onclick=startFlight; $('#lofSkip').onclick=function(){ startFlight(); };
+  $('#lofGo').onclick=function(){ startLesson(LESSONS[0].id); }; $('#lofGo').focus({preventScroll:true});
+}
+$('#lessonNext').addEventListener('click',function(){ if(lessonStep()) lessonNext(); });
+$('#lessonSkip').addEventListener('click',function(){ if(lessonStep()) lessonNext(false,true); });
+$('#lessonEnd').addEventListener('click',lessonQuit);
 /* ---------------- main loop ---------------- */
 var last=performance.now(), acc=0;
 function loop(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
   if(replaying){ replayTick(dt); audioTick(dt,false); requestAnimationFrame(loop); return; }
-  var running=(mode==='fly'&&!halted());
+  var running=(mode==='fly'&&!halted()), simDt=0;
   if(mode==='fly'&&!halted()){
     var kp=((isDown('pitchUp')?1:0)-(isDown('pitchDown')?1:0))*(ST.invert?-1:1);
     var kt=(isDown('thrustUp')?1:0)-(isDown('thrustDown')?1:0);
     var rep=REPEAT[ST.repeat]||1;
     var dp=clamp(kp+hold.pit*rep,-2,2), dthr=clamp(kt+hold.thr*rep,-2,2);
     if(dp||dthr){ angle=clamp(angle+dp*14*ST.pitchSens*dt,-5,maxAngle()); thrust=clamp(thrust+dthr*45*ST.thrSens*dt,0,100); syncSliders(); }
-    var sc=(slow?0.25:1)*(ST.gameSpeed==='slower'?0.75:1);
+    var sc=(slow?0.25:lessonSlowOn()?0.35:1)*(ST.gameSpeed==='slower'?0.75:1); simDt=dt*sc;
     acc+=dt*sc;
     while(acc>=1/60 && mode==='fly' && !paused){
-      step(1/60); acc-=1/60;
+      var wasAir=S.airborne; step(1/60); acc-=1/60; touchFx(wasAir,'fly');
       if(S.stallEvt){ S.stallEvt=false; buzz([60,40,60]); if(ST.autoPause){ S.autoPaused=true; setPaused(true); S.autoPaused=true; } }
     }
     prop+=dt*sc*(6+thrust*0.35);
   } else acc=0;
+  if(mode==='fly'&&dt>0){ var tgtE=halted()?0:clamp((angle-elevAng)/dt/14,-1,1); elevAng=angle; elev+=(tgtE-elev)*Math.min(1,dt*9); if(Math.abs(elev)<.01) elev=0; }
   audioTick(dt,running);
   if(S.msgT>0&&!halted()) S.msgT-=dt;
   if(S.shake>0) S.shake=Math.max(0,S.shake-dt);
-  var live=running||mode==='crashed'||mode==='won'||S.shake>0;
+  if(PARTS.length&&!halted()) updateParts(dt*(slow?.25:1));
+  var live=running||mode==='crashed'||mode==='won'||S.shake>0||PARTS.length>0||camBusy();
   if(live||dirty){
     draw(now/1000); dirty=false;
     if(!live||frame++%5===0) updatePanel();
   }
+  if(LESSON) lessonTick(simDt);                                   /* after drawing, so the ring uses this frame's plane position */
   requestAnimationFrame(loop);
 }
 $('#mapbtn').addEventListener('click',function(){ if(!overlay&&!settingsOpen) showMap(); });
 (function(){ var h=document.querySelector('a.home'); try{ if(h&&new URL(h.href).pathname===location.pathname) h.style.display='none'; }catch(e){} })();
 reset();
+try{ $('#plane').innerHTML=planeSVG(); }catch(e){}
 buildMeters();
 setupCanvas();
 applyLayout(true);

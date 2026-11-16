@@ -268,6 +268,13 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .papi i{width:14px;height:14px;border-radius:50%;border:2px solid #000}
 .papi i.w{background:#fff} .papi i.r{background:#E5483B}
 .checks{margin:2px 0 6px;padding-left:22px}
+.pnums{border:2.5px dashed var(--ink);border-radius:10px;padding:2px 10px;margin:6px 0;background:var(--card)}
+.pnums summary{cursor:pointer;min-height:32px} .pnums p{margin:4px 0;overflow-wrap:anywhere}
+.physbox{border:2.5px solid var(--lift);border-radius:10px;padding:4px 10px;margin:6px 0;background:var(--card)} .physbox p{margin:2px 0;overflow-wrap:anywhere}
+.lvlcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:8px 0}
+.lvlcard{font:inherit;color:var(--ink);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:10px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);box-shadow:3px 3px 0 rgba(0,0,0,.18);min-height:44px}
+.lvlcard b{font-size:calc(26px*var(--ts))} .lvlcard small{color:var(--pencil);font-size:calc(15px*var(--ts))} .lvlcard span{font-size:calc(17px*var(--ts))}
+@media (hover:hover){.lvlcard:hover{background:var(--lift-t)}}
 .pausem{position:fixed;inset:0;z-index:48;background:rgba(10,16,30,.5);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}
 .pausem[hidden]{display:none}
 .pmcard{max-width:560px}
@@ -1152,6 +1159,157 @@ function fmtP(s,P){
     return m;
   });
 }
+/* ---------------- explanation levels: one text table ----------------
+   ST.level is 'explorer' (about 6-10: short everyday words, no units), 'student' (about 11-16: the game as it was) or 'pilot'
+   (16+: real terms and the physics). Only the words change, never the physics, the checks or the scoring.
+   TX[key] = {e: explorer, s: student, p: pilot}; tx(key, vals) picks the player's level and falls back to the student text.
+   {name} placeholders come from vals (numbers already formatted by the caller); plane numbers like {rot} {crit} go through fmtP().
+   To add a message: add TX.mykey={s:'…', e:'…', p:'…'} and call tx('mykey',{…}). */
+var LEVELS=[['explorer','Explorer','about 6 to 10'],['student','Student','about 11 to 15'],['pilot','Pilot','16 and up, university']];
+function lvl(){ return ST.level==='explorer'||ST.level==='pilot'?ST.level:'student'; }
+function lvlE(){ return lvl()==='explorer'; }
+function lvlP(){ return lvl()==='pilot'; }
+function tx(key,v){
+  var m=TX[key]; if(!m) return '';
+  var s=m[lvl().charAt(0)]; if(s===undefined) s=m.s;
+  if(typeof s==='function') s=s(v||{});
+  s=String(s).replace(/\{(\w+)\}/g,function(a,k){ return v&&v[k]!==undefined?v[k]:a; });
+  return fmtP(s);
+}
+/* numbers in words for Explorer */
+function hillTag(ft){ var c=LV.goal==='clear'; return lvlE()?(c?'FLY OVER THIS HILL':'HILL'):(c?'CLEAR THE HILL: ':'HILL ')+altStrFt(ft); }
+function eSpeed(kt){ return kt<20?'standing still':kt<60?'slow':kt<110?'fast':'very fast'; }
+function eHeight(ft){ return ft<3?'on the ground':ft<150?'just above the ground':ft<700?'up high':'very high'; }
+function eSink(fpm){ return fpm<150?'like a feather':fpm<400?'gently':fpm<800?'a bit hard':'very hard'; }
+var TX={
+  /* ---- coach messages (the long version; 'x.' = the short one for phones) ---- */
+  stall:{e:'STALL! Point the nose down now!',s:'STALL!{tstall} Lower the nose (pitch below {rec}°) to get your lift back.',p:'STALL: angle of attack {aoa}° is past the critical {crit}°, C_L has collapsed. Lower the nose below {rec}° to reattach the airflow.'},
+  'x.stall':{e:'STALL! Nose down!',s:'STALL! Nose down!',p:'STALL! AoA below {rec}°!'},
+  toofast:{e:'Coming down too fast! Lift the nose and add some engine!',s:'TOO FAST FOR LANDING! Sinking {sink} (limit {limit}). Raise the pitch and add a little thrust.',p:'SINK RATE: {sink}, limit {limit}. Raise the angle of attack and add thrust now.'},
+  'x.toofast':{e:'Too fast down! Nose up!',s:'TOO FAST! Pitch up, add thrust.',p:'SINK RATE! Pitch up, power.'},
+  stallwarn:{e:'Too steep! Point the nose down a little!',s:'TOO STEEP! Lower the nose now, or the wing will stall{tstall}.',p:'STALL WARNING: angle of attack {aoa}°, critical {crit}°. Lower the nose now.'},
+  'x.stallwarn':{e:'Too steep! Nose down!',s:'Too steep! Nose down!',p:'Stall warning! Nose down!'},
+  steep:{e:'The nose is very high. Bring it down a bit.',s:'The nose is getting steep. Lower it a little to stay safe.',p:'AoA {aoa}°: close to the stall margin ({crit}°). Ease the nose down.'},
+  'x.steep':{e:'Nose a bit lower.',s:'Nose getting steep. Lower it a bit.',p:'AoA high. Ease down.'},
+  hill:{e:'Hill ahead! Climb higher!',s:'HILL AHEAD! You will pass it {proj} up but it is {hill} high. {fix}',p:'TERRAIN: projected {proj} over a {hill} ridge. {fix}'},
+  'x.hill':{e:'Hill! Climb!',s:'Hill ahead! Climb!',p:'Terrain! Climb!'},
+  hillFixLand:{e:'',s:'Climb a little and stay above the path until it is behind you.',p:'Climb and stay above the glide path until it is behind you.'},
+  hillFixClimb:{e:'',s:'Full thrust and keep the nose near {climb}°.',p:'Full power, best-climb attitude about {climb}°.'},
+  fuellow:{e:'Almost out of fuel! Use less engine.',s:'FUEL LOW: {fuel} s of full thrust left. Use less thrust.',p:'FUEL LOW: {fuel} s at full power. Reduce thrust.'},
+  'x.fuellow':{e:'Fuel low!',s:'Fuel low! Use less thrust.',p:'Fuel low! Reduce power.'},
+  glide:{e:'The engine stopped. Glide down slowly and steadily to the runway.',s:'ENGINE OUT. Thrust is locked at 0. You need a glide of {need} : 1 to reach the zone; you have {have} : 1. {fix}',p:'ENGINE FAILURE. Required glide ratio {need}:1, current {have}:1. {fix}'},
+  glider:{e:'No engine! Glide down slowly and steadily to the runway.',s:'NO ENGINE: a glider trades height for speed. You need a glide of {need} : 1 to reach the zone; you have {have} : 1. {fix}',p:'Gliding: potential energy into speed. Required glide ratio {need}:1, current {have}:1. {fix}'},
+  'x.glide':{e:'Engine stopped! Glide!',s:'Engine out! Glide: about {glide}°.',p:'Engine out. Best glide about {glide}°.'},
+  'x.glider':{e:'No engine. Glide!',s:'No engine: glide at about {glide}°.',p:'Best glide about {glide}°.'},
+  glideOk:{s:'Hold this nose angle.',p:'Hold this attitude.'},
+  glideFix:{s:'Lower the nose to go faster, or raise it a little: about {glide}° glides farthest.',p:'Fly the best-glide angle of attack, about {glide}°: lowest drag for the lift you need.'},
+  go:{e:'Touch and go! Full engine and lift the nose to fly again!',s:'TOUCH AND GO! Push THRUST to full and raise the nose to about {rot}° to take off again before the runway ends.',p:'TOUCH AND GO: full power, rotate to about {rot}° before the end of the runway.'},
+  'x.go':{e:'Full engine, nose up!',s:'Full thrust, pitch up ~{rot}°!',p:'Full power, rotate ~{rot}°!'},
+  runwayend:{e:'The runway is ending! Lift the nose up now!',s:'RUNWAY ENDING! Raise the pitch to about {rot}° now. Runway left: {left}.',p:'RUNWAY ENDING: {left} left. Rotate to about {rot}° now.'},
+  'x.runwayend':{e:'Nose up now!',s:'Runway ending! Pitch up ~{rot}°.',p:'Rotate now!'},
+  rotate:{e:'Almost flying! Lift the nose up a little.',s:'Lift is almost enough! Raise the pitch to about {rot}° to lift off (rotate).',p:'Rotate: L/W = {lw}. Raise the angle of attack to about {rot}° (C_L about {clr}) to lift off.'},
+  'x.rotate':{e:'Nose up a little!',s:'Pitch up ~{rot}° to lift off.',p:'Rotate to ~{rot}°.'},
+  brake:{e:'Turn the engine off. The plane will slow down and stop.',s:'Set THRUST to 0. The brakes and drag will stop you.',p:'Idle. Wheel brakes and drag will decelerate you.'},
+  brakeTouch:{e:'Tap IDLE {where} to turn the engine off.',s:'Tap IDLE {where} to set THRUST to 0. The brakes and drag will stop you.',p:'Tap IDLE {where}. Brakes and drag will decelerate you.'},
+  'x.brake':{e:'Engine off!',s:'Tap IDLE to stop.',p:'Idle.'},
+  braking:{e:'Slowing down. Stop before the runway ends.',s:'Rolling to a stop… keep thrust at 0. Stop before the runway ends.',p:'Rollout: keep idle, stop before the end of the runway.'},
+  'x.braking':{e:'Slowing down…',s:'Rolling to a stop…',p:'Rollout…'},
+  start:{e:'Turn the engine up ({key}) to start rolling.',s:'Push THRUST up ({key} or the slider) to start rolling. Full thrust is best.',p:'Full power ({key}) for the take-off roll.'},
+  startTouch:{e:'Hold + (or tap FULL) {where} to start rolling.',s:'Hold + (or tap FULL) {where} to start rolling. Full thrust is best.',p:'Tap FULL {where} for the take-off roll.'},
+  'x.start':{e:'Tap FULL to go!',s:'Tap FULL to start rolling.',p:'Full power.'},
+  pushmore:{e:'More engine! The plane needs more push to go faster.',s:'Thrust has to beat drag (and rolling friction) to speed up. Push THRUST higher.',p:'T < D + rolling friction: no acceleration. Add power.'},
+  'x.pushmore':{e:'More engine!',s:'Thrust must beat drag. More thrust!',p:'More power.'},
+  roll:{e:'Faster and faster… soon you can fly!',s:'Thrust > Drag, so you speed up. You lift off when Lift > Weight (about {lofLo} to {lofHi} airspeed).',p:'T > D: accelerating. Lift = ½ ρ v² S C_L grows with v², so you lift off near {lofLo} to {lofHi}.'},
+  'x.roll':{e:'Speeding up…',s:'Thrust > Drag: speeding up.',p:'T > D: accelerating.'},
+  flare:{e:'Now lift the nose a tiny bit for a soft landing!',s:'FLARE! Raise the pitch a little to soften the touchdown.',p:'FLARE: raise the angle of attack slightly to reduce the sink rate ({sink}).'},
+  'x.flare':{e:'Nose up a tiny bit!',s:'Flare! Raise the pitch a bit.',p:'Flare!'},
+  late:{e:'You flew past the landing spot! Land soon.',s:'PAST THE ZONE! Get the wheels down soon. Runway left: {left}.',p:'PAST THE TOUCHDOWN ZONE: {left} of runway left. Land now.'},
+  'x.late':{e:'Land now!',s:'Past the zone! Land soon.',p:'Past the zone! Land.'},
+  level:{e:'Fly straight for now. When the landing lights show up, start going down.',s:'Keep level for now. When the GLIDE PATH LIGHTS box appears (top right of the view), start to descend.',p:'Maintain level until intercepting the glide path (lights box, top right), then begin the descent.'},
+  'x.level':{e:'Fly straight for now.',s:'Level off. Descend when the lights show.',p:'Level until the glide path.'},
+  high:{e:'Too high! Less engine and point the nose down a little.',s:'TOO HIGH: all 4 lights are white. Cut thrust and lower the nose a little to come down.',p:'WELL ABOVE PATH (4 white): approach angle {ang}° against {gs}°. Reduce power, lower the nose.'},
+  'x.high':{e:'Too high!',s:'Too high! Cut thrust, nose down.',p:'High! Power off, nose down.'},
+  abithigh:{e:'A little too high. Nose down a tiny bit.',s:'A bit high (3 white lights). Ease the nose down a little.',p:'Slightly high (3 white): {ang}° against {gs}°. Ease the nose down.'},
+  'x.abithigh':{e:'A bit high.',s:'A bit high. Ease the nose down.',p:'Slightly high.'},
+  descend:{e:'Time to go down now! Less engine and nose down gently.',s:'The runway is in range. Start your descent now: cut thrust a little and lower the nose gently.',p:'Glide path intercept: reduce power and set a {gs}° descent.'},
+  'x.descend':{e:'Go down now!',s:'Start descending now.',p:'Begin descent.'},
+  path:{e:'Perfect! You are on the landing path. Keep it steady.',s:'On the path: 2 white and 2 red lights. Hold it. Cut thrust and flare{tflare} just before touchdown, inside the zone.',p:'On glide path ({gs}°, 2 white 2 red). Sink {sink} at {spd}. Hold attitude, idle and flare at about {fh}.'},
+  'x.path':{e:'Perfect! Keep it steady.',s:'On the path! Hold it.',p:'On path. Hold it.'},
+  abitlow:{e:'A little too low. Add a bit of engine.',s:'A bit low (3 red lights). Add a little thrust or raise the nose.',p:'Slightly low (3 red): {ang}° against {gs}°. Add a little power.'},
+  'x.abitlow':{e:'A bit low.',s:'A bit low. Add a little thrust.',p:'Slightly low.'},
+  low:{e:'Too low! More engine and nose up, or you will miss the runway!',s:'TOO LOW: all 4 lights are red. Add thrust and raise the nose, or you will land short of the runway.',p:'WELL BELOW PATH (4 red): {ang}° against {gs}°. Power and pitch up, or you land short.'},
+  'x.low':{e:'Too low! Nose up!',s:'Too low! Add thrust, nose up.',p:'Low! Power, pitch up.'},
+  land:{e:'Turn the engine off and come down gently.',s:'Cut thrust and flare{tflare} just before touchdown. Butter is under {butter}.',p:'Idle, flare just before touchdown. Butter: sink rate under {butter}.'},
+  'x.land':{e:'Come down gently.',s:'Cut thrust, descend gently.',p:'Idle, flare.'},
+  climbUp:{e:'Lift is winning! You are going up.',s:'Lift > Weight, so you climb. Goal: {goal}.',p:'L/W = {lw}: climbing at {vs}. Target {goal}.'},
+  'x.climbUp':{e:'Going up!',s:'Lift > Weight: climbing.',p:'L > W: climbing.'},
+  climbDown:{e:'Weight is winning. You are going down. Go faster or lift the nose.',s:'Lift < Weight, so you sink. Add speed or pitch. Goal: {goal}.',p:'L/W = {lw}: sinking. Lift = ½ ρ v² S C_L: add speed or angle of attack. Target {goal}.'},
+  'x.climbDown':{e:'Going down.',s:'Lift < Weight: sinking.',p:'L < W: sinking.'},
+  climbLevel:{e:'Lift and weight are even. You fly straight.',s:'Lift ≈ Weight: level flight. Goal: {goal}.',p:'L ≈ W: level flight, AoA {aoa}°, C_L {cl}. Target {goal}.'},
+  'x.climbLevel':{e:'Flying straight.',s:'Lift ≈ Weight: level flight.',p:'L ≈ W: level.'},
+  gusts:{e:' Wind bumps you around. Small moves keep you steady.',s:' Gusts push you around: nudge the pitch to stay steady.',p:' Gusts change the relative wind: small pitch corrections.'},
+  /* ---- force tips (the arrows and the meters) ---- */
+  'tip.lift':{e:'Lift pushes the plane up. Go faster to get more.',s:'Lift pushes the plane up. Go faster to get more lift.',p:'Lift = ½ ρ v² S C_L. Twice the speed, four times the lift; C_L rises with angle of attack up to the stall.'},
+  'tip.weight':{e:'Weight pulls the plane down.',s:'Weight is gravity pulling the plane down.',p:'Weight = m g, straight down. Burning fuel lowers it.'},
+  'tip.thrust':{e:'Thrust pushes the plane forward. The engine makes it.',s:'Thrust pushes the plane forward. The engine makes it.',p:'Thrust from the propeller or jet, along the flight path.'},
+  'tip.drag':{e:'Drag is the air pushing back on the plane.',s:'Drag is the air pushing back. The faster you fly, the more drag.',p:'Drag = parasite drag (grows with v²) + induced drag (grows with C_L²).'},
+  'm.weightHint':{e:'Fly faster for much more lift.',s:'Twice as fast = four times the lift.',p:'L ∝ v²: twice the speed, four times the lift.'},
+  'm.thrustHint':{e:'',s:'Different scale from the slider: full engine (100%) pushes with 150% of the weight.',p:'Full power = 150% of the weight (thrust-to-weight 1.5).'},
+  'm.scale':{e:'Longer bar = stronger push or pull.',s:'100% = the normal weight of the plane',p:'Forces as % of the normal weight (L/W, T/W, D/W).'},
+  'm.win.up':{e:'Lift is winning!'},'m.win.down':{e:'Weight is winning!'},'m.win.even':{e:'Lift and weight are even.'},
+  'm.win.fast':{e:'Thrust is winning: faster!'},'m.win.slow':{e:'Drag is winning: slower.'},
+  /* ---- star checks, results ---- */
+  'g.0':{e:'Super soft landing!',s:'BUTTER LANDING!',p:'BUTTER LANDING'},
+  'g.1':{e:'Nice soft landing!',s:'SMOOTH LANDING',p:'SMOOTH LANDING'},
+  'g.2':{e:'A bit of a bump!',s:'FIRM LANDING',p:'FIRM LANDING'},
+  'g.3':{e:'Ouch, that was hard!',s:'HARD LANDING',p:'HARD LANDING'},
+  'g.4':{e:'Crash!',s:'CRASH',p:'CRASH'},
+  'st.sink':{e:'Soft landing',s:'Gentle touchdown',p:'Sink rate at touchdown'},
+  'st.zone':{e:'Landed in the right spot',s:'Touchdown zone',p:'Touchdown zone'},
+  'st.nose':{e:'Nose up a little when landing',s:'Nose angle',p:'Pitch attitude at touchdown'},
+  'st.stop':{e:'Stopped on the runway',s:'Stop on the runway',p:'Stop on the runway'},
+  'st.clean':{e:'No stall',s:'No stall',p:'No stall (AoA below critical)'},
+  'st.goal':{e:'Scenario goal',s:'Scenario goal',p:'Scenario goal'},
+  'ck.sink':{e:'Land softly, like a feather',s:'Gentle touchdown: under {limit}',p:'Sink rate at touchdown under {limit}'},
+  'ck.zone':{e:'Land in the marked part of the runway',s:'Touch down inside the zone ({zone}% of the runway)',p:'Touch down in the zone (first {zone}% of the runway)'},
+  'ck.nose':{e:'Nose up a little when you land',s:'Good nose angle at touchdown',p:'Pitch attitude at touchdown: slightly nose-up, main wheels first'},
+  'ck.stop':{e:'Stop before the runway ends',s:'Stop before the runway ends',p:'Stop within the runway length'},
+  'ck.clean':{e:'Do not let the wing stall',s:'No stall',p:'Never exceed the critical angle of attack ({crit}°)'},
+  resSay:{e:'{name} landed {sinkw}.',s:'{name} touched down at {fpm}. ',p:'{name}: touchdown at {fpm} ({fpmalt}), {td} past the threshold, pitch {pitch}°. '},
+  'say.0':{e:' Super soft landing!',s:'Pilots dream of landings like this!',p:'Excellent energy management.'},
+  'say.1':{e:' Nice and soft!',s:'Nicely done.',p:'Well flown.'},
+  'say.2':{e:' A bit bumpy, but you did it!',s:'The passengers felt that one.',p:'Firm: flare a little earlier to bleed off the sink rate.'},
+  'say.3':{e:' That was hard. The plane needs a check-up!',s:'The plane survived but needs an inspection.',p:'Hard landing: the airframe needs an inspection. Reduce the sink rate with an earlier flare.'},
+  well:{e:'You did it!',s:'You did well:',p:'Well done:'},
+  next:{e:'Next time:',s:'Try next time:',p:'Debrief:'},
+  /* ---- Explorer debrief: what went well, what to try ---- */
+  'ew.zone':{e:'You landed in the right spot!'},'ew.sink':{e:'Super soft landing!'},'ew.stop':{e:'You stopped on the runway!'},
+  'ew.nose':{e:'Good nose angle when you landed!'},'ew.clean':{e:'No stall all the way!'},'ew.won':{e:'You flew and landed the plane!'},
+  'ew.air':{e:'You got the plane into the air!'},'ew.speed':{e:'You got the plane rolling fast!'},'ew.try':{e:'You gave it a go. Every pilot practises!'},
+  'et.sink':{e:'Next time, lift the nose a tiny bit just before landing.'},'et.zone':{e:'Next time, land in the marked part of the runway.'},
+  'et.nose':{e:'Next time, keep the nose up a little when you land.'},'et.stop':{e:'Next time, turn the engine off as soon as you land.'},
+  'et.clean':{e:'Next time, do not lift the nose so high.'},'et.goal':{e:'Next time, read the goal again before you fly.'},
+  'et.overrun':{e:'Next time, lift the nose earlier on the runway.'},'et.missed':{e:'Next time, start going down as soon as the landing lights appear.'},
+  'et.grass':{e:'Next time, keep the engine on full while you climb.'},'et.short':{e:'Next time, add a little engine when the lights turn red.'},
+  'et.long':{e:'Next time, start going down sooner.'},'et.offend':{e:'Next time, turn the engine off right after landing.'},
+  'et.hard':{e:'Next time, come down slower and lift the nose a little before landing.'},'et.terrain':{e:'Next time, fly higher over the hills.'},
+  'et.nogo':{e:'Next time, add full engine right after the wheels touch.'},'et.ok':{e:'Try the next scenario!'},
+  'crash.e':{e:'The plane came down too hard or in the wrong place. Try again!'},
+  /* ---- Pilot debrief numbers ---- */
+  pn:{p:'Sink rate {fpm} ({fpmalt}) · airspeed {spd} · pitch {pitch}° · L/W {lw} at touchdown. Flare: {flare}. Approach: {appr}.'},
+  'pn.flare':{p:'began {lead} s before touchdown'},'pn.noflare':{p:'none detected'},'pn.appr':{p:'{a}° against the ideal {gs}°'},'pn.noappr':{p:'not recorded'},
+  'pt.noflare':{p:'Tip: no flare. Raise the angle of attack 2 to 3 s before touchdown to cut the sink rate.'},
+  'pt.early':{p:'Tip: the flare started {lead} s early, so you floated. Flare at about {fh}.'},
+  'pt.sink':{p:'Tip: sink rate above {lim}. Start the flare a little earlier and close the throttle.'},
+  'pt.path':{p:'Tip: the approach was {d}° off the glide path. Track 2 white / 2 red more tightly.'},
+  'pt.ok':{p:'Tip: clean numbers. Aim for the first third of the zone next time.'},
+  pauseStall:{e:'The nose went too high and the wing stopped lifting. Point the nose down when you continue.',s:'Pitch went past {crit}°, so the air tore away from the wing and lift collapsed. Lower the nose below {rec}° when you continue.',p:'Angle of attack exceeded the critical {crit}°: flow separation, C_L collapsed. Reduce α below {rec}° on resuming.'},
+  /* ---- the explanation level itself ---- */
+  lvlNote:{s:'Changes the words and the detail, not the difficulty or the stars.'},
+  'lvl.ex.explorer':{s:'Lift is winning! You are going up.'},
+  'lvl.ex.student':{s:'Lift > Weight, so you climb. Raise the pitch to about 9° to lift off.'},
+  'lvl.ex.pilot':{s:'L/W = 1.08: climbing. Lift = ½ ρ v² S C_L, so twice the speed gives four times the lift.'}
+};
 var SCN=[], SBY={};
 function makeScn(r,i){
     var L=LOCBY[r.loc], air=r.air||{}, pl=r.plane||{}, fd=r.field||{}, b=Math.round(r.grade?r.grade[0]:L.butter);
@@ -1258,8 +1416,27 @@ var LESSON_RAW=[
   {spot:'view',say:'Keep thrust at 0. Drag, rolling friction and the brakes slow you down. Stop before the runway ends.',go:function(){return mode==='won';}}
   ]}
 ];
+/* lesson texts per explanation level: Explorer gets its own short words per step (same steps, same checks); Pilot keeps the
+   Student steps and adds a short "The physics" box (shown on the lesson card and in How to play) */
+var LESSON_LV={
+  'lesson-forces':{e:['This is your plane. Four pushes and pulls work on it all the time.','Weight (red arrow) pulls the plane down.','Lift (blue arrow) pushes the plane up.',function(){return 'Thrust (green arrow) is the engine pushing forward. Turn the engine all the way up: '+kThr()+'.';},'Drag (orange arrow) is the air pushing back. The faster you go, the more it pushes.',function(){return 'Now turn the engine off ('+kIdle()+'). Drag wins and you slow down.';},function(){return 'Lift the nose up a little ('+kUp()+'). Lift wins and you go up!';},'That is it! Lift against weight: up or down. Thrust against drag: faster or slower.'],
+    p:'Lift = ½ ρ v² S C_L and drag = ½ ρ v² S C_D. In steady flight L = W and T = D; any difference accelerates the plane (F = m a).'},
+  'lesson-takeoff':{e:[function(){return 'You are on the runway. Turn the engine all the way up ('+kThr()+').';},'The plane rolls faster and faster. Watch the lift bar grow.',function(){return 'Almost enough lift! Lift the nose up now ('+kUp()+').';},'You are flying! Keep going up.'],
+    p:'On the roll, T − D − μ(W − L) accelerates the plane. Lift-off when L = W: v = √(2W / (ρ S C_L)), so rotating to a higher C_L lowers the lift-off speed.'},
+  'lesson-stall':{e:['The nose angle makes more lift, but only up to a point.',function(){return 'Lift the nose a little ('+kUp()+'). You go up.';},'Keep lifting the nose, more and more. You are high up, so it is safe.',function(){return 'STALL! The wing stopped lifting. Point the nose down ('+kDown()+') to fix it.';},'The stall guard is on (Settings), so the nose stops before a stall.','Remember: keep the nose from going too high.'],
+    p:'C_L rises about linearly with angle of attack until the critical angle ({crit}°). Beyond it the flow separates, C_L drops and drag rises sharply. Recovery: reduce α.'},
+  'lesson-climb':{e:[function(){return 'Go up: engine all the way up ('+kThr()+') and the nose up a little.';},'Lift is winning, so you go up. Keep climbing.','Now fly straight: nose down a little and less engine. Hold it.','Flying straight: lift and weight are even, thrust and drag are even.'],
+    p:'Climb rate ≈ (T − D) v / W: excess power divided by weight. In level flight L = W and T = D.'},
+  'lesson-papi':{e:['These are the landing lights. 2 white and 2 red means you are on the right path.','More white: too high, come down a bit. More red: too low, add engine. Keep 2 white and 2 red.','Good. Stay on the path.','You flew the landing path!'],
+    p:'The PAPI shows your position against a fixed glide slope (here {gs}°). Descent rate ≈ ground speed × tan(γ): a faster approach needs a higher sink rate on the same path.'},
+  'lesson-flare':{e:['Just before landing, lift the nose a tiny bit. This is the flare. It makes the landing soft.','Stay on the path: 2 white and 2 red lights.',function(){return 'Flare now: lift the nose a little ('+kUp()+').';},function(){return 'Hold it. When the wheels touch, turn the engine off ('+kIdle()+').';},function(){return 'You landed '+eSink(S.tdFpm||S.fpm)+'!';}],
+    p:'The flare raises C_L briefly so L > W, curving the path and cutting the sink rate before touchdown. Ground effect also reduces induced drag within about one wingspan.'},
+  'lesson-brake':{e:[function(){return 'You just landed and you are still fast. Turn the engine off ('+kIdle()+').';},'Keep the engine off. The brakes and the air slow you down. Stop before the runway ends.'],
+    p:'Stopping distance ≈ v² / (2 a): half the touchdown speed means a quarter of the distance. Braking and drag do the work; residual thrust adds distance.'}
+};
+LESSON_RAW.forEach(function(r){ var x=LESSON_LV[r.id]; if(!x) return; r.steps.forEach(function(st,i){ if(x.e[i]!==undefined) st.sayE=x.e[i]; }); r.physics=x.p; });
 var LESSONS=LESSON_RAW.map(function(r){
-  var s=makeScn(r,-1); s.lesson=true; s.num='L'+r.n; s.locName='Lessons'; s.steps=r.steps; s.setup=r.setup||null; s.recap=r.recap; return s;
+  var s=makeScn(r,-1); s.lesson=true; s.num='L'+r.n; s.locName='Lessons'; s.steps=r.steps; s.setup=r.setup||null; s.recap=r.recap; s.physics=r.physics||''; return s;
 }), LBY={};
 LESSONS.forEach(function(s){ LBY[s.id]=s; });
 /* the five levels of the first version live on as scenarios; their saved stars move with them */
@@ -1291,7 +1468,7 @@ function defKeys(){var o={};ACTIONS.forEach(function(a){o[a.id]=a.d.slice();});r
 var DEF={
   adv:false,
   theme:'light', text:'medium', arrows:true, arrowSize:'normal', labels:true, showTarget:true, showRunway:true, forceUnits:'pct',
-  altU:'ft', spdU:'kt', vsU:'fpm',
+  altU:'ft', spdU:'kt', vsU:'fpm', level:'student', unitSys:'aviation',
   panels:{meters:true,data:true,steps:true,chart:true,coach:true}, side:'right', density:'spacious', viewSize:'balanced', coachPos:'top', camera:'chase',
   thrSens:1, pitchSens:1, invert:false, touchSize:'medium', repeat:'normal', keys:defKeys(), keyVer:2,
   gameSpeed:'normal', turb:'normal', stallProt:false, fuel:true, tips:'all', autoPause:false, autoCharts:true,
@@ -1380,6 +1557,7 @@ function altStrFt(ft){return ST.altU==='m'?nf(ft/FT)+' m':nf(ft)+' ft';}
 function spdStrKt(kt){return nf(spdFromKt(kt))+' '+spdUnit();}
 function vsStr(fpm){return ST.vsU==='ms'?(fpm/FPM).toFixed(1)+' m/s':nf(fpm)+' fpm';}
 function fForce(v){return nf(v)+(ST.forceUnits==='pct'?'%':'');}
+function cvF(v){return lvlE()?'':fForce(v);}                       /* force numbers on the view: none for Explorer */
 
 /* ---------------- state ---------------- */
 var cvs=$('#cv'), ctx=cvs.getContext('2d');
@@ -1515,7 +1693,7 @@ function syncSliders(){
   markDirty(); thr.value=thrust; ang.value=angle;
   $('#thrV').textContent=Math.round(thrust)+'%';
   var a=Math.round(angle*10)/10;
-  $('#angV').textContent=(a>0?'+':'')+a.toFixed(1)+'°'+(angle>=PL.soft?' ⚠':'');
+  $('#angV').textContent=(a>0?'+':'')+a.toFixed(1)+'°'+(lvlP()&&S?' · C_L '+liftCoeff(angle,S.stalled).toFixed(2):'')+(angle>=PL.soft?' ⚠':'');   /* Pilot: the lift coefficient too */
   $('#angV').classList.toggle('steep',angle>=PL.soft);
 }
 thr.addEventListener('input',function(){thrust=+thr.value;syncSliders();});
@@ -1732,7 +1910,7 @@ function updatePauseUI(){var b=$('#pause'); b.setAttribute('aria-pressed',paused
 var pmEl=$('#pauseMenu'), pmCard=$('#pmCard'), pmOpen=false;
 function renderPause(keepFocus){
   var fid=keepFocus&&document.activeElement&&pmCard.contains(document.activeElement)?document.activeElement.id:null;
-  var stall=S&&S.autoPaused?'<p class="pmstall" role="alert"><b>STALL!</b> '+esc(fmtP('Pitch went past {crit}°, so the air tore away from the wing and lift collapsed. Lower the nose below {rec}° when you continue.'))+'</p>':'';
+  var stall=S&&S.autoPaused?'<p class="pmstall" role="alert"><b>STALL!</b> '+esc(tx('pauseStall',{aoa:angle.toFixed(1)}))+'</p>':'';
   var fs=inFs()&&actionOf('escape')==='pause'&&!IS_TOUCH?'<p class="mapnote">Press Esc again to exit fullscreen'+(escLocked?' (or hold Esc)':'')+'. The game stays paused.</p>':'';
   pmCard.innerHTML='<h2 id="pmTitle"><span>PAUSED</span></h2>'+stall+fs+
     '<div class="pmmain"><button type="button" class="btn pmgo" id="pmGo">▶ Continue <small>('+esc(keysAll('pause'))+')</small></button><button type="button" class="btn ghost" id="pmRestart">↺ Restart <small>('+esc(keyFirst('restart'))+')</small></button></div>'+
@@ -2056,11 +2234,11 @@ function touchdown(sink){
     objTouch(g,fpm);
     if(g>=S.grade){S.grade=g; S.fpm=fpm; S.bad=bad||S.bad;}
     if(S.phase==='landing'){S.phase='rollout'; S.ev.touch=S.time;}
-    S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['thrust','lift','amber','weight','weight'][g]; S.msgT=3.5;
+    S.msg=tx('g.'+g).toUpperCase(); S.msg2=lvlE()?'':vsStr(fpm); S.msgCol=['thrust','lift','amber','weight','weight'][g]; S.msgT=3.5;
   } else if(S.phase==='climb'){
     if(S.x>S.stripEnd+60) return crash(fpm,'grass');        /* came back down on the grass after take-off */
     if(S.obj.stage>=2){ S.phase='rollout'; S.obj.stage=1; } else S.phase='takeoff';
-    if(g>=2){S.msg=NAMES[g]; S.msg2=vsStr(fpm); S.msgCol=['thrust','lift','amber','weight','weight'][g]; S.msgT=2.5;}
+    if(g>=2){S.msg=tx('g.'+g).toUpperCase(); S.msg2=lvlE()?'':vsStr(fpm); S.msgCol=['thrust','lift','amber','weight','weight'][g]; S.msgT=2.5;}
   }
   sfxTouch(g); buzz(g>=3?90:g===2?35:12);
   if(g>=3) S.shake=0.5; else if(g===2) S.shake=0.2;
@@ -2849,7 +3027,7 @@ function drawTerrain(gy,sxOf){
     if(xr<VB.x0-20||xl>VB.x1+20) return;
     ctx.beginPath(); ctx.moveTo(xl,gy); ctx.lineTo(xc,gy-hp); ctx.lineTo(xr,gy); ctx.closePath();
     ctx.fillStyle=TH.hill||TH.grass; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.lineJoin='round'; ctx.stroke();
-    var sc=scrX(xc); if(sc>40&&sc<W-40) tagW((LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),xc,gy-hp-10);
+    var sc=scrX(xc); if(sc>40&&sc<W-40) tagW(hillTag(o.h),xc,gy-hp-10);
   });
 }
 /* fuel bar and engine-out label */
@@ -2946,7 +3124,7 @@ function drawWind(t){
     ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx-dirw*(46+aw),sy); ctx.stroke();
   }
   ctx.restore();
-  tag(wk>0?'◀ HEADWIND '+spdStrKt(Math.round(aw)):'TAILWIND '+spdStrKt(Math.round(aw))+' ▶',16,122,'left');
+  tag(lvlE()?(wk>0?'◀ WIND IN YOUR FACE':'WIND FROM BEHIND ▶'):wk>0?'◀ HEADWIND '+spdStrKt(Math.round(aw)):'TAILWIND '+spdStrKt(Math.round(aw))+' ▶',16,122,'left');
 }
 /* a dashed line across the view at a height, with its label at the right edge */
 function heightLine(by,col,dash,lw,txt){
@@ -2991,10 +3169,10 @@ function drawForceArrows(X,Y,zs,az){
        {k:'drag',x0:X-AB-Math.max(Dc,26),x1:X-AB+4,y0:Y-hb,y1:Y+hb}];
   if(ST.labels){
     var fp=(ST.fnum&&CS>=0.55);                       /* F1..F4 prefixes are dropped on small screens */
-    if(Lc>14) tag((fp?'F1 ':'')+'LIFT '+fForce(S.L),X,Math.max(topSafe()-4,Y-AU-Lc-6));
-    var wy=Y+AD+Wv+22; if(wy>H-8) tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),X+18,H-10,'left'); else tag((fp?'F2 ':'')+'WEIGHT '+fForce(S.W),X,wy);
-    if(Tv>14) tag((fp?'F3 ':'')+'THRUST '+fForce(S.T),X+AF+Tv+8,Y-16*ka,'left');
-    if(Dc>14) tag((fp?'F4 ':'')+'DRAG '+fForce(S.D),X-AB-Dc-8,Y-16*ka,'right');
+    if(Lc>14) tag((fp?'F1 ':'')+'LIFT '+cvF(S.L),X,Math.max(topSafe()-4,Y-AU-Lc-6));
+    var wy=Y+AD+Wv+22; if(wy>H-8) tag((fp?'F2 ':'')+'WEIGHT '+cvF(S.W),X+18,H-10,'left'); else tag((fp?'F2 ':'')+'WEIGHT '+cvF(S.W),X,wy);
+    if(Tv>14) tag((fp?'F3 ':'')+'THRUST '+cvF(S.T),X+AF+Tv+8,Y-16*ka,'left');
+    if(Dc>14) tag((fp?'F4 ':'')+'DRAG '+cvF(S.D),X-AB-Dc-8,Y-16*ka,'right');
   }
 }
 function draw(t){
@@ -3021,9 +3199,9 @@ function draw(t){
   ctx.setTransform(RS,0,0,RS,RS*shx,RS*shy);
   if(kind!=='side') drawWind(t);
   if(LV.runway && ST.showRunway && S.phase==='takeoff' && mode==='fly')
-    tag('RUNWAY LEFT: '+altStrFt(Math.max(0,(LV.runway-S.x)*FTPERU)),W-16,150,'right');
+    if(!lvlE()) tag('RUNWAY LEFT: '+altStrFt(Math.max(0,(LV.runway-S.x)*FTPERU)),W-16,150,'right');
   if(mode==='fly'&&ST.showRunway){
-    if(S.phase==='landing'&&LG.placed&&S.x<LG.thr) tag('RUNWAY IN: '+altStrFt((LG.thr-S.x)*FTPERU),W-16,150,'right');
+    if(lvlE()){} else if(S.phase==='landing'&&LG.placed&&S.x<LG.thr) tag('RUNWAY IN: '+altStrFt((LG.thr-S.x)*FTPERU),W-16,150,'right');
     else if(S.phase==='rollout') tag('RUNWAY LEFT: '+altStrFt(Math.max(0,(LG.end-S.x)*FTPERU)),W-16,150,'right');
   }
   WTAGS.forEach(function(w){ tag(w[0],w[1],w[2],w[3]); });
@@ -3042,7 +3220,7 @@ function draw(t){
     if(S.autoPaused){
       bigText('STALL! Paused',H/2-30,60,'#fff');
       ctx.font=fsz(26)+fontf(); ctx.textAlign='center'; ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.8)'; ctx.fillStyle='#fff';
-      var l1=fmtP('Pitch went past {crit}°, so the air tore away from the wing and lift collapsed.'), l2=fmtP('Lower the nose below {rec}° after you ')+resumeTxt()+'.';
+      var l1=tx('pauseStall').replace(/ (Lower|Point|Reduce).*$/,''), l2=(lvlE()?'Point the nose down after you ':fmtP('Lower the nose below {rec}° after you '))+resumeTxt()+'.';
       ctx.strokeText(l1,W/2,H/2+10); ctx.fillText(l1,W/2,H/2+10); ctx.strokeText(l2,W/2,H/2+44); ctx.fillText(l2,W/2,H/2+44);
     } else {
       bigText('PAUSED',H/2-6,64,'#fff');
@@ -3074,9 +3252,9 @@ function drawSideView(t,gy,py,cam,sxOf,shx,shy){
   drawLayers(gy,cam,scroll);
   drawHaze(gy,.3);
   screen(); drawWind(t); world();
-  if(LV.shear&&S.reached) heightLine(gy-(LV.shear.alt/FT)*PXM,FC.amber,[4,10],2.5,'WIND FLIPS BELOW '+altStrFt(LV.shear.alt));   /* the height where the wind flips */
-  if(!S.reached&&ST.showTarget) heightLine(gy-TARGET_M*PXM,FC.lift,[14,10],3,'TARGET: '+altStrFt(LV.target));
-  var lm=lessonMark(); if(lm) heightLine(gy-lm/FT*PXM,FC.lift,[14,10],3,'LESSON GOAL: '+altStrFt(lm));
+  if(LV.shear&&S.reached) heightLine(gy-(LV.shear.alt/FT)*PXM,FC.amber,[4,10],2.5,(lvlE()?'THE WIND CHANGES HERE':'WIND FLIPS BELOW '+altStrFt(LV.shear.alt)));   /* the height where the wind flips */
+  if(!S.reached&&ST.showTarget) heightLine(gy-TARGET_M*PXM,FC.lift,[14,10],3,(lvlE()?'FLY UP TO HERE':'TARGET: '+altStrFt(LV.target)));
+  var lm=lessonMark(); if(lm) heightLine(gy-lm/FT*PXM,FC.lift,[14,10],3,(lvlE()?'LESSON GOAL':'LESSON GOAL: '+altStrFt(lm)));
 
   if(ground){
     drawGround(gy,sxOf,t);
@@ -3278,7 +3456,7 @@ function drawInstruments(lay){
     var rgb=hex2rgb(col.charAt(0)==='#'?col:'#888888'); ctx.fillStyle=(rgb[0]*.3+rgb[1]*.59+rgb[2]*.11)>150?'#1D2B44':'#fff';
     ctx.font=Math.round(ts*.62)+'px '+fontf(); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(df[1],m.x+dr,ly+1);
     ctx.font=fsz(17)+fontf(); ctx.fillStyle=P.text; ctx.textAlign='left';
-    var val=fForce(df[3]), nm=df[2]+' '; ctx.textAlign='right'; ctx.fillText(val,m.x+m.w,ly+1); var vw=ctx.measureText(val).width;
+    var val=cvF(df[3]), nm=df[2]+' '; ctx.textAlign='right'; ctx.fillText(val,m.x+m.w,ly+1); var vw=ctx.measureText(val).width;
     ctx.textAlign='left'; if(ctx.measureText(nm).width<m.w-2*dr-vw-12) ctx.fillText(nm,m.x+2*dr+6,ly+1);
     ctx.textBaseline='alphabetic';
     var by=m.y+Math.round(ts*1.2)+2;
@@ -3371,7 +3549,7 @@ function drawCockpitView(t,dt,shx,shy){
     var lf=ckProj(df,-ls,0), rf=ckProj(df,ls,0), pk=ckProj(dp,0,hm), sl=ckProj(dp,-ls*.45,hm*.62), sr=ckProj(dp,ls*.5,hm*.55);
     ctx.beginPath(); ctx.moveTo(lf.x-400,lf.y); ctx.lineTo(sl.x,sl.y); ctx.lineTo(pk.x,pk.y); ctx.lineTo(sr.x,sr.y); ctx.lineTo(rf.x+400,rf.y); ctx.closePath();
     ctx.fillStyle=TH.hill||TH.grass; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=FC.ink; ctx.stroke();
-    if(pk.y>30&&pk.y<py-20) WTAGS.push([(LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),clamp(pk.x,120,W-120),pk.y-12]);
+    if(pk.y>30&&pk.y<py-20) WTAGS.push([hillTag(o.h),clamp(pk.x,120,W-120),pk.y-12]);
   });
   drawTodShade();
   /* lights: runway edges, green threshold, red end (dusk and night), and the glide-path lights beside the aim point */
@@ -3437,18 +3615,18 @@ function drawPathView(t,dt,shx,shy){
     ctx.save(); ctx.globalAlpha=.6; ctx.strokeStyle=FC.pencil; ctx.strokeRect(X(LG.end),G,X(LG.end+CUSH)-X(LG.end),8); ctx.restore();
   } else if(predThr!==null){                                          /* a dashed outline: the runway is placed when you reach the target */
     ctx.save(); ctx.setLineDash([6,5]); ctx.strokeStyle=FC.ink; ctx.lineWidth=2; ctx.strokeRect(X(predThr),G,X(predThr+LV.land.len)-X(predThr),8); ctx.restore();
-    WTAGS.push(['RUNWAY APPEARS AT '+altStrFt(LV.target),clamp(X(predThr+LV.land.len/2),140,W-140),G+30]);
+    WTAGS.push([(lvlE()?'THE RUNWAY APPEARS HERE':'RUNWAY APPEARS AT '+altStrFt(LV.target)),clamp(X(predThr+LV.land.len/2),140,W-140),G+30]);
   }
   /* target, wind shear and lesson heights */
   function hline(ft,col,dash,txt,dim){ var y=Y(ft); if(y<T-20) return; ctx.save(); ctx.globalAlpha=dim?.45:1; ctx.setLineDash(dash); ctx.lineWidth=3; ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(R,y); ctx.stroke(); ctx.restore(); WTAGS.push([txt,L+8,y-8,'left']); }
-  if(ST.showTarget) hline(LV.target,FC.lift,[14,10],(S.reached?'TARGET REACHED: ':'TARGET: ')+altStrFt(LV.target),S.reached);
-  if(LV.shear) hline(LV.shear.alt,FC.amber,[4,10],'WIND FLIPS BELOW '+altStrFt(LV.shear.alt));
-  var lm=lessonMark(); if(lm) hline(lm,FC.lift,[14,10],'LESSON GOAL: '+altStrFt(lm));
+  if(ST.showTarget) hline(LV.target,FC.lift,[14,10],(lvlE()?(S.reached?'REACHED!':'FLY UP TO HERE'):(S.reached?'TARGET REACHED: ':'TARGET: ')+altStrFt(LV.target)),S.reached);
+  if(LV.shear) hline(LV.shear.alt,FC.amber,[4,10],(lvlE()?'THE WIND CHANGES HERE':'WIND FLIPS BELOW '+altStrFt(LV.shear.alt)));
+  var lm=lessonMark(); if(lm) hline(lm,FC.lift,[14,10],(lvlE()?'LESSON GOAL':'LESSON GOAL: '+altStrFt(lm)));
   /* hills */
   S.obst.forEach(function(o){
     ctx.beginPath(); ctx.moveTo(X(o.cx-o.hw),G); ctx.lineTo(X(o.cx),Y(o.h)); ctx.lineTo(X(o.cx+o.hw),G); ctx.closePath();
     ctx.fillStyle=TH.hill||TH.grass; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=FC.ink; ctx.stroke();
-    WTAGS.push([(LV.goal==='clear'?'CLEAR THE HILL: ':'HILL ')+altStrFt(o.h),clamp(X(o.cx),100,W-100),Y(o.h)-10]);
+    WTAGS.push([hillTag(o.h),clamp(X(o.cx),100,W-100),Y(o.h)-10]);
   });
   /* the ideal glide path: 3.5 degrees up from the aim point (dashed), so you can compare your approach with it */
   var aim=LG.placed?LG.aim:(predThr!==null?predThr+TZ0+Math.round(LV.land.len*LV.land.zone*.15):null);
@@ -3780,7 +3958,7 @@ var RANK={tip:0,cue:1,caution:2,warn:3}, ICON={tip:'i',cue:'➜',caution:'!',war
 var coachCur={key:'',lvl:'',t:0,terms:[]}, coachFlashT=null;
 var TERMKEY='flightSchoolTerms', TERMS={}, pendTerms=[], TERMDEF={stall:' (the wing stops making lift)',flare:' (a small nose-up move)'};
 try{TERMS=JSON.parse(localStorage.getItem(TERMKEY))||{};}catch(e){TERMS={};}
-function tdef(k){ if(TERMS[k]) return ''; pendTerms.push(k); return TERMDEF[k]; }
+function tdef(k){ if(TERMS[k]||lvl()!=='student') return ''; pendTerms.push(k); return TERMDEF[k]; }
 function markTerms(list){ if(!list||!list.length) return; list.forEach(function(k){TERMS[k]=1;}); try{localStorage.setItem(TERMKEY,JSON.stringify(TERMS));}catch(e){} }
 var coachBox=$('#coachBox'), coachTextEl=$('#coachText'), coachIconEl=$('#coachIcon'), srLive=$('#srLive'), sheetCoachEl=$('#sheetCoach');
 
@@ -3788,68 +3966,64 @@ function computeCoachFull(){
   var gl=LV.grade, sinkFpm=-S.vy*FPM, altFt=S.alt*FT, onG=!S.airborne&&S.alt<=0, p=S.phase;
   var tti=S.vy<-0.5?S.alt/(-S.vy):99;
   pendTerms=[];
-  if(S.stalled) return {key:'stall',lvl:'warn',text:'STALL!'+tdef('stall')+fmtP(' Lower the nose (pitch below {rec}°) to get your lift back.')};
-  if(S.airborne&&sinkFpm>gl[3]&&tti<20) return {key:'toofast',lvl:'warn',text:'TOO FAST FOR LANDING! Sinking '+vsStr(sinkFpm)+' (limit '+vsStr(gl[3])+'). Raise the pitch and add a little thrust.'};
-  if(S.warn) return {key:'stallwarn',lvl:'caution',text:'TOO STEEP! Lower the nose now, or the wing will stall'+tdef('stall')+'.'};
-  if(S.airborne&&angle>=PL.soft) return {key:'steep',lvl:'cue',text:'The nose is getting steep. Lower it a little to stay safe.'};
+  var V={aoa:angle.toFixed(1),sink:vsStr(Math.max(0,sinkFpm)),spd:spdStrKt((S.v+WIND)*KT),lw:(S.L/Math.max(S.W,1)).toFixed(2),cl:liftCoeff(angle,S.stalled).toFixed(2),
+    clr:liftCoeff(PL.rot,false).toFixed(2),goal:altStrFt(LV.target),vs:vsStr(Math.abs(S.vy*FPM)),gs:GS.toFixed(1),fh:altStrFt(30)};
+  function T(key,lv,extra){ var o={}, k; for(k in V) o[k]=V[k]; if(extra) for(k in extra) o[k]=extra[k]; return {key:key,lvl:lv,text:tx(key,o)}; }
+  if(S.stalled) return T('stall','warn',{tstall:lvl()==='student'?tdef('stall'):''});
+  if(S.airborne&&sinkFpm>gl[3]&&tti<20) return T('toofast','warn',{limit:vsStr(gl[3])});
+  if(S.warn) return T('stallwarn','caution',{tstall:lvl()==='student'?tdef('stall'):''});
+  if(S.airborne&&angle>=PL.soft) return T('steep','cue');
   if(S.obst.length&&S.airborne){                                   /* will the climb or the path clear the next hill? */
     var ob=null; S.obst.forEach(function(o){ if(!o.passed&&(!ob||o.cx<ob.cx)) ob=o; });
     if(ob){ var tt=(ob.cx-S.x)/Math.max(S.v,10), proj=altFt+S.vy*FT*tt;
-      if(tt<16&&proj<ob.h+25) return {key:'hill',lvl:'warn',text:'HILL AHEAD! You will pass it '+altStrFt(Math.max(0,Math.round(proj)))+' up but it is '+altStrFt(ob.h)+' high. '+(p==='landing'?'Climb a little and stay above the path until it is behind you.':fmtP('Full thrust and keep the nose near {climb}°.'))}; }
+      if(tt<16&&proj<ob.h+25) return T('hill','warn',{proj:altStrFt(Math.max(0,Math.round(proj))),hill:altStrFt(ob.h),fix:tx(p==='landing'?'hillFixLand':'hillFixClimb')}); }
   }
-  if(S.fuelMax>0&&!S.noThrust&&S.airborne&&S.fuel<5) return {key:'fuellow',lvl:'caution',text:'FUEL LOW: '+Math.ceil(S.fuel)+' s of full thrust left. Use less thrust.'};
+  if(S.fuelMax>0&&!S.noThrust&&S.airborne&&S.fuel<5) return T('fuellow','caution',{fuel:Math.ceil(S.fuel)});
   if(S.noThrust&&S.airborne&&p==='landing'&&altFt>=60){
     var need=distToAimFt()/Math.max(altFt,1), have=(S.v*FTPERU)/Math.max(-S.vy*FT,0.5);
-    return {key:PL.engine?'glide':'glider',lvl:have>=need?'tip':'caution',text:(PL.engine?'ENGINE OUT. Thrust is locked at 0.':'NO ENGINE: a glider trades height for speed.')+' You need a glide of '+need.toFixed(1)+' : 1 to reach the zone; you have '+(have>60?'60+':have.toFixed(1))+' : 1. '+(have>=need?'Hold this nose angle.':fmtP('Lower the nose to go faster, or raise it a little: about {glide}° glides farthest.'))};
+    var c=T(PL.engine?'glide':'glider',have>=need?'tip':'caution',{need:need.toFixed(1),have:have>60?'60+':have.toFixed(1),fix:tx(have>=need?'glideOk':'glideFix')}); return c;
   }
-  if(onG&&p==='rollout'&&S.obj.stage===1) return {key:'go',lvl:'cue',text:fmtP('TOUCH AND GO! Push THRUST to full and raise the nose to about {rot}° to take off again before the runway ends.')};
+  if(onG&&p==='rollout'&&S.obj.stage===1) return T('go','cue');
   if(onG&&p==='takeoff'&&LV.runway){
     var left=Math.max(0,(LV.runway-S.x)*FTPERU);
-    if(left<400&&angle<PL.rot-2&&S.v>3) return {key:'runwayend',lvl:'warn',text:fmtP('RUNWAY ENDING! Raise the pitch to about {rot}° now. Runway left: ')+altStrFt(left)+'.'};
+    if(left<400&&angle<PL.rot-2&&S.v>3) return T('runwayend','warn',{left:altStrFt(left)});
   }
-  if(onG&&p==='takeoff'&&S.L>=S.W*0.85&&angle<PL.rot-2&&S.v>5) return {key:'rotate',lvl:'cue',text:fmtP('Lift is almost enough! Raise the pitch to about {rot}° to lift off (rotate).')};
-  if(onG&&p==='rollout'){
-    if(thrust>5) return {key:'brake',lvl:'cue',text:'Set THRUST to 0. The brakes and drag will stop you.'};
-    return {key:'braking',lvl:'tip',text:'Rolling to a stop… keep thrust at 0. Stop before the runway ends.'};
-  }
+  if(onG&&p==='takeoff'&&S.L>=S.W*0.85&&angle<PL.rot-2&&S.v>5) return T('rotate','cue');
+  if(onG&&p==='rollout') return thrust>5?T('brake','cue'):T('braking','tip');
   if(onG&&p==='takeoff'){
-    if(thrust<5&&S.v<1) return {key:'start',lvl:'tip',text:'Push THRUST up ('+keyFirst('thrustUp')+' or the slider) to start rolling. Full thrust is best.'};
-    if(S.T<=S.D+PL.roll) return {key:'pushmore',lvl:'tip',text:'Thrust has to beat drag (and rolling friction) to speed up. Push THRUST higher.'};
-    return {key:'roll',lvl:'tip',text:fmtP('Thrust > Drag, so you speed up. You lift off when Lift > Weight (about {lofLo} to {lofHi} airspeed).')};
+    if(thrust<5&&S.v<1) return T('start','tip',{key:keyFirst('thrustUp')});
+    if(S.T<=S.D+PL.roll) return T('pushmore','tip');
+    return T('roll','tip');
   }
   if(S.airborne&&p==='landing'){
-    if(altFt<120&&sinkFpm>gl[1]) return {key:'flare',lvl:'cue',text:'FLARE! Raise the pitch a little to soften the touchdown.'};
-    if(S.x>LG.zb) return {key:'late',lvl:'caution',text:'PAST THE ZONE! Get the wheels down soon. Runway left: '+altStrFt(Math.max(0,(LG.end-S.x)*FTPERU))+'.'};
-    var gi=glideInfo();
-    if(gi&&gi.far) return {key:'level',lvl:'tip',text:'Keep level for now. When the GLIDE PATH LIGHTS box appears (top right of the view), start to descend.'};
+    if(altFt<120&&sinkFpm>gl[1]) return T('flare','cue');
+    if(S.x>LG.zb) return T('late','caution',{left:altStrFt(Math.max(0,(LG.end-S.x)*FTPERU))});
+    var gi=glideInfo(), tf=lvl()==='student'?tdef('flare'):'';
+    if(gi&&gi.far) return T('level','tip');
     if(gi&&altFt>=80){
-      if(gi.whites===4) return {key:'high',lvl:'caution',text:'TOO HIGH: all 4 lights are white. Cut thrust and lower the nose a little to come down.'};
-      if(gi.whites===3) return {key:'abithigh',lvl:'tip',text:'A bit high (3 white lights). Ease the nose down a little.'};
-      if(gi.whites===2&&sinkFpm<150&&altFt>200) return {key:'descend',lvl:'cue',text:'The runway is in range. Start your descent now: cut thrust a little and lower the nose gently.'};
-      if(gi.whites===2) return {key:'path',lvl:'tip',text:'On the path: 2 white and 2 red lights. Hold it. Cut thrust and flare'+tdef('flare')+' just before touchdown, inside the zone.'};
-      if(gi.whites===1) return {key:'abitlow',lvl:'cue',text:'A bit low (3 red lights). Add a little thrust or raise the nose.'};
-      return {key:'low',lvl:'warn',text:'TOO LOW: all 4 lights are red. Add thrust and raise the nose, or you will land short of the runway.'};
+      var A={ang:gi.ang.toFixed(1),tflare:tf};
+      if(gi.whites===4) return T('high','caution',A);
+      if(gi.whites===3) return T('abithigh','tip',A);
+      if(gi.whites===2&&sinkFpm<150&&altFt>200) return T('descend','cue',A);
+      if(gi.whites===2) return T('path','tip',A);
+      if(gi.whites===1) return T('abitlow','cue',A);
+      return T('low','warn',A);
     }
-    return {key:'land',lvl:'tip',text:'Cut thrust and flare'+tdef('flare')+' just before touchdown. Butter is under '+vsStr(gl[0])+'.'};
+    return T('land','tip',{tflare:tf,butter:vsStr(gl[0])});
   }
   if(S.airborne){
-    var cv=S.L/Math.max(S.W,1);
-    var st=cv>1.03?'climbUp':cv<0.97?'climbDown':'climbLevel';
-    var txt=st==='climbUp'?'Lift > Weight, so you climb.':st==='climbDown'?'Lift < Weight, so you sink. Add speed or pitch.':'Lift ≈ Weight: level flight.';
-    return {key:st,lvl:'tip',text:txt+' Goal: '+altStrFt(LV.target)+'.'+(LV.turb>0&&S.cfg.turb!=='off'?' Gusts push you around: nudge the pitch to stay steady.':'')};
+    var cv=S.L/Math.max(S.W,1), st=cv>1.03?'climbUp':cv<0.97?'climbDown':'climbLevel', r=T(st,'tip');
+    if(LV.turb>0&&S.cfg.turb!=='off') r.text+=tx('gusts');
+    return r;
   }
   return null;
 }
-var SHORT={hill:'Hill ahead! Climb!',fuellow:'Fuel low! Use less thrust.',glide:'Engine out! Glide: about {glide}°.',glider:'No engine: glide at about {glide}°.',go:'Full thrust, pitch up ~{rot}°!',stall:'STALL! Nose down!',toofast:'TOO FAST! Pitch up, add thrust.',stallwarn:'Too steep! Nose down!',steep:'Nose getting steep. Lower it a bit.',runwayend:'Runway ending! Pitch up ~10°.',
-  rotate:'Pitch up ~{rot}° to lift off.',brake:'Tap IDLE to stop.',braking:'Rolling to a stop…',start:'Tap FULL to start rolling.',pushmore:'Thrust must beat drag. More thrust!',
-  roll:'Thrust > Drag: speeding up.',flare:'Flare! Raise the pitch a bit.',land:'Cut thrust, descend gently.',level:'Level off. Descend when the lights show.',descend:'Start descending now.',high:'Too high! Cut thrust, nose down.',abithigh:'A bit high. Ease the nose down.',path:'On the path! Hold it.',abitlow:'A bit low. Add a little thrust.',low:'Too low! Add thrust, nose up.',late:'Past the zone! Land soon.',climbUp:'Lift > Weight: climbing.',climbDown:'Lift < Weight: sinking.',climbLevel:'Lift ≈ Weight: level flight.'};
 function computeCoach(){
   var c=computeCoachFull(); if(!c) return c;
-  c.s=SHORT[c.key]?fmtP(SHORT[c.key]):c.text;
-  if(IS_TOUCH){
+  c.s=lvlE()?c.text:(TX['x.'+c.key]?tx('x.'+c.key):c.text);
+  if(IS_TOUCH&&(c.key==='start'||c.key==='brake')){
     var where=layout==='desktop'?'below the flight view':'on the left';
-    if(c.key==='start') c.text='Hold + (or tap FULL) '+where+' to start rolling. Full thrust is best.';
-    else if(c.key==='brake') c.text='Tap IDLE '+where+' to set THRUST to 0. The brakes and drag will stop you.';
+    c.text=tx(c.key==='start'?'startTouch':'brakeTouch',{where:where});
   }
   return c;
 }
@@ -3926,24 +4100,30 @@ function updatePitchChart(){
   m.setAttribute('cx',pcx(a)); m.setAttribute('cy',pcy(c)); m.setAttribute('fill',S.stalled?FC.weight:FC.lift);
 }
 function updateUnitLabels(){
+  if(lvlE()){                                                         /* Explorer: words instead of units */
+    $('#lAir').textContent='SPEED'; $('#lGnd').textContent='OVER THE GROUND'; $('#lAlt').textContent='HEIGHT'; $('#lVs').textContent='UP OR DOWN';
+    $('#hSl').textContent='SPEED'; $('#hAl').textContent='HEIGHT'; $('#subScale').textContent=tx('m.scale');
+  } else {
   $('#lAir').textContent='AIRSPEED '+spdUnit(); $('#lGnd').textContent='GROUND SPD '+spdUnit();
-  $('#lAlt').textContent='ALTITUDE '+altUnit(); $('#lVs').textContent='CLIMB RATE '+vsUnit();
+  $('#lAlt').textContent='ALTITUDE '+altUnit(); $('#lVs').textContent=(lvlP()?'VERTICAL SPEED ':'CLIMB RATE ')+vsUnit();
   $('#hSl').textContent='SPEED '+spdUnit(); $('#hAl').textContent='ALT '+altUnit();
-  $('#subScale').textContent=ST.forceUnits==='pct'?'100% = the normal weight of the plane':'100 = the normal weight of the plane (plain force numbers)';
+  $('#subScale').textContent=ST.forceUnits==='pct'?tx('m.scale'):'100 = the normal weight of the plane (plain force numbers)';
+  }
+  var pl=$('label[for="ang"] span'); if(pl) pl.textContent=lvlE()?'NOSE (up ↑ / down ↓)':lvlP()?'PITCH = ANGLE OF ATTACK α':'PITCH (nose up ↑ / down ↓)';
 }
 var METER_DEFS=[
   {k:'lift',  f:'f1',n:'F1',name:'Lift',  arrow:'↑',val:function(){return Math.max(0,S.L);},mark:1},
-  {k:'weight',f:'f2',n:'F2',name:'Weight',arrow:'↓',val:function(){return S.W;},hint:'Twice as fast = four times the lift.',hintAdv:'Dashed line on Lift = the weight it has to beat.'},
-  {k:'thrust',f:'f3',n:'F3',name:'Thrust',arrow:'→',val:function(){return S.T;},hint:'Different scale from the slider: full engine (100%) pushes with 150% of the weight.'},
+  {k:'weight',f:'f2',n:'F2',name:'Weight',arrow:'↓',val:function(){return S.W;},hint:'m.weightHint',hintAdv:'Dashed line on Lift = the weight it has to beat.'},
+  {k:'thrust',f:'f3',n:'F3',name:'Thrust',arrow:'→',val:function(){return S.T;},hint:'m.thrustHint'},
   {k:'drag',  f:'f4',n:'F4',name:'Drag',  arrow:'←',val:function(){return S.D;},mark:2,hintAdv:'Dashed line on Drag = your thrust. Thrust has to beat drag to speed up.'}
 ];
 var MP=[], MH=[], E={}, stepLis=[];
 var TIPS={lift:'Lift pushes the plane up. Go faster to get more lift.',weight:'Weight is gravity pulling the plane down.',thrust:'Thrust pushes the plane forward. The engine makes it.',drag:'Drag is the air pushing back. The faster you fly, the more drag.'};
 var FCLS={lift:'f1',weight:'f2',thrust:'f3',drag:'f4'};
 function meterHTML(d){
-  return '<div class="meter '+d.f+'" data-f="'+d.k+'" tabindex="0" role="group" aria-label="'+d.name+'. '+TIPS[d.k]+'"><div class="row"><b class="dot">'+d.n+'</b>'+d.name+' '+d.arrow+'<em data-v></em></div>'+
+  return '<div class="meter '+d.f+'" data-f="'+d.k+'" tabindex="0" role="group" aria-label="'+d.name+'. '+esc(tx('tip.'+d.k))+'"><div class="row"><b class="dot">'+d.n+'</b>'+d.name+' '+d.arrow+'<em data-v></em></div>'+
     '<div class="bar" role="meter" aria-label="'+d.name+'" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"><i></i>'+(d.mark?'<u class="advonly" data-mk></u>':'')+'</div></div>'+
-    (d.hint?'<p class="hint">'+d.hint+'</p>':'')+(d.hintAdv?'<p class="hint advonly">'+d.hintAdv+'</p>':'');
+    (d.hint&&tx(d.hint)?'<p class="hint">'+esc(tx(d.hint))+'</p>':'')+(d.hintAdv?'<p class="hint advonly">'+d.hintAdv+'</p>':'');
 }
 function hudMeterHTML(d){
   return '<span class="hm '+d.f+'"><span class="hl">'+d.name+' '+d.arrow+'</span><span class="bar"><i></i>'+(d.mark?'<u class="advonly" data-mk></u>':'')+'</span><em data-v></em></span>';
@@ -3971,10 +4151,10 @@ function setStyle(el,prop,v){ var k='_'+prop; if(el[k]!==v){ el[k]=v; el.style[p
 function updatePanel(){
   var vals=[], i, m, v, txt, w;
   for(i=0;i<METER_DEFS.length;i++){
-    v=METER_DEFS[i].val(); vals[i]=v; txt=fForce(v); w=clamp(v/200*100,0,100)+'%'; m=MP[i];
+    v=METER_DEFS[i].val(); vals[i]=v; txt=lvlE()?'':lvlP()&&ST.forceUnits==='pct'?(Math.round(v*10)/10).toFixed(1)+'%':fForce(v); w=clamp(v/200*100,0,100)+'%'; m=MP[i];
     setTxt(m.v,txt); setStyle(m.fill,'width',w);
     var rv=Math.round(v);
-    if(m.bar._n!==rv){ m.bar._n=rv; m.bar.setAttribute('aria-valuenow',rv); m.bar.setAttribute('aria-valuetext',txt+(ST.forceUnits==='pct'?' of normal weight':'')); }
+    if(m.bar._n!==rv){ m.bar._n=rv; m.bar.setAttribute('aria-valuenow',rv); m.bar.setAttribute('aria-valuetext',lvlE()?(v<40?'weak':v<110?'medium':'strong'):txt+(ST.forceUnits==='pct'?' of normal weight':'')); }
     if(MOBILE){ setTxt(MH[i].v,txt); setStyle(MH[i].fill,'width',w); }
   }
   var mw=clamp(vals[1]/200*100,0,100)+'%', mt=clamp(vals[2]/200*100,0,100)+'%';
@@ -3983,6 +4163,12 @@ function updatePanel(){
   var sp=nf(spdFromU(S.v+WIND)), al=nf(altFromM(S.alt));
   setTxt(E.tS,sp); setTxt(E.tG,nf(spdFromU(S.v))); setTxt(E.tA,al);
   var vs; if(ST.vsU==='ms'){var mm=Math.round(S.vy*10)/10; vs=(mm>0?'+':'')+mm.toFixed(1);} else {var f=Math.round(S.vy*FPM/10)*10; vs=(f>0?'+':'')+nf(f);}
+  if(lvlE()){                                                         /* Explorer: words and arrows instead of numbers */
+    var kt=(S.v+WIND)*KT, fpm=S.vy*FPM; sp=eSpeed(kt); al=eHeight(S.alt*FT); vs=fpm>120?'↑ going up':fpm<-120?'↓ going down':'→ level';
+    setTxt(E.tG,eSpeed(S.v*KT)); setTxt(E.tA,al); setTxt(E.tS,sp);
+    var wl=S.L>S.W*1.03?'m.win.up':S.L<S.W*.97?'m.win.down':'m.win.even', wt=S.T>S.D+1?'m.win.fast':'m.win.slow';
+    setTxt($('#subScale'),tx(wl)+' '+(S.airborne||S.v>1?tx(wt):''));
+  }
   setTxt(E.tC,vs);
   if(MOBILE){ setTxt(E.hS,sp); setTxt(E.hA,al); }
   if(ST.adv&&ST.panels.chart&&(!MOBILE||sheetOpen)) updatePitchChart();
@@ -4018,9 +4204,11 @@ function renderKeysCard(){
 }
 
 /* ---------------- apply settings (live) ---------------- */
+var LVL_SHOWN='';
 function applySettings(){
+  var met=lvlP()&&ST.unitSys==='metric'; ST.altU=met?'m':'ft'; ST.spdU=met?'kmh':'kt'; ST.vsU=met?'ms':'fpm';   /* metric units: a Pilot-level option */
   if(typeof syncQuick==='function') syncQuick();
-  var r=rootEl;
+  var r=rootEl; r.setAttribute('data-level',lvl());
   r.setAttribute('data-theme',ST.theme); r.setAttribute('data-cb',ST.cb?'1':'0'); r.setAttribute('data-font',ST.font);
   r.setAttribute('data-focus',ST.focus==='strong'?'strong':'normal'); r.setAttribute('data-pat',ST.labels?'1':'0');
   r.setAttribute('data-motion',ST.reduceMotion?'reduce':'normal'); r.setAttribute('data-adv',ST.adv?'1':'0');
@@ -4037,8 +4225,9 @@ function applySettings(){
   coachContainer();
   $('#pause').title='Pause ('+keysAll('pause')+')'; fsLabel(!!fsElement()||pseudoFs);
   $('#gear').title='Settings ('+keysAll('settings')+')'; $('#restart').title='Restart ('+keyFirst('restart')+')'; $('#mapbtn').title='Level select ('+keyFirst('map')+')'; $('#hangarbtn').title='Hangar: choose your plane ('+keyFirst('hangar')+')';
+  if(LVL_SHOWN!==lvl()&&MP.length){ LVL_SHOWN=lvl(); buildMeters(); coachCur={key:'',lvl:'',t:0,terms:[]}; if(pmOpen) renderPause(true); if(typeof screenOpen!=='undefined'&&screenOpen&&scrCur&&scrCur.id!=='main') redrawScreen(); }   /* a new explanation level: texts change at once */
   updateUnitLabels(); updateStepLabels(); updateLevelLabel(); renderKeysCard(); updateCamBtn();
-  if(S){ updatePanel(); }
+  if(S){ updatePanel(); if(typeof syncSliders==='function') syncSliders(); }
   if(S&&S.cfg) applyAngRange();
   if(typeof updateRestartNote==='function') updateRestartNote();
   if(endOpen&&endPage===2&&flightAdv!==ST.adv) refreshFlightArea();     /* Advanced info changed while page 2 is open */
@@ -4068,6 +4257,7 @@ var SCHEMA=[
  {id:'display',label:'Display',items:[
   {t:'sel',k:'forceUnits',l:'Show forces as',o:[['pct','% of weight'],['num','Plain numbers']]},
   {t:'more'},
+  {t:'sel',k:'unitSys',l:'Units',h:'Pilot level only. The other levels use kt, ft and fpm (Explorer shows no units).',o:[['aviation','Aviation: kt, ft, fpm'],['metric','Metric: km/h, m, m/s']],when:function(){ return lvlP(); }},
   {t:'tog',k:'arrows',l:'Force arrows on the plane'},
   {t:'sel',k:'arrowSize',l:'Arrow size',o:[['small','Small'],['normal','Normal'],['large','Large']]},
   {t:'tog',k:'fnum',l:'F1–F4 numbers on the force labels',h:'Phones hide them automatically to save space.'},
@@ -4119,6 +4309,7 @@ var SCHEMA=[
 ];
 /* Quick settings: the most-used options in one panel, shown as Settings → Quick and inside the pause menu (one list, one routine) */
 var QUICK=[
+  {t:'sel',k:'level',l:'Explanations',h:'Changes the words and the detail, not the difficulty or the stars.',o:LEVELS.map(function(L){ return [L[0],L[1]+' ('+L[2]+')']; })},
   {t:'tog',k:'adv',l:'Advanced info',h:'Adds the lift-vs-pitch chart, the dashed marks on the meters and the flight charts after landing.'},
   {t:'sel',k:'tips',l:'Coaching tips',o:[['all','All tips'],['important','Important only'],['off','Off (no messages)']]},
   {t:'slow'},
@@ -4142,6 +4333,7 @@ function sid(k){return 's_'+SID_PRE+k.replace(/\./g,'_');}
 function rowHTML(it){
   var rt=it.r?'<span class="rtag">↻ restart needed</span>':'', hp=it.h?'<small>'+esc(it.h)+'</small>':'';
   var id=sid(it.k||it.id||'x');
+  if(it.when&&!it.when()) return '';
   if(it.t==='grp') return '<div class="sgroup">'+esc(it.l)+'</div>';
   if(it.t==='note') return '<p class="note">'+esc(it.l)+'</p>';
   if(it.t==='lvl') return '<div class="srow"><span class="sl">Scenario<small>'+esc(LV.locName+' '+LV.num+' · '+LV.label)+(PR[levelKey]?'  '+starsOf(levelKey):'')+'. Pick another on the map.</small></span><button class="btn ghost small" type="button" id="s_map">🗺 Open the map</button></div>';
@@ -4247,6 +4439,7 @@ function settingInput(e){
     if(t.type!=='range'&&e.type!=='change') return;
     var v=t.type==='checkbox'?t.checked:t.type==='range'?+t.value:t.value;
     setPath(k,v);
+    if(k==='level'){ if(v==='explorer') ST.adv=false; else if(v==='pilot') ST.adv=true; if(settingsOpen) setTimeout(renderBody,0); }   /* a default per level; still changeable */
     if(k==='camera'){ setCamera(v,true); CAM.msgT=0; }
     if(t.type==='range'){ var o=$('#'+t.id+'_o'); var it=SCHEMA.reduce(function(a,g){return a.concat(g.items);},QUICK).filter(function(x){return x.k===k;})[0]; if(o&&it) o.textContent=it.fmt(v); }
     saveSettings(); applySettings(); updateRestartNote();
@@ -4943,6 +5136,19 @@ function learnHTML(){
     '<div class="lbody" id="lbody" role="tabpanel" aria-labelledby="lt_'+t+'">'+learnBody(t)+'</div>';
 }
 function learnBody(t){
+  if(t==='forces'&&lvlE()) return '<p>Four pushes and pulls work on every plane. Your job: <b>take off, fly up, land on the runway and stop</b>.</p>'+
+    '<div class="mini"><div class="f1"><b>Lift ↑</b><br>Pushes the plane up.</div><div class="f2"><b>Weight ↓</b><br>Pulls it down.</div>'+
+    '<div class="f3"><b>Thrust →</b><br>The engine pushes it forward.</div><div class="f4"><b>Drag ←</b><br>The air pushes it back.</div></div>'+
+    '<ul><li>If lift wins, you go up. If weight wins, you go down.</li><li>If thrust wins, you go faster. If drag wins, you slow down.</li><li>Faster means much more lift.</li><li>Lifting the nose makes more lift, but not too much: a very high nose makes the wing <b>stall</b> and stop lifting.</li><li>New here? Try the <b>Lessons</b> tab.</li></ul>';
+  if(t==='forces'&&lvlP()) return '<p>Four forces act on the aircraft. Mission: take off, climb, fly the approach, land in the touchdown zone and stop.</p>'+
+    '<div class="mini"><div class="f1"><b>Lift L ↑</b><br>L = ½ ρ v² S C_L</div><div class="f2"><b>Weight W ↓</b><br>W = m g</div>'+
+    '<div class="f3"><b>Thrust T →</b><br>From the engine</div><div class="f4"><b>Drag D ←</b><br>Parasite (∝ v²) + induced (∝ C_L²)</div></div><ul>'+
+    '<li>L &gt; W: climb. T &gt; D: accelerate. In steady flight L = W and T = D.</li>'+
+    '<li>Lift ∝ v²: twice the airspeed gives four times the lift at the same C_L.</li>'+
+    fmtP('<li>C_L rises with the <b>angle of attack</b> α (here the pitch) up to the critical angle, {crit}°. Beyond it the flow separates: a <b>stall</b>. Recover by lowering α below {rec}°.</li>')+
+    '<li>Glide ratio = L/D: the distance flown per unit of height lost without power.</li>'+
+    '<li>Near the ground, <b>ground effect</b> reduces induced drag and the plane floats in the flare.</li>'+
+    '<li>Forces are shown as % of the normal weight: L/W, T/W and D/W.</li></ul>';
   if(t==='forces') return '<p>Four forces act on every plane. Your mission: <b>take off, climb, land on the runway and stop before it ends</b>. Watch the forces change as you fly.</p>'+
     '<div class="mini"><div class="f1"><b>F1 Lift ↑</b><br>Pushes the plane up.</div><div class="f2"><b>F2 Weight ↓</b><br>Gravity pulls it down.</div>'+
     '<div class="f3"><b>F3 Thrust →</b><br>Engine pushes it forward.</div><div class="f4"><b>F4 Drag ←</b><br>Air resistance holds it back.</div></div>'+
@@ -4953,11 +5159,20 @@ function learnBody(t){
     '<li>Forces are shown as a <b>% of normal weight</b>. Burning fuel makes the plane lighter.</li>'+
     '<li>New to this? Try the <b>Lessons</b> tab, and keep <b>Advanced info</b> off. Turn it on (Quick settings, or press '+esc(keyFirst('advanced'))+') for the lift-vs-pitch chart and the flight charts after landing.</li></ul>';
   if(t==='warmup') return matchHTML();
-  if(t==='lessons') return '<p>Short guided flights with the Trainer. No stars, and you can skip a step or stop any time. ✓ = done.</p>'+lessonsHTML();
+  if(t==='lessons') return '<p>Short guided flights with the Trainer. No stars, and you can skip a step or stop any time. ✓ = done.</p>'+lessonsHTML()+(lvlP()?LESSONS.map(function(L){ return lessonPhysics(L).replace('<b>The physics</b>','<b>'+esc(L.n+' · '+L.label)+': the physics</b>'); }).join(''):'');
   if(t==='controls') return '<h3>KEYBOARD</h3><div class="keygrid">'+keyGridHTML()+'</div>'+
     '<h3>TOUCH SCREENS</h3><ul><li>Hold <b>−</b> / <b>+</b> for less or more thrust, <b>IDLE</b> and <b>FULL</b> jump straight there.</li><li>Hold <b>▼</b> / <b>▲</b> to lower or raise the nose.</li>'+
     '<li><b>❚❚</b> (top right of the flight view) opens the pause menu. <b>☰</b> has the camera, the Hangar and Settings; tap the instruments for the flight details.</li></ul>'+
     '<div class="row" style="justify-content:flex-start"><button type="button" class="btn ghost small" id="lkeys">⌨ Change keys (Settings)</button></div>';
+  if(t==='landing'&&lvlE()) return '<ul><li>When the <b>landing lights</b> appear next to the runway, start going down.</li><li><b>2 white and 2 red</b> lights: you are on the right path. More white: too high. More red: too low.</li>'+
+    '<li>Use only a little engine on the way down. Land in the <b>marked part</b> of the runway.</li><li>Just before the wheels touch, lift the nose a tiny bit. This is the <b>flare</b>: it makes the landing soft.</li>'+
+    '<li>Then turn the engine off and stop before the runway ends.</li></ul><h3>THE FIVE STAR CHECKS</h3><ol class="checks"><li>Land softly</li><li>Land in the right spot</li><li>Nose up a little when you land</li><li>Stop on the runway</li><li>No stall</li></ol><p>All five: three stars. One missed: two stars.</p>';
+  if(t==='landing'&&lvlP()) return '<ul><li>Intercept the glide path when the PAPI box appears; fly a '+GS.toFixed(1)+'° slope (2 white / 2 red).</li>'+
+    '<li>Required sink rate ≈ ground speed × tan(γ): about '+nf(130*1.689*Math.tan(GS*Math.PI/180)*60)+' fpm at 130 kt ground speed. A headwind lowers it.</li>'+
+    '<li>Aim for the first part of the touchdown zone. Close the throttle and flare: a brief increase of α makes L &gt; W and arrests the sink rate.</li>'+
+    '<li>Ground effect reduces induced drag in the last wingspan of height, so a late, small flare avoids floating.</li>'+
+    '<li>Touchdown attitude: slightly nose-up, main wheels first. Then idle and brake to a stop within the runway.</li></ul>'+
+    '<h3>THE FIVE STAR CHECKS</h3><ol class="checks"><li>Sink rate at touchdown</li><li>Touchdown zone</li><li>Pitch attitude at touchdown</li><li>Stop within the runway</li><li>No stall (some scenarios swap this for their own goal)</li></ol><p>All five: ★★★, one missed: ★★.</p>';
   if(t==='landing') return '<div class="papi" role="img" aria-label="Glide-path lights: two white and two red means on the path; more white, too high; more red, too low">'+
       [['too high',['w','w','w','r']],['on the path',['w','w','r','r']],['too low',['w','r','r','r']]].map(function(r){ return '<div><span>'+r[1].map(function(c){ return '<i class="'+c+'"></i>'; }).join('')+'</span><small>'+r[0]+'</small></div>'; }).join('')+'</div><ul>'+
     '<li>Stay level until the <b>glide-path lights</b> show up beside the runway. <b>2 white + 2 red = on the path</b>; more white = too high, more red = too low.</li>'+
@@ -5000,6 +5215,7 @@ function dotLabel(s){
 function showMap(){ showScreen('levels',null,{stack:[{id:'main'}]}); }
 function checkLine(k){
   var g=LV.grade;
+  if(lvl()!=='student'&&k!=='goal') return tx('ck.'+k,{limit:vsStr(g[1]),zone:Math.round(LV.land.zone*100)});
   switch(k){
     case 'sink': return 'Gentle touchdown: under '+vsStr(g[1]);
     case 'zone': return 'Touch down inside the zone ('+Math.round(LV.land.zone*100)+'% of the runway)';
@@ -5012,6 +5228,7 @@ function checkLine(k){
 }
 function condLine(){
   var p=[];
+  if(lvlE()) return [{day:'Daytime',dusk:'Evening',night:'Night'}[LV.tod]||'Daytime',LV.wind?(LV.wind>15?'Very windy':'Windy'):'No wind',LV.turb>=.3?'Bumpy air':'Smooth air'].concat(LV.weight>100?['Heavy plane']:[]).concat(LV.fuel?['Little fuel']:[]).join(' · ');
   p.push(TODICON[LV.tod]+' '+TODNAME[LV.tod]);
   p.push(LV.wind?'Headwind '+spdStrKt(LV.wind):'No wind');
   if(LV.shear) p.push('Wind flips below '+altStrFt(LV.shear.alt));
@@ -5108,18 +5325,19 @@ var ACH=[
   {id:'mountain',g:'Progress',n:'Mountain opened',d:'Unlock the Mountain.'},
   {id:'island',g:'Progress',n:'Island opened',d:'Unlock the Island.'},
   {id:'all',g:'Progress',n:'Every star',d:'Earn all '+SCN.length*3+' stars.'},
-  {id:'butter',g:'Skill',n:'Butter',d:'Touch down at less than 100 fpm.'},
-  {id:'bullseye',g:'Skill',n:'Bullseye',d:'Touch down within 20 ft of the aim point.'},
-  {id:'deadstick',g:'Skill',n:'Dead-stick',d:'Get 3 stars on a scenario where the engine stops and you glide.'},
+  {id:'butter',g:'Skill',n:'Butter',d:'Touch down at less than 100 fpm.',de:'Land as softly as a feather.',dp:'Touch down with a sink rate under 100 fpm (0.5 m/s).'},
+  {id:'bullseye',g:'Skill',n:'Bullseye',d:'Touch down within 20 ft of the aim point.',de:'Land right on the landing mark.'},
+  {id:'deadstick',g:'Skill',n:'Dead-stick',d:'Get 3 stars on a scenario where the engine stops and you glide.',de:'Get 3 stars when the engine stops and you glide down.',dp:'3 stars on an engine-failure approach: fly the best glide ratio.'},
   {id:'deckhand',g:'Skill',n:'Deck hand',d:'Get 3 stars on a carrier landing.'},
-  {id:'nostall',g:'Skill',n:'Stall-free location',d:'Land every scenario of one location without a stall.'},
-  {id:'charts',g:'Teaching',n:'Read the charts',d:'Look at the flight charts (Advanced info) after 10 flights.'},
-  {id:'shear',g:'Teaching',n:'Wind shear survivor',d:'Pass the sink-rate check in a wind shear scenario.'},
-  {id:'heavy',g:'Teaching',n:'Heavy lifter',d:'Get 3 stars on a scenario with a heavy plane.'},
+  {id:'nostall',g:'Skill',n:'Stall-free location',d:'Land every scenario of one location without a stall.',de:'Land every flight in one place without a stall.'},
+  {id:'charts',g:'Teaching',n:'Read the charts',d:'Look at the flight charts (Advanced info) after 10 flights.',de:'Look at the flight pictures after 10 flights (turn on Advanced info).'},
+  {id:'shear',g:'Teaching',n:'Wind shear survivor',d:'Pass the sink-rate check in a wind shear scenario.',de:'Land softly when the wind suddenly changes.'},
+  {id:'heavy',g:'Teaching',n:'Heavy lifter',d:'Get 3 stars on a scenario with a heavy plane.',de:'Get 3 stars with a heavy plane.'},
   {id:'daily3',g:'Coming back',n:'Three days running',d:'Fly the daily approach on 3 days in a row.'},
   {id:'streak10',g:'Coming back',n:'Ten in a row',d:'Land 10 times in a row in endless mode.'}
 ];
 var ACHBY={}; ACH.forEach(function(a){ ACHBY[a.id]=a; });
+function achD(a){ return (lvlE()&&a.de)||(lvlP()&&a.dp)||a.d; }   /* the description at the player's explanation level */
 function achCount(){ return ACH.filter(function(a){ return PG.ach[a.id]; }).length; }
 function grant(id,list){ if(PG.ach[id]) return; PG.ach[id]=dateKey(); if(list) list.push(ACHBY[id]); }
 function checkAch(c){
@@ -5211,7 +5429,7 @@ function bindModes(){
 function showAch(){
   var groups=['Progress','Skill','Teaching','Coming back'];
   var html=xBtn('xclose','Close (Esc)')+'<h2><span>ACHIEVEMENTS</span> <span class="tot">'+achCount()+' / '+ACH.length+'</span></h2><div class="achgrid">'+
-    groups.map(function(g){ return '<section><h3>'+g+'</h3><ul>'+ACH.filter(function(a){return a.g===g;}).map(function(a){ var on=PG.ach[a.id]; return '<li class="'+(on?'on':'')+'"><span aria-hidden="true">'+(on?'🏅':'○')+'</span><div><b>'+esc(a.n)+'</b><small>'+esc(a.d)+(on?' (got it '+esc(dateShort(on))+')':'')+'</small></div></li>'; }).join('')+'</ul></section>'; }).join('')+'</div>'+
+    groups.map(function(g){ return '<section><h3>'+g+'</h3><ul>'+ACH.filter(function(a){return a.g===g;}).map(function(a){ var on=PG.ach[a.id]; return '<li class="'+(on?'on':'')+'"><span aria-hidden="true">'+(on?'🏅':'○')+'</span><div><b>'+esc(a.n)+'</b><small>'+esc(achD(a))+(on?' (got it '+esc(dateShort(on))+')':'')+'</small></div></li>'; }).join('')+'</ul></section>'; }).join('')+'</div>'+
     '<div class="row"><button class="btn" id="achback" type="button">← Back</button></div>';
   openOverlay(html);
   $('#xclose').onclick=closeIntro; $('#achback').onclick=closeIntro; $('#achback').focus({preventScroll:true});
@@ -5418,6 +5636,10 @@ function approachAngle(){ var h=S.hist,i,t=S.ev.target; if(t===null) return null
 function wellText(){
   var c=endCtx, fa=c.won?c.sc.fac:[];
   function ok(k){return fa.some(function(x){return x.k===k&&x.ok;});}
+  if(lvlE()){                                                         /* Explorer: one short happy sentence */
+    if(c.won){ var e=['sink','zone','stop','nose','clean'].filter(ok)[0]; return tx(e?'ew.'+e:'ew.won'); }
+    return tx(S.ev.liftoff!==null?'ew.air':(thrust>20||S.v>10)?'ew.speed':'ew.try');
+  }
   if(c.won){
     if(ok('zone')) return 'You touched down '+altStrFt(Math.round(S.tdRel*FTPERU))+' after the runway start, right inside the touchdown zone.';
     if(ok('sink')) return 'Your touchdown was gentle ('+vsStr(S.fpm)+'). The passengers would hardly notice!';
@@ -5431,7 +5653,18 @@ function wellText(){
   return 'You gave it a go. Every pilot has a few bumpy tries while learning.';
 }
 function tryText(){
+  if(lvlE()){ var c=endCtx, f=c.won?c.sc.fac.filter(function(x){ return !x.ok; })[0]:null, k=!c.won?(TX['et.'+S.crashWhy]?'et.'+S.crashWhy:'et.hard'):(f&&TX['et.'+f.k]?'et.'+f.k:'et.ok');
+    var t=tx(k).replace(/^Next time, /,''); return t.charAt(0).toUpperCase()+t.slice(1); }   /* the label already says "Next time" */
   var t=endTips(); return t.length?t[0]:'Try the next level for a new challenge.';
+}
+/* Pilot: the touchdown in numbers and one tip from them (behind "More" on phones) */
+function pilotNumsHTML(){
+  if(!lvlP()||!endCtx.won) return '';
+  var pre=S.ev.touch!==null?sampleBefore(S.ev.touch):null, lead=(S.ev.flare!==null&&S.ev.touch!==null)?S.ev.touch-S.ev.flare:null, ap=approachAngle(), gl=LV.grade;
+  var nums=tx('pn',{fpm:vsStr(S.fpm),fpmalt:ST.vsU==='ms'?nf(S.fpm)+' fpm':(S.fpm/FPM).toFixed(1)+' m/s',spd:spdStrKt((S.tdV||S.v)*KT),pitch:Math.round(S.tdPitch),lw:pre?(pre.L/pre.W).toFixed(2):'—',
+    flare:lead!==null?tx('pn.flare',{lead:lead.toFixed(1)}):tx('pn.noflare'),appr:ap!==null?tx('pn.appr',{a:ap.toFixed(1),gs:GS.toFixed(1)}):tx('pn.noappr')});
+  var tip=lead===null?tx('pt.noflare'):lead>5?tx('pt.early',{lead:lead.toFixed(1),fh:altStrFt(30)}):S.fpm>gl[1]?tx('pt.sink',{lim:vsStr(gl[1])}):ap!==null&&Math.abs(ap-GS)>1?tx('pt.path',{d:Math.abs(ap-GS).toFixed(1)}):tx('pt.ok');
+  return '<details class="pnums"'+(MOBILE?'':' open')+'><summary>The numbers</summary><p>'+esc(nums)+'</p><p>'+esc(tip)+'</p></details>';
 }
 function bestHTML(){
   var c=endCtx, pr=PR[levelKey]; if(!c.won||!pr||c.practice) return '';
@@ -5467,16 +5700,16 @@ function bindReplay(){
 function endResultHTML(){
   var c=endCtx, gl=LV.grade, P=pilot(); analyseFlight();
   function face(ex,txt){ return '<div class="respilot">'+pilotImg(P,ex,72,true,'','')+'<p>'+txt+'</p></div>'+(c.rankUp?'<p class="rankup" role="status">🎉 Promoted! '+esc(P.name)+' is now a <b>'+esc(RANKS[c.rankUp][0])+'</b>.</p>':''); }
-  var did='<div class="did"><p class="well"><b>✓ You did well:</b> '+esc(wellText())+'</p><p class="next"><b>➜ Try next time:</b> '+esc(tryText())+'</p></div>';
+  var did='<div class="did"><p class="well"><b>✓ '+esc(tx('well'))+'</b> '+esc(wellText())+'</p><p class="next"><b>➜ '+esc(tx('next'))+'</b> '+esc(tryText())+'</p></div>';
   var tail='<div class="resplane">'+planeImg(S.plane,paintOf(S.plane),'',PBY[S.plane].name)+'<span>Flown with the '+esc(PBY[S.plane].name)+'</span></div>'+(c.practice?'<p class="dailyline">✈ Practice flight with the '+esc(PBY[S.plane].name)+': stars only with the suggested plane ('+esc(PBY[LV.craft].name)+').</p>':'')+bestHTML()+(endCtx.extra||'')+flightPathHTML();
   if(c.won){
     var sc=c.sc, g=sc.g, n3=sc.n3;
-    var td=esc(P.name)+' touched down at '+vsStr(S.fpm)+'. ', say=[td+'Pilots dream of landings like this!',td+'Nicely done.',td+'The passengers felt that one.',td+'The plane survived but needs an inspection.'][g];
+    var say=esc(tx('resSay',{name:P.name,fpm:vsStr(S.fpm),sinkw:eSink(S.fpm),fpmalt:ST.vsU==='ms'?nf(S.fpm)+' fpm':(S.fpm/FPM).toFixed(1)+' m/s',td:S.tdRel!==null?altStrFt(Math.round(S.tdRel*FTPERU)):'—',pitch:Math.round(S.tdPitch)})+tx('say.'+g));
     var ex=(g===0||n3===3)?'vhappy':g===3?'worried':'happy';         /* the pilot's face: butter or 3 stars, normal, hard landing */
-    var crit='<ul class="crit" aria-label="Star checks: all must pass for 3 stars">'+sc.fac.map(function(x){return '<li>'+(x.ok?'✓':'✗')+' '+esc(x.txt)+'</li>';}).join('')+'</ul>';
+    var crit='<ul class="crit" aria-label="Star checks: all must pass for 3 stars">'+sc.fac.map(function(x){return '<li>'+(x.ok?'✓':'✗')+' '+esc(lvlE()?tx('st.'+x.k):x.txt)+'</li>';}).join('')+'</ul>'+pilotNumsHTML();
     return '<h2><span>'+(g===3?'HARD LANDING':'MISSION COMPLETE!')+'</span> ✈</h2>'+
       '<p class="stars3" role="img" aria-label="'+n3+' out of 3 stars">'+stars3Str(n3)+'</p>'+
-      '<p class="gname">'+((g<=1&&sc.fails>0)?'SOFT TOUCHDOWN':NAMES[g])+'</p>'+face(ex,say)+crit+did+tail;
+      '<p class="gname">'+((g<=1&&sc.fails>0)?(lvlE()?'Soft landing!':'SOFT TOUCHDOWN'):esc(tx('g.'+g)))+'</p>'+face(ex,say)+crit+did+tail;
   }
   var w=S.crashWhy, T={
     terrain:['HIT THE HILL!','FLEW INTO THE GROUND','You were '+altStrFt(Math.round(S.alt*FT))+' up, but the ground there was '+altStrFt(Math.round(terrainFt(S.x)))+' high.'],
@@ -5491,13 +5724,13 @@ function endResultHTML(){
   if(LV.water&&(w==='short'||w==='long'||w==='offend')) T=[w==='short'?'INTO THE WATER!':'SPLASH!',w==='short'?'LANDED SHORT, IN THE SEA':w==='long'?'LANDED PAST THE STRIP':'RAN OFF THE END',T[2].replace('on the grass','in the sea')];
   return '<h2><span>'+T[0]+'</span></h2>'+
     '<p class="stars3" role="img" aria-label="0 out of 3 stars">'+stars3Str(0)+'</p>'+
-    '<p class="gname">'+T[1]+'</p>'+face(w==='missed'||w==='nogo'?'worried':'shocked',T[2])+did+tail;
+    '<p class="gname">'+T[1]+'</p>'+face(w==='missed'||w==='nogo'?'worried':'shocked',lvlE()?esc(tx('crash.e')):T[2])+did+tail;
 }
 function endDataHTML(){
   var top=0; S.hist.forEach(function(h){if(h.alt>top) top=h.alt;});
   var td=endCtx.won?vsStr(S.fpm):'—';
   return '<h2><span>FLIGHT DATA</span></h2>'+
-    '<div class="stats"><div><small>LIFT-OFF AT</small><b>'+(S.ev.liftoff!==null?Math.round(S.ev.liftoff)+' s':'—')+'</b></div><div><small>FLIGHT TIME</small><b>'+Math.round(S.time)+' s</b></div><div><small>TOP HEIGHT</small><b>'+altStrFt(top)+'</b></div><div><small>STALLS</small><b>'+S.stallCount+'</b></div></div>'+
+    '<div class="stats"><div><small>LIFT-OFF AT</small><b>'+(S.ev.liftoff!==null?Math.round(S.ev.liftoff)+' s':'—')+'</b></div><div><small>FLIGHT TIME</small><b>'+Math.round(S.time)+' s</b></div><div><small>TOP HEIGHT</small><b>'+(lvlE()?eHeight(top):altStrFt(top))+'</b></div><div><small>STALLS</small><b>'+S.stallCount+'</b></div></div>'+
     flightSection();
 }
 function flareLine(){
@@ -5663,7 +5896,7 @@ function replayTick(dt){
 var ftip=$('#ftip'), tipTimer=0, tipSrc='';
 function showTip(k,anchor,auto){
   clearTimeout(tipTimer); tipSrc=anchor&&anchor.nodeType?'el':'cv';
-  ftip.className='ftip '+FCLS[k]; ftip.textContent=TIPS[k]; ftip.hidden=false;
+  ftip.className='ftip '+FCLS[k]; ftip.textContent=tx('tip.'+k); ftip.hidden=false;
   var vw=window.innerWidth, vh=window.innerHeight, w=ftip.offsetWidth, h=ftip.offsetHeight, x, y, m=10;
   if(anchor&&anchor.nodeType){
     var r=anchor.getBoundingClientRect();
@@ -5769,7 +6002,8 @@ var LESSON=null, lessonBox=$('#lessonBox'), lspot=$('#lspot'), lessonSpotN=0;
 function lessonStep(){ return (LESSON&&!LESSON.done&&LESSON.i>=0)?LESSON.L.steps[LESSON.i]:null; }
 function lessonSlowOn(){ var s=lessonStep(); return !!(s&&s.slow&&mode==='fly'); }
 function lessonHold(){ var s=lessonStep(); return !!(s&&s.read&&mode==='fly'); }
-function lessonSay(s){ return typeof s.say==='function'?s.say():s.say; }
+function lessonSay(s){ var x=lvlE()&&s.sayE!==undefined?s.sayE:s.say; return typeof x==='function'?x():x; }   /* Explorer: its own words for the same step */
+function lessonPhysics(L){ return lvlP()&&L.physics?'<div class="physbox"><b>The physics</b><p>'+esc(fmtP(L.physics.replace('{gs}',GS.toFixed(1))))+'</p></div>':''; }
 function startLesson(id){ var L=LBY[id]; if(!L) return; setLevel(L,true); startFlight(false,{kind:'lesson',id:id}); }
 function lessonBegin(){
   var L=LBY[RUN.id]; if(!L){ lessonStop(); return; }
@@ -5846,7 +6080,7 @@ function lessonFinish(){
   if(ST.announce){ srLive.textContent=''; setTimeout(function(){ srLive.textContent='Lesson '+L.n+' complete. '+L.recap; },30); }
   sfxWin(3);
   var nx=LESSONS[LESSONS.indexOf(L)+1];
-  lessonCard('<h2><span>LESSON COMPLETE ✓</span></h2><p class="gname">'+esc(L.n+' · '+L.label)+'</p><p class="brtip">'+esc(L.recap)+'</p>'+
+  lessonCard('<h2><span>LESSON COMPLETE ✓</span></h2><p class="gname">'+esc(L.n+' · '+L.label)+'</p><p class="brtip">'+esc(L.recap)+'</p>'+lessonPhysics(L)+
     '<p class="bestline">Lessons give no stars. '+lessonsDone()+' of '+LESSONS.length+' lessons done.</p>',
     (nx?'<button class="btn" id="lnext" type="button">Next lesson: '+esc(nx.label)+' →</button>':'<button class="btn" id="lfly" type="button">Fly 1.1 · '+esc(SBY['grass-1'].label)+' →</button>'),nx);
 }
@@ -5886,6 +6120,35 @@ function lessonsHTML(){
 }
 function bindLessons(root){ [].forEach.call((root||card).querySelectorAll('.lbtn'),function(b){ b.onclick=function(){ startLesson(b.dataset.lesson); }; }); }
 /* new players: after the intro, offer Lesson 1 once */
+/* the explanation level: asked once (new players and old saves), skippable; Student is the default */
+function levelOffer(){
+  var seen=false; try{ seen=localStorage.getItem('flightSchoolLevelAsked')==='1'; }catch(e){}
+  if(seen) return false;
+  try{ localStorage.setItem('flightSchoolLevelAsked','1'); }catch(e){}
+  levelHello(); return true;
+}
+/* page 1: say hi first */
+function levelHello(){
+  openOverlay(xBtn('xclose','Skip (Esc)')+'<h2><span>HI, WELCOME TO FLIGHT SCHOOL!</span></h2>'+
+    '<div class="brpilot">'+pilotImg(pilot(),'vhappy',64,true,'','')+'<p>Hello! Here you learn how planes fly by flying one yourself: take off, climb, land softly and stop.</p></div>'+
+    '<p>First, one quick question so the game can explain things in a way that suits you.</p>'+
+    '<div class="row"><button class="btn ghost" id="lvskip" type="button">Skip</button><button class="btn" id="lvnext" type="button">Let’s go →</button></div>');
+  $('#xclose').onclick=closeIntro; $('#lvskip').onclick=closeIntro; $('#lvnext').onclick=levelAsk; $('#lvnext').focus({preventScroll:true});
+}
+/* page 2: how old are you? The answer only picks the explanation level; the age itself is never saved */
+function levelAsk(){
+  var AGES=[['explorer','6 to 10'],['student','11 to 15'],['pilot','16 or older']];
+  openOverlay(xBtn('xclose','Skip: keep Student (Esc)')+'<h2><span>HOW OLD ARE YOU?</span></h2>'+
+    '<p>This picks how the game talks to you. It never changes the difficulty or the stars.</p>'+
+    '<div class="lvlcards">'+AGES.map(function(a){ var L=LEVELS.filter(function(x){ return x[0]===a[0]; })[0];
+      return '<button type="button" class="lvlcard" data-lv="'+a[0]+'"'+(a[0]==='student'?' data-main':'')+'><b>'+esc(a[1])+'</b><small>'+esc(L[1])+' explanations</small><span>“'+esc(TX['lvl.ex.'+a[0]].s)+'”</span></button>'; }).join('')+'</div>'+
+    '<p class="mapnote">Your age is not saved, only the kind of explanations. Change it any time: Settings → Quick → Explanations.</p>'+
+    '<div class="row"><button class="btn ghost" id="lvback" type="button">← Back</button><button class="btn ghost" id="lvskip" type="button">Rather not say</button></div>');
+  function pick(v){ ST.level=v; if(v==='explorer') ST.adv=false; else if(v==='pilot') ST.adv=true; saveSettings(); applySettings(); srSay(LEVELS.filter(function(L){ return L[0]===v; })[0][1]+' explanations chosen.'); closeIntro(); }
+  [].forEach.call(card.querySelectorAll('.lvlcard'),function(b){ b.onclick=function(){ pick(b.dataset.lv); }; });
+  $('#xclose').onclick=closeIntro; $('#lvskip').onclick=closeIntro; $('#lvback').onclick=levelHello;
+  var f=card.querySelector('.lvlcard[data-main]'); if(f) f.focus({preventScroll:true});
+}
 /* players from before the pilot creator: asked once, gently, to make their own pilot (skippable) */
 function pilotOffer(){
   var seen=false; try{ seen=localStorage.getItem('flightSchoolPilotOffer')==='1'; }catch(e){}
@@ -5944,7 +6207,7 @@ applyLayout(true);
 applySettings();
 setLevel(levelKey);
 updatePanel();
-showScreen('main'); pilotOffer();                                     /* every visit starts at the main menu */
+showScreen('main'); if(!levelOffer()) pilotOffer();                                     /* every visit starts at the main menu */
 requestAnimationFrame(loop);
 })();
 </script>

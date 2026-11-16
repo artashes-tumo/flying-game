@@ -4,6 +4,16 @@ The whole game is one file, `index.html`. Open it in a browser (double-click). I
 
 Take off, climb, land softly on the runway and stop. Every scenario teaches one idea about the four forces: lift, weight, thrust and drag.
 
+## What's new: explanation levels
+
+- **Three levels** change how the game talks, never the physics, difficulty, star checks or scoring, so stars stay fair:
+  - **Explorer** (about 6 to 10): short everyday sentences, no units or numbers. Speed and height as words ("fast", "up high"), climb as an arrow ("↑ going up"), the forces as pushes and pulls ("Lift is winning!"). No percentages on the meters or the arrows.
+  - **Student** (about 11 to 16): the game as before: %, ft, kt, fpm, "Lift > Weight, so you climb".
+  - **Pilot** (16 and up, university): real terms and physics: angle of attack, lift coefficient C_L (shown next to the pitch), sink rate, glide ratio, L/W, lift = ½ ρ v² S C_L, ground effect. Results add "The numbers" (sink rate, airspeed, pitch, L/W at touchdown, flare timing, approach angle against the ideal path, and one tip from them). Lessons add a short "The physics" box. Pilot can switch to metric units (Settings → Display → Units: km/h, m, m/s).
+- The age ranges only pick the explanation level; the age itself is never saved.
+- **Choosing:** on the first visit (and once for older saves) the game first says hi ("Hi, welcome to Flight School!"), then asks "How old are you?" with three buttons: 6 to 10 (Explorer), 11 to 15 (Student), 16 or older (Pilot). "Rather not say" or Skip keeps Student. Only the level is saved, never the age. Change it any time in Quick settings (also in the pause menu); mid-flight the texts change at once. Choosing Explorer turns Advanced info off and Pilot turns it on (you can still change it).
+- Safety messages (stall, too fast, too low, hill, runway ending) stay just as short and urgent at every level.
+
 ## What's new: a living main menu
 
 - **The scene:** behind the main menu flies a small free-flight sky made from the game's own scenery (hills, trees, runway, sea, mountains, islands) in slow parallax. Every 40–60 s it cross-fades to another location you have unlocked (a first visit shows only the Grass strip). The time of day follows your clock: day, dusk, or night with stars, a moon and runway lights. Small life: birds, a windsock, a balloon (or a glider at dusk and night) far away, boats at the coast and the island, and now and then another Hangar plane in the distance.
@@ -130,6 +140,7 @@ Colour-blind palette (Okabe-Ito), pattern fills and text labels so the forces ne
 - **Flight path view:** `drawPathView()` with its own scales (`PV`).
 - **Planes:** `PLANES` (data: name, texts, `phys` factors, `needs`, paints), `PAINTS`, `planePhys()`, `planeIssue()` (why a plane cannot fly a scenario), `flightPlaneId()` (which plane really flies). Looks: `LOOKS` (true side-view parts, far wing, registration, wheel contacts, arrow anchors, props or jet, retractable gear, elevator, lights, cockpit frame and engine gauge, and `pilot` = where a pilot's head goes), `drawAirframe()` + `drawLive()` (one drawing for everything), `buildPlaneSprite()`, `drawPlane()`, `planePicURL()` / `planeImg()` (the same drawing as a picture for the Hangar, briefing, results and warm-up), `wheelDrop()` (wheel contact at any pitch; the biplane and the glider sit on their tails when slow). The Hangar: `HANGAR_TABS`, `showHangar()`, `hangarPlaneHTML()`; the choice is saved under `flightSchoolHangar`.
 - **Pilot:** data `PSKIN`, `PHAIR`, `PHAIRCOL`, `PEYES`, `PBROWS`, `PMOUTH`, `PEXTRA`, `PHEAD`, `PJACKET`, `PBADGE`, `PEXPR`, `PILOT_DEF`, `RANKS` (items with `req` are locked: `reqOpen()` / `reqText()`); `normPilot()` / `pilot()` / `savePilot()` (saved as `PG.pilot`); `drawPilot()` draws one at any size and expression; `pilotImg()` its picture; `drawPilotIn()` puts it in a plane at `LOOKS[...].pilot`; `pilotMood()` the face in flight. Pilot tab `hangarPilotHTML()` / `bindHangarPilot()`; licence card `showLicence()`; `pilotOffer()` (once, for older saves); `askPilotReset()` (after Reset progress).
+- **Explanation levels:** the text table `TX` and `tx(key, vals)` (fallback to Student), `lvl()`, `LEVELS`, `levelOffer()`, `LESSON_LV`, `pilotNumsHTML()`, `achD()`.
 - **Menu scene:** `MS`, `msBuild()`, `msLife()`, `clockTod()`, `menuLocs()`; the menu plane `MPL` with `mpStep()`, `mpDraw()`, `mpKey()`, `mpSound()`; loop `menuBgStart()` / `drawMenuBg()` / `menuBgStop()`.
 - **Menus:** `SCREENS` (main, levels, loc, learn) with `showScreen()` / `screenBack()` / `closeScreens()`, `SCR_STACK` (the way back), `mainHTML()`, `levelsHTML()`, `locHTML()` (`scnCardHTML()`, `scnIcons()`), `learnHTML()` / `learnBody()` (`LEARN_TABS`), `sceneSVG()` (location drawings), `drawMenuBg()` (the moving background), `matchHTML()` / `bindMatch()` (warm-up), `MENU` saved as `flightSchoolMenu`. Pause menu: `updatePauseUI()` → `openPause()` / `renderPause()` / `closePause()`. Quick settings: `QUICK` + `quickHTML()`, one handler `settingInput()`, `syncQuick()`.
 - **Settings:** `SCHEMA` builds the Settings dialog, `ACTIONS` the rebindable keys.
@@ -209,6 +220,15 @@ Open `index.html`. Do the list on desktop, then again with `?layout=cockpit` and
 65. **Dark and high contrast:** the scene follows the theme and the panel keeps the text readable.
 66. **Portrait layout:** the plane cruises above the buttons, the ground sits at the bottom, the buttons stay clear.
 67. **The animation stops during a flight:** start any flight; the menu scene stops (and starts again on the main menu).
+
+68. **First visit:** clear the site data: after the main menu appears, "Hi, welcome to Flight School!" greets you; "Let’s go →" asks "How old are you?" with 6 to 10, 11 to 15 and 16 or older (each with an example sentence). Pick one, or "Rather not say" / Skip / Esc (Student); ← Back returns to the greeting. Reload: it does not come back, and no age is stored (only the level).
+69. **1.1 at each level** (Quick settings → Explanations): Explorer: the coach says "Turn the engine up…", "Almost flying! Lift the nose up a little.", the panel shows "fast", "up high", "↑ going up" and "Lift is winning!", no numbers on the arrows; the results say e.g. "Pilot landed gently. Nice and soft!" with simple checks. Student: as before. Pilot: "Rotate: L/W = 0.88…", the pitch shows C_L, VERTICAL SPEED, and the results have "The numbers".
+70. **A stall warning at each level:** raise the nose past the warning: Explorer "Too steep! Point the nose down a little!", Student "TOO STEEP!…", Pilot "STALL WARNING: angle of attack …". With Auto-pause on, the pause menu's STALL text follows the level.
+71. **Switching mid-flight:** pause, change Explanations in the pause menu: the meters, labels and the next coach message change at once, the flight goes on.
+72. **A lesson at Explorer and at Pilot:** Lesson 1 at Explorer uses the short words ("Weight (red arrow) pulls the plane down."); at Pilot the steps are as before and the finished card has "The physics". How to play → Lessons at Pilot lists the physics of every lesson.
+73. **Metric units at Pilot:** Settings → Display → Units → Metric: km/h, m and m/s everywhere, also in coach messages and the results. The option is hidden at Explorer and Student, and they show kt / ft / fpm (Explorer none).
+74. **An old save:** a browser with progress from before: stars, plane and pilot are kept, the level is Student, and the choice card appears once.
+75. **Phones and big text:** `?layout=portrait` with Settings → Text size → Extra large at each level: coach messages, the panel words and the Pilot "The numbers" box wrap without overflowing ("The numbers" is closed by default on phones).
 
 ## Earlier versions
 

@@ -4,6 +4,21 @@ The whole game is one file, `index.html`. Open it in a browser (double-click). I
 
 Take off, climb, land softly on the runway and stop. Every scenario teaches one idea about the four forces: lift, weight, thrust and drag.
 
+## What's new: notifications, smooth panels, tags and a new briefing
+
+- **Notifications:** a new achievement, rank, location, plane colour or pilot item shows a small card at the top centre (it slides down, stays about 4 s, then slides up) with a short chime. Several show one after another. Hover pauses it, clicking opens the achievements list with that one highlighted, × closes it. During a flight it is smaller and never covers the phone HUD or pauses the game. With Reduce motion it only fades.
+- **Smooth panels:** Settings slide in from the right, the pause menu fades in with a slight zoom while the flight dims, the Hangar and the achievements slide in, the briefing, results and licence card rise up, menu screens slide forward and back, and tab contents cross-fade. Reduce motion: very short fades only.
+- **Centred screens:** How to play, the level select and the location screens sit in the middle; tall content scrolls inside the box. Daily approach and Endless landings are a centred pair.
+- **Condition tags:** each scenario card shows coloured tags (🌬 Wind, 〰 Gusts, ↯ Shear, 🌙 Night, 🌅 Dusk, ⚖ Heavy, ⚠ Engine out, ⛽ Little fuel, ⚓ Carrier, ✈ a plane other than the Trainer), always with an icon and a word. Hover for the meaning; ⓘ Icon key lists them all.
+- **Briefing in sections:** header with stars and tags, Your goal (the steps), Conditions (one row each, at your explanation level), You will learn (with the star checks folded away), Plane, and Fly this scenario. Fits one screen on desktop and on a phone held sideways.
+
+## What's new: compact pause menu and Hangar, automatic touch / keyboard
+
+- **Pause menu:** a small card over the dimmed flight: **▶ Continue** (focused), **↺ Restart**, and one row with 🔈 mute, the volume slider, ⚙ (Quick settings as a second small card on top: all quick options, More settings, Level select) and ⌂ (main menu, asks "Leave this flight?" first). A stall pause shows one short line above. Esc, P, the fullscreen double-Esc and the auto-pauses work as before; Esc closes the ⚙ card first.
+- **Hangar on one screen:** a big preview on top (plane with its comparison bars, or the pilot with name, 🎲 Random, ↺ Reset, 🪪 licence and the faces), then horizontal rows: the planes and the paints, or the pilot groups (Skin, Hair, Face, Headgear, Jacket) and their choices. Rows scroll by swipe, mouse wheel or trackpad, with ← → between items and small ‹ › buttons on mouse devices. Locked items keep a small 🔒 with the requirement in the tooltip. Fits without vertical scrolling on desktop and on a phone held sideways.
+- **Achievements** moved to the main menu (🏆 with the count).
+- **Touch or keyboard, automatically:** the game looks at how you play, not at the device name. On touch the keyboard guide (KEYS panel), key hints, the keyboard part of How to play → Controls and key re-binding in Settings are hidden, and coach messages, lessons and the tour talk about the on-screen buttons. The first real key press switches to keyboard hints; a touch after 20 s without keys switches back. Touch screens keep the ❚❚ pause button, also with a keyboard. Phones pick the sideways (cockpit) or upright (portrait) layout and switch when rotated, without restarting the flight; `?layout=` still forces one.
+
 ## What's new: explanation levels
 
 - **Three levels** change how the game talks, never the physics, difficulty, star checks or scoring, so stars stay fair:
@@ -24,7 +39,7 @@ Take off, climb, land softly on the runway and stop. Every scenario teaches one 
 ## What's new: menus, How to play, Quick settings and the pause menu
 
 - **Main menu first, every time.** A big FLIGHT SCHOOL title over a calm sky where your plane (with its paint and pilot) drifts by; with Reduce motion it is a still picture. Menu music plays. Buttons: **▶ PLAY**, **Continue: <last scenario>** (once you have flown; opens its briefing), **Pilot** and **Plane** (the Hangar on that tab), **How to play**, **Settings** (opens on the Quick tab). The licence badge in the corner (face, name, rank, stars) opens the licence card. On a first visit How to play pulses gently with "New here? Start here!"; nothing pops up and PLAY works straight away.
-- **Level select** (after PLAY): four location cards with a small drawing of each place, its tagline, stars earned of the total, and "Opens at X stars" with a lock while closed (clicking a closed one says how many stars you need). Below: **Daily approach**, **Endless landings** and **Achievements** (same rules as before: one daily try, streaks, best runs).
+- **Level select** (after PLAY): four location cards with a small drawing of each place, its tagline, stars earned of the total, and "Opens at X stars" with a lock while closed (clicking a closed one says how many stars you need). Below: **Daily approach** and **Endless landings** (same rules as before: one daily try, streaks, best runs). **Achievements** are on the main menu (🏆 7/15).
 - **A location's scenarios:** its drawing and name, then one card per scenario: number and name, stars or "not flown yet", a lock with what opens it, and icons for the conditions (🌬 wind, 〰 gusts, ↯ wind shear, 🌙 night, 🌅 dusk, ⚖ heavy, ⚠ engine failure, ⛽ little fuel, ⚓ carrier) plus the suggested plane. An open card opens the briefing card ("Fly this scenario", "Change plane").
 - **How to play** has six tabs: Four forces · Warm-up (the force-matching game, right there) · Lessons (✓ = done) · Controls (your current keys, and touch) · Landing guide (glide-path lights, touchdown zone, flare, the five star checks) · Quick tour (replay it). It remembers the tab you were on. The old intro pop-up is gone; Settings → Game → "Open How to play" and the intro key `I` open this screen.
 - **Moving around:** every screen has a Back button and `Esc` goes back one screen (on the main menu it does nothing, except leave fullscreen). In menus Esc never pauses. Screens slide in; with Reduce motion they switch instantly. `M` opens the level select (during a flight the flight waits paused underneath, and Back returns to it).
@@ -201,7 +216,7 @@ Open `index.html`. Do the list on desktop, then again with `?layout=cockpit` and
 47. **A locked and an open location:** with few stars click Coast: "The Coast opens at 10 stars. You have …". Click Grass strip: its scenarios.
 48. **A locked and an open scenario:** a locked card says "Earn at least 1 star on … first"; an open one opens the briefing; "← Grass strip" on the briefing goes back to the cards.
 49. **How to play:** each tab; the Warm-up (place all four forces, ↺ Start again, ▶ Go fly); a lesson from the Lessons tab (End lesson brings you back to the Lessons tab); Controls shows your own keys; Quick tour starts a flight with the tour. Leave and come back: the same tab is open.
-50. **Daily, Endless and Achievements from the level select:** the daily asks for a second click and then flies (once a day); Endless starts; Achievements opens and "← Back" returns to the level select.
+50. **Daily and Endless from the level select:** the daily asks for a second click and then flies (once a day); Endless starts.
 51. **Esc through every screen:** main menu → PLAY → Grass strip → a briefing: Esc closes the briefing, Esc → level select, Esc → main menu, Esc does nothing more. During a flight Esc opens and closes the pause menu; in fullscreen the second Esc leaves fullscreen and the menu stays.
 52. **The pause menu:** Continue (and P) resume; Restart restarts; change Volume, Music, Advanced info, Coaching tips and Camera view and see them apply; ⚙ More settings opens Settings and closing it comes back here; Level select and Main menu need two clicks. Fly into a stall with Auto-pause on: the menu shows the STALL explanation. On a phone the ❚❚ button (top corner, next to ⤢) opens it. Arrow keys do nothing to the plane while it is open.
 53. **Quick settings everywhere:** change a setting in the pause menu, open Settings → Quick: it shows the same value; press `T` or `V` while paused: the boxes follow.
@@ -229,6 +244,23 @@ Open `index.html`. Do the list on desktop, then again with `?layout=cockpit` and
 73. **Metric units at Pilot:** Settings → Display → Units → Metric: km/h, m and m/s everywhere, also in coach messages and the results. The option is hidden at Explorer and Student, and they show kt / ft / fpm (Explorer none).
 74. **An old save:** a browser with progress from before: stars, plane and pilot are kept, the level is Student, and the choice card appears once.
 75. **Phones and big text:** `?layout=portrait` with Settings → Text size → Extra large at each level: coach messages, the panel words and the Pilot "The numbers" box wrap without overflowing ("The numbers" is closed by default on phones).
+
+76. **Pause menu:** fly 1.1, press Esc: the small card with Continue focused. Restart restarts; 🔈 mutes (the icon and its label change) and the slider changes the volume; ⚙ opens Quick settings on top, ← Back or Esc returns to the pause card; ⌂ asks "Leave this flight?" (Stay / Main menu). Esc / P resume; in fullscreen (Chrome) the first Esc pauses, the second leaves fullscreen and the card stays. Fly into a stall with Auto-pause: one short STALL line on the card.
+77. **Hangar on desktop:** both tabs fit without scrolling. Plane: click each plane in the row (the preview and bars change; the Glider on 1.1 shows 🔒 and why); pick a paint. Pilot: switch Skin / Hair / Face / Headgear / Jacket; the row under them changes; Random, Reset and the licence icon work.
+78. **Hangar on phones:** the device toolbar at 812×375 (sideways) and 375×812 (upright): no vertical scrolling; the rows scroll with a swipe.
+79. **Scrolling rows:** mouse wheel over a row scrolls it sideways; ‹ › buttons; focus an item and press ← →: focus moves and the row follows.
+80. **Achievements:** the main menu shows 🏆 0/15 (your count); it opens the achievements; Back returns to the main menu. The level select no longer has it.
+81. **Touch / keyboard:** in the device toolbar pick a phone and reload: no KEYS panel, How to play → Controls shows only touch, Settings → Controls has no key re-binding, coach says "Hold + (or tap FULL)…". Press a key on the real keyboard: the keyboard hints come back without the layout jumping.
+82. **Rotating mid-flight:** in the device toolbar start a flight upright, then rotate: the layout changes to sideways and the flight carries on.
+
+83. **One achievement:** with a fresh save, land 1.1 for the first time (First flight): the card slides down with a chime, then up after about 4 s.
+84. **Two at once:** with a fresh save, make the first landing a soft one (under 100 fpm) to earn First flight and Butter together: the two cards come one after another. Hover one: it stays. Click it: the achievements list opens with it highlighted. × closes it early.
+85. **Every panel opens and closes smoothly:** Settings (S), the pause menu (Esc) and its ⚙ card, the Hangar (G), How to play, level select, a location, the briefing, the results, the licence card, the achievements. Click open/close quickly several times: nothing gets stuck, and the last state wins.
+86. **Reduce motion on:** the same panels just fade quickly; screens switch instantly; notifications fade without sliding.
+87. **Centred screens:** How to play, the level select and a location sit in the middle of the screen; with Extra large text they scroll inside the box. Daily and Endless are centred under the location cards.
+88. **Tags and the icon key:** on each location the cards show coloured tags (the Island has Night, Dusk, Carrier, Shear…; the plane tag only where another plane is suggested). Hover a tag; open ⓘ Icon key (Esc closes it).
+89. **The briefing:** click a scenario: header with tags, Your goal steps, Conditions rows, You will learn, Plane with Change plane, Fly this scenario. No scrolling on desktop or at 740×360.
+90. **Themes and layouts:** repeat 85, 88 and 89 with Dark and High contrast, at `?layout=cockpit` and `?layout=portrait`.
 
 ## Earlier versions
 

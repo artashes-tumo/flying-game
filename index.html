@@ -196,8 +196,27 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 
 /* ----- modals ----- */
 .modal{position:fixed;inset:0;z-index:50;background:rgba(10,16,30,.62);display:none;align-items:center;justify-content:center;padding:14px;overflow:auto}
-.modal.show{display:flex}
+.modal.show,.modal.fx-on{display:flex}
+/* panel motion (fxOpen / fxClose): opacity on the layer, a transform on its card; ease-out opening, ease-in closing */
+[data-fx]{opacity:0;transition:opacity .24s ease-in}
+[data-fx].fx-in{opacity:1;transition-timing-function:ease-out}
+[data-fx].fx-out{pointer-events:none}
+[data-fx] .card,.note{transition:transform .24s ease-in}
+[data-fx].fx-in .card,.note.fx-in{transition-timing-function:ease-out}
+[data-fx=rise] .card{transform:translateY(22px)} [data-fx=slide] .card{transform:translateX(44px)} [data-fx=right] .card{transform:translateX(56px)}
+[data-fx=pop] .card{transform:scale(.96)} [data-fx].fx-in .card{transform:none}
+.pausem .pmqcard[data-fx]{transform:translate(calc(-50% + 40px),-50%)} .pausem .pmqcard[data-fx].fx-in{transform:translate(-50%,-50%)}
+.note{transform:translate(-50%,-140%)} .note.fx-in{transform:translate(-50%,0)}
+.xf{animation:xfade .22s ease-out}
+@keyframes xfade{from{opacity:0}to{opacity:1}}
+:root[data-motion="reduce"] [data-fx],:root[data-motion="reduce"] [data-fx] .card{transition-duration:.08s!important}
+:root[data-motion="reduce"] [data-fx] .card{transform:none!important}
+:root[data-motion="reduce"] .note{transform:translate(-50%,0)!important}
+:root[data-motion="reduce"] .pausem .pmqcard[data-fx]{transform:translate(-50%,-50%)!important}
+:root[data-motion="reduce"] .xf{animation:none}
 #settings{z-index:70}
+:root[data-input="touch"] .keyonly,:root[data-input="touch"] #gKeys{display:none!important}
+:root[data-input="keys"] .touchonly{display:none!important}
 /* menu screens (main menu, level select, scenarios, How to play) and the pause menu */
 .screens{position:fixed;inset:0;z-index:45;background:var(--paper)}
 .screens[hidden]{display:none}
@@ -206,6 +225,23 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .scr{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
 .screens:not(.s-main) .scrin{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border:4px solid var(--ink);border-radius:16px 8px 14px 10px/10px 14px 8px 16px;padding:clamp(12px,2.2vw,22px)}
 .scrin{max-width:980px;margin:0 auto;position:relative;color:var(--ink)}
+/* the menu screens sit centred; taller content scrolls inside the box */
+.screens:not(.s-main) .scr{display:flex;flex-direction:column}
+.screens:not(.s-main) .scrin{margin:auto;width:100%;max-height:100%;overflow:auto;overscroll-behavior:contain}
+/* notifications (achievements, ranks, unlocks) */
+.note{position:fixed;left:50%;top:8px;z-index:90;display:flex;align-items:center;gap:10px;width:min(430px,calc(100vw - 24px));padding:8px 40px 8px 12px;border:3px solid var(--ink);border-radius:18px;background:var(--card);color:var(--ink);box-shadow:0 10px 28px rgba(0,0,0,.28),3px 3px 0 rgba(0,0,0,.18)}
+.note[hidden]{display:none}
+.note.link{cursor:pointer}
+.nicon{font-size:30px;line-height:1;flex:none}
+.ntext{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.ntext small{font-size:12px;letter-spacing:1.5px;color:var(--pencil)}
+.ntext b{font-size:calc(20px*var(--ts))}
+.ntext span{font-size:calc(15px*var(--ts));overflow-wrap:anywhere}
+.nx{position:absolute;top:4px;right:6px;width:30px;height:30px;font:inherit;font-size:16px;cursor:pointer;border:0;border-radius:50%;background:transparent;color:var(--ink)}
+@media (pointer:coarse){.nx{width:44px;height:44px;top:0;right:0}}
+.note.small{width:min(320px,calc(100vw - 24px));padding:5px 36px 5px 8px;gap:6px}
+.note.small .nicon{font-size:22px} .note.small .ntext b{font-size:16px} .note.small .ntext span{display:none}
+.achgrid li.hl{opacity:1;outline:3px solid var(--lift);outline-offset:2px;border-radius:8px}
 .scrin.anim{animation:scrIn .22s ease-out} .scrin.anim.back{animation:scrBack .22s ease-out}
 @keyframes scrIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes scrBack{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
@@ -257,8 +293,42 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 .snum{font-size:calc(15px*var(--ts));color:var(--pencil)}
 .sname{font-size:calc(22px*var(--ts));line-height:1.1}
 .sst{font-size:calc(17px*var(--ts))}
+
+.tag{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border:2px solid var(--ink);border-radius:999px;font-size:calc(14px*var(--ts));line-height:1.3;white-space:nowrap;background:var(--tb,#eee);color:var(--tf,var(--ink))}
+.tag:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.tag-wind{--tb:#D3E9FA}
+.tag-gusts{--tb:#CBEDE7}
+.tag-shear{--tb:#E6DAF6}
+.tag-night{--tb:#2B3A67}
+.tag-dusk{--tb:#F8DCC4}
+.tag-heavy{--tb:#E8D6C2}
+.tag-fail{--tb:#F8D3CF}
+.tag-fuel{--tb:#FCE0BD}
+.tag-deck{--tb:#D5DDE8}
+.tag-plane{--tb:#D3EED9}
+.tag-night{--tf:#fff}
+:root[data-theme="dark"] .tag-wind{--tb:#1D3D5C}
+:root[data-theme="dark"] .tag-gusts{--tb:#16463F}
+:root[data-theme="dark"] .tag-shear{--tb:#3B2D5C}
+:root[data-theme="dark"] .tag-night{--tb:#0E1736}
+:root[data-theme="dark"] .tag-dusk{--tb:#5A3A2A}
+:root[data-theme="dark"] .tag-heavy{--tb:#4A3826}
+:root[data-theme="dark"] .tag-fail{--tb:#5C1F1A}
+:root[data-theme="dark"] .tag-fuel{--tb:#5A3A12}
+:root[data-theme="dark"] .tag-deck{--tb:#2D3A4D}
+:root[data-theme="dark"] .tag-plane{--tb:#1C4A2C}
+:root[data-theme="dark"] .tag-night{--tf:var(--ink)}
+:root[data-theme="hc"] .tag{--tb:#000;--tf:#fff;border-color:#fff}
 .sicons{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
-.sicons i{font-style:normal;font-size:calc(14px*var(--ts));border:2px solid var(--ink);border-radius:8px;padding:0 5px;background:var(--paper)}
+.locfoot{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
+.locfoot .mapnote{margin:0}
+.ikey{position:static}   /* the popover is placed against the footer, so it never leaves the screen */
+.ikey summary{cursor:pointer;list-style:none;font-size:calc(17px*var(--ts));border:2.5px solid var(--ink);border-radius:999px;padding:3px 12px;background:var(--card);min-height:40px;display:flex;align-items:center}
+.ikey summary::-webkit-details-marker{display:none}
+.ikeybox{position:absolute;right:0;bottom:calc(100% + 6px);z-index:5;width:min(360px,100%);max-height:60vh;overflow:auto;padding:8px 10px;border:3px solid var(--ink);border-radius:12px;background:var(--card);box-shadow:4px 4px 0 rgba(0,0,0,.2)}
+.ikeybox ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.ikeybox li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;font-size:calc(14px*var(--ts));padding:0!important}
+.ikeybox li::before{display:none}
 .lbody{min-height:200px}
 .scrin ul{padding-left:22px;margin:6px 0} .scrin li{margin:2px 0}
 .lbody h3{margin:10px 0 4px}
@@ -277,11 +347,21 @@ kbd{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:0 6px;bac
 @media (hover:hover){.lvlcard:hover{background:var(--lift-t)}}
 .pausem{position:fixed;inset:0;z-index:48;background:rgba(10,16,30,.5);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}
 .pausem[hidden]{display:none}
-.pmcard{max-width:560px}
-.pmmain{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
-.pmgo{font-size:calc(28px*var(--ts));flex:1 1 220px}
-.pmmain small,.pmgo small{font-size:calc(14px*var(--ts));opacity:.8}
-.pmstall{border:3px solid var(--weight);border-radius:10px;padding:4px 10px;background:var(--card)}
+.pausem .pmcard{max-width:360px;display:flex;flex-direction:column;gap:8px;text-align:center}
+.pmcard h2{margin:0 0 2px}
+.pmgo{font-size:calc(28px*var(--ts));width:100%}
+.pmre{width:100%}
+.pmgo small,.pmre small{font-size:calc(14px*var(--ts));opacity:.8}
+.pmbar{display:flex;align-items:center;gap:6px}
+.pmbar input[type=range]{flex:1;min-width:60px}
+.ibtn{font:inherit;font-size:22px;line-height:1;width:44px;height:44px;flex:none;display:grid;place-items:center;cursor:pointer;color:var(--ink);background:var(--card);border:2.5px solid var(--ink);border-radius:10px 6px 9px 7px/7px 9px 6px 10px;padding:0}
+.ibtn[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.ibtn{width:38px;height:38px;font-size:20px}}
+.pmconfirm{border:2.5px dashed var(--ink);border-radius:10px;padding:4px 8px;background:var(--card)}
+.pmconfirm p{margin:0 0 4px}
+.pmnote{margin:0;font-size:calc(15px*var(--ts));color:var(--pencil)}
+.pausem .pmqcard{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:480px;width:calc(100% - 24px);max-height:calc(100% - 24px);overflow:auto;box-shadow:6px 6px 0 rgba(0,0,0,.25)}
+.pmstall{border:3px solid var(--weight);border-radius:10px;padding:2px 8px;margin:0;background:var(--card);font-size:calc(16px*var(--ts))}
 .pmexit{justify-content:flex-start;flex-wrap:wrap;gap:8px}
 .quick .srow{padding:4px 0}
 .pausefab{position:absolute;top:8px;right:56px;z-index:7;width:44px;height:44px;padding:0;font:inherit;font-size:20px;cursor:pointer;color:var(--ink);background:var(--card);border:2.5px solid var(--ink);border-radius:10px 6px 9px 7px/7px 9px 6px 10px;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
@@ -610,13 +690,45 @@ html[data-layout="portrait"] .hold{min-height:56px}
 @media (hover:hover){.sdot:not(.locked):hover{background:var(--ink);color:var(--paper)}.sdot:not(.locked):hover .st{color:var(--paper-2)}}
 .maptoast{position:sticky;bottom:0;margin:8px 0 0;padding:6px 12px;border:3px solid var(--ink);border-radius:10px;background:var(--amber-t,#FFE9B0)}
 .brsub{color:var(--pencil);font-size:calc(18px*var(--ts));margin:-4px 0 8px}
+/* the briefing card in sections */
+.brhead h2{margin-bottom:2px}
+.brhead .brsub{margin:0 0 4px}
+.brtags{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.brgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.brsec{border:2.5px solid var(--ink);border-radius:10px 6px 9px 7px/7px 9px 6px 10px;background:var(--card);padding:4px 10px 6px;min-width:0}
+.brsec h3{margin:0 0 2px;font-size:calc(18px*var(--ts))}
+.brsec p{margin:2px 0!important;font-size:calc(16px*var(--ts));line-height:1.2}
+.brsmall{color:var(--pencil);font-size:calc(14px*var(--ts))!important}
+.brsteps{margin:0;padding-left:22px;font-size:calc(16px*var(--ts));line-height:1.25}
+.brsteps li{padding-left:0!important}.brsteps li::before{display:none}
+.brconds{list-style:none;margin:0;padding:0;display:grid;gap:1px;font-size:calc(15px*var(--ts))}
+.brconds li{display:grid;grid-template-columns:1.4em 6.5em 1fr;gap:4px;padding:0!important}.brconds li::before{display:none}
+.brconds b{font-weight:400;color:var(--pencil)}
+.brchecks summary{cursor:pointer;font-size:calc(15px*var(--ts));min-height:28px}
+.brsec .brplanes{border:0;padding:0;margin:0}
+.brsec .brplanes img{width:96px}
+.brbtns{align-items:center;flex-wrap:wrap;gap:8px}
+.brcapt{display:flex;align-items:center;gap:6px;color:var(--pencil);font-size:calc(15px*var(--ts));margin-left:auto}
+.brcapt img{width:36px;height:36px;border-radius:50%;background:var(--skybg);border:2px solid var(--ink)}
+.brgo{font-size:calc(24px*var(--ts))}
+@media (max-width:640px){.brgrid{grid-template-columns:1fr}.brcapt{display:none}}
+@media (max-height:460px){   /* a phone held sideways: the whole briefing on one screen */
+  .brhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding-right:44px}.brhead h2{font-size:22px;margin:0}.brhead .brsub{margin:0;font-size:14px}.brtags{margin:0}.brtags .tag{font-size:12px;padding:0 6px}
+  .brgrid{gap:4px;margin-top:4px}.brsec{padding:2px 8px 4px}.brsec h3{font-size:15px}.brsec p{font-size:14px}.brsec p.brsmall,.brcapt{display:none}
+  .brsteps{display:flex;flex-wrap:wrap;gap:0 16px;font-size:14px}
+  .brconds{grid-template-columns:1fr 1fr;font-size:13px}.brconds li{grid-template-columns:1.3em 1fr}
+  .brconds b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .brsec .brplanes{gap:6px}.brsec .brplanes img{width:60px}.brsec .brplanes p{font-size:13px;min-width:120px}.brsec .brplanes .btn{padding:0 8px;font-size:14px}
+  .brchecks summary{min-height:22px;font-size:13px}.brbtns{margin-top:4px}.brbtns .btn{padding:2px 14px;font-size:18px}.brgo{font-size:20px}
+  #card{padding:8px 12px}}
 .brief p{margin-bottom:6px}
 .brief .crit li{margin-top:4px}
 .brtip{border-left:6px solid var(--lift);padding-left:10px}
 .unlockline{border:3px dashed var(--ink);border-radius:10px;background:var(--card);padding:6px 10px;margin:6px 0}
 @media (max-width:640px){.mapgrid{grid-template-columns:1fr}}
 /* ----- daily, endless, achievements ----- */
-.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 10px}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,280px));justify-content:center;gap:10px;margin:6px 0 10px}   /* Daily and Endless: a centred pair */
+@media (max-width:520px){.modes{grid-template-columns:1fr}}
 .mode{font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);color:var(--ink);line-height:1.15}
 .mode b{font-size:calc(20px*var(--ts))}
 .mode span{color:var(--pencil);font-size:calc(16px*var(--ts))}
@@ -629,6 +741,7 @@ html[data-layout="portrait"] .hold{min-height:56px}
 .achgrid ul{list-style:none;margin:0;padding:0}
 .achgrid li{display:flex;gap:8px;align-items:flex-start;margin:0 0 6px;opacity:.7}
 .achgrid li.on{opacity:1}
+.achgrid li{padding-left:0!important}.achgrid li::before{display:none}   /* the medal is the marker */
 .achgrid li small{display:block;color:var(--pencil);font-size:calc(15px*var(--ts));line-height:1.15}
 @media (max-width:640px){.modes,.achgrid{grid-template-columns:1fr}}
 /* ----- fullscreen button: top-right corner of the flight view ----- */
@@ -670,6 +783,46 @@ html[data-layout="portrait"] .rotate:not([hidden]){right:60px}
 .resplane img{width:110px;height:auto}
 .brplanes p{margin:0!important;flex:1;min-width:200px}
 @media (max-width:640px){.pcards{grid-template-columns:1fr}}
+/* compact Hangar: preview on top, then horizontal rows */
+.hgtop{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px;align-items:center;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);padding:6px 10px;margin-bottom:6px}
+.hgpic{display:flex;justify-content:center;align-items:center;min-width:0}
+.hgpic .pic{width:100%;max-width:400px;max-height:24vh;object-fit:contain}
+.hgpic .pbig{width:auto;height:min(24vh,190px);aspect-ratio:5/6;background:var(--skybg);border:2.5px solid var(--ink);border-radius:50% 50% 12px 12px}
+.hginfo{min-width:0;display:flex;flex-direction:column;gap:3px}
+.hginfo h3{margin:0;font-size:calc(22px*var(--ts))}
+.hginfo .pline{margin:0;font-size:calc(15px*var(--ts));line-height:1.15}
+.hgtop .hbars{gap:1px;margin:2px 0}
+.hgtop .hbar{grid-template-columns:6.2em minmax(40px,1fr) 2.6em;font-size:calc(13px*var(--ts))}
+.hgtop .hbar .ht{height:9px}
+.hgtop .pblock{margin:0;font-size:calc(14px*var(--ts))}
+.hgnote{margin:2px 0;font-size:calc(14px*var(--ts));color:var(--pencil)}
+.hrow{display:flex;align-items:center;gap:4px;margin:4px 0}
+.hrail{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:thin;padding:4px 2px;flex:1;min-width:0;overscroll-behavior-x:contain}
+.hrail>*{flex:none;scroll-snap-align:start}
+.hsb{flex:none;width:30px;height:44px;font:inherit;font-size:22px;cursor:pointer;color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:0}
+.hsb:disabled{opacity:.3;cursor:default}
+@media (hover:none),(pointer:coarse){.hsb{display:none}}
+.hcard{font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:118px;padding:4px;border:2.5px solid var(--ink);border-radius:10px;background:var(--paper);font-size:calc(14px*var(--ts));min-height:44px}
+.hcard img{width:100%;height:auto}
+.hcard.on{box-shadow:0 0 0 3px var(--lift);font-weight:700}
+.hcard.sel span::before{content:"\2713\00a0"}
+.hcard.locked{border-style:dashed;opacity:.75}
+.hrail .paint{width:auto;min-width:84px}
+.hrail .popt{position:relative}
+.psub{display:flex;gap:4px;align-items:center;padding-right:8px;border-right:2px dashed var(--hair)}
+.psub>b{font-weight:400;color:var(--pencil);font-size:calc(14px*var(--ts));padding:0 2px}
+.plock{position:absolute;top:1px;right:2px;font-size:12px;font-weight:400}
+.pnamerow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.pnamerow .pname input{width:8.5em}
+.ptabs{margin:4px 0 2px;padding-bottom:4px}
+.hginfo small{color:var(--pencil);font-size:calc(13px*var(--ts));line-height:1.15}
+@media (max-width:640px){.hgtop{grid-template-columns:1fr}.hgpic .pic{max-height:18vh}.hgpic .pbig{height:min(20vh,150px)}}
+@media (max-height:460px){   /* a phone held sideways: everything on one screen */
+  .hangar h2{font-size:20px;margin:0 50px 2px 0;display:inline-block}.hangar>.tabs{display:inline-flex;margin:0 0 4px 10px;border:0;padding:0;vertical-align:middle}
+  .hangar .tab{padding:1px 10px;font-size:16px}.hgtop{padding:2px 8px;gap:6px;margin-bottom:2px}.hgpic .pic{max-height:24vh}.hgpic .pbig{height:26vh}
+  .hginfo .pline,.hgnote,.hginfo small{display:none}.hginfo h3{font-size:17px}.hgtop .hbar{font-size:11px;line-height:1}.hgtop .hbar .ht{height:7px}
+  .hrow{margin:0}.hrail{padding:2px}.hcard{width:84px;font-size:12px;padding:2px}.hcard img{max-height:26px;width:auto}.hrail .paint{min-height:36px;padding:2px 4px;font-size:12px}.hrail .paint svg{width:30px;height:16px}
+  .hrail .popt.pic img{width:34px;height:34px}.ptabs .tab{padding:1px 8px;font-size:15px}.hgfoot{margin-top:2px}.hgfoot .btn{padding:2px 14px;font-size:18px}}
 /* the Pilot tab and the licence card */
 .pilotwrap{display:grid;grid-template-columns:minmax(200px,240px) 1fr;gap:12px;align-items:start}
 .pprev{position:sticky;top:0;border:3px solid var(--ink);border-radius:12px 6px 10px 8px/8px 10px 6px 12px;background:var(--card);padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
@@ -821,11 +974,12 @@ html[data-layout="cockpit"] .view .coachbar.lessonbar{max-width:min(70vw,600px);
 <div id="tour" hidden><div class="tback" id="tback"></div><div class="tspot" id="tspot"></div>
   <div class="tcard" id="tourCard" role="dialog" aria-label="Quick tour"></div></div>
 
-<div class="screens" id="screens" hidden><canvas id="menuBg" aria-hidden="true"></canvas><div class="scr" id="scr" role="dialog" aria-modal="true" aria-label="Main menu"></div></div>
-<div class="pausem" id="pauseMenu" role="dialog" aria-modal="true" aria-labelledby="pmTitle" hidden><div class="card pmcard" id="pmCard"></div></div>
-<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Flight School"><div class="card" id="card"></div></div>
+<div class="screens" id="screens" data-fx="fade" hidden><canvas id="menuBg" aria-hidden="true"></canvas><div class="scr" id="scr" role="dialog" aria-modal="true" aria-label="Main menu"></div></div>
+<div class="pausem" id="pauseMenu" data-fx="pop" role="dialog" aria-modal="true" aria-labelledby="pmTitle" hidden><div class="card pmcard" id="pmCard"></div><div class="card pmqcard" id="pmqCard" data-fx="side" role="group" aria-label="Quick settings" hidden></div></div>
+<div class="note" id="note" data-fx="note" hidden></div>
+<div class="modal" id="modal" data-fx="rise" data-fx-hide="class" role="dialog" aria-modal="true" aria-label="Flight School"><div class="card" id="card"></div></div>
 
-<div class="modal" id="settings" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+<div class="modal" id="settings" data-fx="right" data-fx-hide="class" role="dialog" aria-modal="true" aria-labelledby="sTitle">
   <div class="card wide" id="sCard">
     <button class="xbtn" id="sClose" type="button" aria-label="Close settings">✕</button>
     <h2 id="sTitle"><span>SETTINGS</span></h2>
@@ -1342,10 +1496,10 @@ var SIDS=SCN.map(function(s){return s.id;});
        mark   a height (ft) to draw as a dashed line       when   function: false skips the step
      setup   runs once when the lesson's flight starts      recap   one line for the "lesson complete" card
    Lessons give no stars and never change unlocks; a finished lesson gets a tick on the map (PG.lessons). */
-function kThr(){ return IS_TOUCH?'hold + or tap FULL':'press '+keyFirst('thrustUp')+', or '+keyFirst('thrustFull')+' for full'; }
-function kIdle(){ return IS_TOUCH?'tap IDLE':'press '+keyFirst('thrustIdle'); }
-function kUp(){ return IS_TOUCH?'hold ▲':'press '+keyFirst(ST.invert?'pitchDown':'pitchUp'); }
-function kDown(){ return IS_TOUCH?'hold ▼':'press '+keyFirst(ST.invert?'pitchUp':'pitchDown'); }
+function kThr(){ return touchUI()?'hold + or tap FULL':'press '+keyFirst('thrustUp')+', or '+keyFirst('thrustFull')+' for full'; }
+function kIdle(){ return touchUI()?'tap IDLE':'press '+keyFirst('thrustIdle'); }
+function kUp(){ return touchUI()?'hold ▲':'press '+keyFirst(ST.invert?'pitchDown':'pitchUp'); }
+function kDown(){ return touchUI()?'hold ▼':'press '+keyFirst(ST.invert?'pitchUp':'pitchDown'); }
 function ftNow(){ return S.alt*FT; }
 var LESSON_RAW=[
 {id:'lesson-forces',n:1,label:'The four forces',loc:'grass',goal:'approach',start:{alt:800,dist:40000},air:{wind:0,turb:0},
@@ -1563,6 +1717,19 @@ function cvF(v){return lvlE()?'':fForce(v);}                       /* force numb
 var cvs=$('#cv'), ctx=cvs.getContext('2d');
 var RS=1, CS=1, skyGrad=null, dirty=true;   /* RS = backing-store pixels per logical (960x540) pixel */
 var IS_TOUCH=false; try{IS_TOUCH=window.matchMedia('(pointer:coarse)').matches;}catch(e){}
+/* ---- how the player controls the game: the one place that decides "touch" or "keys" ----
+   Starts from the media queries ((pointer: coarse) and (hover: none) = touch); a real key press switches to keys, a touch
+   switches back after 20 s without keys. Sets data-input on <html>: CSS hides .keyonly on touch and .touchonly with keys.
+   IS_TOUCH (the pointer itself) only picks the layout, the pixel ratio and vibration, so layouts never jump. */
+var INPUT={mode:'keys',lastKey:-1e9};
+try{ if(window.matchMedia('(pointer: coarse)').matches&&window.matchMedia('(hover: none)').matches) INPUT.mode='touch'; }catch(e){}
+function touchUI(){ return INPUT.mode==='touch'; }
+function setInputMode(m){
+  if(INPUT.mode===m) return; INPUT.mode=m; rootEl.setAttribute('data-input',m);
+  if(typeof renderKeysCard==='function'){ renderKeysCard(); coachCur={key:'',lvl:'',t:0,terms:[]}; markDirty(); }
+  if(typeof pmOpen!=='undefined'&&pmOpen) renderPause(true);
+  var pf=document.getElementById('pauseFab'); if(pf) pf.hidden=!(IS_TOUCH||m==='touch');
+}
 var layout='desktop', MOBILE=false, sheetOpen=false, menuOpen=false, rotateGone=false, sheetPrevFocus=null;
 function markDirty(){dirty=true;}
 function calcLayout(){
@@ -1910,23 +2077,43 @@ function updatePauseUI(){var b=$('#pause'); b.setAttribute('aria-pressed',paused
 var pmEl=$('#pauseMenu'), pmCard=$('#pmCard'), pmOpen=false;
 function renderPause(keepFocus){
   var fid=keepFocus&&document.activeElement&&pmCard.contains(document.activeElement)?document.activeElement.id:null;
-  var stall=S&&S.autoPaused?'<p class="pmstall" role="alert"><b>STALL!</b> '+esc(tx('pauseStall',{aoa:angle.toFixed(1)}))+'</p>':'';
-  var fs=inFs()&&actionOf('escape')==='pause'&&!IS_TOUCH?'<p class="mapnote">Press Esc again to exit fullscreen'+(escLocked?' (or hold Esc)':'')+'. The game stays paused.</p>':'';
+  var stall=S&&S.autoPaused?'<p class="pmstall" role="alert"><b>STALL!</b> '+esc(tx('pauseStall',{aoa:angle.toFixed(1)}).split('. ')[0])+'.</p>':'';   /* one short line */
+  var fs=inFs()&&actionOf('escape')==='pause'&&!touchUI()?'<p class="pmnote">Esc again: exit fullscreen'+(escLocked?' (or hold Esc)':'')+'. The game stays paused.</p>':'';
+  var mute=ST.master<=0.001, ph=touchUI()?'':' <small class="keyonly">('+esc(keysAll('pause'))+')</small>';
   pmCard.innerHTML='<h2 id="pmTitle"><span>PAUSED</span></h2>'+stall+fs+
-    '<div class="pmmain"><button type="button" class="btn pmgo" id="pmGo">▶ Continue <small>('+esc(keysAll('pause'))+')</small></button><button type="button" class="btn ghost" id="pmRestart">↺ Restart <small>('+esc(keyFirst('restart'))+')</small></button></div>'+
-    '<h3>QUICK SETTINGS</h3>'+quickHTML('pm_')+'<div class="sbtns"><button type="button" class="btn ghost small" id="pmMore">⚙ More settings</button></div>'+
-    '<div class="row pmexit"><button type="button" class="btn ghost" id="pmLevels">🗺 Level select</button><button type="button" class="btn ghost" id="pmMain">⌂ Main menu</button>'+
-    (HOST&&HOST.quit?'<button type="button" class="btn ghost" id="pmQuit">⏻ Quit game</button>':'')+'</div><p class="mapnote" id="pmWarn">Level select and Main menu end this flight (click twice to confirm).</p>';
+    '<button type="button" class="btn pmgo" id="pmGo">▶ Continue'+ph+'</button>'+
+    '<button type="button" class="btn ghost pmre" id="pmRestart">↺ Restart'+(touchUI()?'':' <small class="keyonly">('+esc(keyFirst('restart'))+')</small>')+'</button>'+
+    '<div class="pmbar"><button type="button" class="ibtn" id="pmMute" aria-pressed="'+mute+'" aria-label="'+(mute?'Unmute':'Mute')+'" title="'+(mute?'Unmute':'Mute')+'">'+(mute?'🔇':'🔈')+'</button>'+
+      '<input type="range" id="s_pmv_master" data-k="master" min="0" max="1" step="0.05" value="'+ST.master+'" aria-label="Volume">'+
+      '<button type="button" class="ibtn" id="pmGear" aria-label="Settings" title="Settings">⚙</button>'+
+      '<button type="button" class="ibtn" id="pmHome" aria-label="Main menu" title="Main menu">⌂</button></div>'+
+    '<div class="pmconfirm" id="pmConfirm" hidden><p>Leave this flight? It will be lost.</p><button type="button" class="btn small" id="pmHomeYes">⌂ Main menu</button> <button type="button" class="btn ghost small" id="pmHomeNo">Stay</button>'+
+      (HOST&&HOST.quit?' <button type="button" class="btn ghost small" id="pmQuit">⏻ Quit game</button>':'')+'</div>';
   $('#pmGo').onclick=function(){ setPaused(false); };
   $('#pmRestart').onclick=function(){ startFlight(); };
-  $('#pmMore').onclick=function(){ openSettings('game'); };
-  $('#pmLevels').onclick=function(){ confirmBtn(this,function(){ showScreen('levels',null,{stack:[{id:'main'}]}); }); };
-  $('#pmMain').onclick=function(){ confirmBtn(this,function(){ showScreen('main'); }); };
-  if($('#pmQuit')) $('#pmQuit').onclick=function(){ confirmBtn(this,function(){ HOST.quit(); }); };
+  $('#pmMute').onclick=function(){ if(ST.master>0.001){ PM_VOL=ST.master; ST.master=0; } else ST.master=PM_VOL||0.7; saveSettings(); applySettings(); renderPause(true); };
+  $('#pmGear').onclick=openPauseQuick;
+  $('#pmHome').onclick=function(){ $('#pmConfirm').hidden=false; $('#pmHomeNo').focus(); };
+  $('#pmHomeNo').onclick=function(){ $('#pmConfirm').hidden=true; $('#pmHome').focus(); };
+  $('#pmHomeYes').onclick=function(){ showScreen('main'); };
+  if($('#pmQuit')) $('#pmQuit').onclick=function(){ HOST.quit(); };
+  if(pmqOpen) renderPauseQuick();
   var f=fid&&$('#'+fid); if(f) try{ f.focus({preventScroll:true}); }catch(e){}
 }
-function openPause(){ pmOpen=true; pressed={}; hold.thr=0; hold.pit=0; renderPause(); pmEl.hidden=false; pmCard.scrollTop=0; try{ $('#pmGo').focus({preventScroll:true}); }catch(e){} markDirty(); }
-function closePause(){ var had=pmCard.contains(document.activeElement); pmOpen=false; pmEl.hidden=true; pmCard.innerHTML=''; markDirty(); if(had&&mode==='fly') focusGame(); }
+/* the gear: Quick settings as a second small card on top of the pause card; Back (or Esc) returns */
+var PM_VOL=0.7, pmqOpen=false, pmqCard=$('#pmqCard');
+function renderPauseQuick(){
+  pmqCard.innerHTML=xBtn('pmqX','Back to the pause menu (Esc)')+'<h2><span>QUICK SETTINGS</span></h2>'+quickHTML('pm_')+
+    '<div class="sbtns"><button type="button" class="btn ghost small" id="pmMore">⚙ More settings</button> <button type="button" class="btn ghost small" id="pmLevels">🗺 Level select</button></div>'+
+    '<p class="pmnote">Level select ends this flight (click twice).</p><div class="row"><button type="button" class="btn" id="pmqBack">← Back</button></div>';
+  $('#pmqX').onclick=closePauseQuick; $('#pmqBack').onclick=closePauseQuick;
+  $('#pmMore').onclick=function(){ openSettings('game'); };
+  $('#pmLevels').onclick=function(){ confirmBtn(this,function(){ showScreen('levels',null,{stack:[{id:'main'}]}); }); };
+}
+function openPauseQuick(){ pmqOpen=true; renderPauseQuick(); fxOpen(pmqCard); pmCard.setAttribute('aria-hidden','true'); pmqCard.scrollTop=0; try{ $('#pmqBack').focus({preventScroll:true}); }catch(e){} }
+function closePauseQuick(){ if(!pmqOpen) return; pmqOpen=false; fxClose(pmqCard,function(){ if(!pmqOpen) pmqCard.innerHTML=''; }); pmCard.removeAttribute('aria-hidden'); renderPause(); try{ $('#pmGear').focus({preventScroll:true}); }catch(e){} }
+function openPause(){ pmOpen=true; pressed={}; hold.thr=0; hold.pit=0; renderPause(); fxOpen(pmEl); try{ $('#pmGo').focus({preventScroll:true}); }catch(e){} markDirty(); }
+function closePause(){ var had=pmEl.contains(document.activeElement); pmqOpen=false; pmOpen=false; pmCard.removeAttribute('aria-hidden'); fxClose(pmqCard); fxClose(pmEl,function(){ if(!pmOpen){ pmCard.innerHTML=''; pmqCard.innerHTML=''; } }); markDirty(); if(had&&mode==='fly') focusGame(); }
 function setPaused(v){paused=v; if(!v&&S) S.autoPaused=false; updatePauseUI(); markDirty();}
 function togglePause(){ if(mode!=='fly'||overlay) return; setPaused(!paused); }
 function toggleSlow(){slow=!slow; markDirty(); [].forEach.call(document.querySelectorAll('[data-slow]'),function(c){ c.checked=slow; });}
@@ -1997,7 +2184,7 @@ function updateFsBtn(){ fsBtn.hidden=IS_IPHONE||!fsSupported; }      /* no Fulls
 document.addEventListener('fullscreenchange',fsChanged);
 document.addEventListener('webkitfullscreenchange',fsChanged);
 $('#pause').addEventListener('click',togglePause);
-var pauseFab=$('#pauseFab'); pauseFab.hidden=!IS_TOUCH; pauseFab.addEventListener('click',function(){ if(mode==='fly'&&!overlay&&!settingsOpen&&!paused) setPaused(true); });   /* touch: a clear pause button on the flight */
+var pauseFab=$('#pauseFab'); pauseFab.hidden=!(IS_TOUCH||touchUI());   /* any touch screen keeps its pause button, also with a keyboard */ pauseFab.addEventListener('click',function(){ if(mode==='fly'&&!overlay&&!settingsOpen&&!paused) setPaused(true); });   /* touch: a clear pause button on the flight */
 $('#cambtn').addEventListener('click',function(){ cycleCamera(); });
 $('#gear').addEventListener('click',function(){toggleSettings();});
 
@@ -2029,6 +2216,8 @@ function handleEsc(){                                              /* true when 
   if(tourOpen){closeTour();return true;}
   if(settingsOpen){closeSettings();return true;}
   if(introOpen){closeIntro();return true;}
+  if(pmqOpen){closePauseQuick();return true;}                       /* the gear card: Esc goes back to the pause card */
+  var ik=document.querySelector('details.ikey[open]'); if(ik){ ik.open=false; var su=ik.querySelector('summary'); if(su) su.focus(); return true; }   /* the icon key popover first */
   if(screenOpen){screenBack();return true;}                         /* menus: Esc goes back one screen, nothing else */
   if(sheetOpen){closeSheet();return true;}
   if(menuOpen){closeMenu();return true;}
@@ -2063,7 +2252,7 @@ window.addEventListener('keydown',function(e){
     renderEnd(endPage+dd);
     return;
   }
-  if(k==='tab'){ var tr=sheetOpen?panelEl:menuOpen?$('#tools'):modal.classList.contains('show')?card:screenOpen?scrBox:pmOpen?pmCard:null; if(tr) trapTab(e,tr); return; }
+  if(k==='tab'){ var tr=sheetOpen?panelEl:menuOpen?$('#tools'):modal.classList.contains('show')?card:screenOpen?scrBox:pmqOpen?pmqCard:pmOpen?pmCard:null; if(tr) trapTab(e,tr); return; }
   var act=actionOf(k);
   if(act&&(screenOpen||pmOpen)&&['map','hangar','settings','shortcuts','fullscreen','intro','pause','restart','advanced','slow','camera'].indexOf(act)<0) return;   /* menus: no flight keys */
   if(act&&screenOpen&&['pause','restart','advanced','slow','camera'].indexOf(act)>-1) return;
@@ -2475,7 +2664,7 @@ var CLOUD_WR=2600, clouds=[];
   clouds.sort(function(a,b){ return (b.far?1:0)-(a.far?1:0); }); })();      /* far ones first, so the near ones cover them */
 /* the keys that resume: in fullscreen Esc leaves fullscreen instead, so it is not offered there */
 function resumeTxt(){
-  if(IS_TOUCH) return 'tap anywhere to resume';
+  if(touchUI()) return 'tap anywhere to resume';
   var ks=ST.keys.pause.filter(function(k){ return k&&!(k==='escape'&&inFs()); });
   return 'press Resume ('+(ks.length?ks.map(keyName).join(' or '):'button')+')';
 }
@@ -3228,7 +3417,7 @@ function draw(t){
       var l3='Read the meters, then '+resumeTxt();
       ctx.strokeText(l3,W/2,H/2+34); ctx.fillText(l3,W/2,H/2+34);
     }
-    if(inFs()&&actionOf('escape')==='pause'&&!IS_TOUCH){                 /* the two-press Esc in fullscreen */
+    if(inFs()&&actionOf('escape')==='pause'&&!touchUI()){                 /* the two-press Esc in fullscreen */
       var l4='Press Esc again to exit fullscreen'+(escLocked?' (or hold Esc)':'')+'.';
       ctx.font=fsz(22)+fontf(); ctx.strokeText(l4,W/2,H/2+(S.autoPaused?82:74)); ctx.fillText(l4,W/2,H/2+(S.autoPaused?82:74));
     }
@@ -4021,7 +4210,7 @@ function computeCoachFull(){
 function computeCoach(){
   var c=computeCoachFull(); if(!c) return c;
   c.s=lvlE()?c.text:(TX['x.'+c.key]?tx('x.'+c.key):c.text);
-  if(IS_TOUCH&&(c.key==='start'||c.key==='brake')){
+  if(touchUI()&&(c.key==='start'||c.key==='brake')){
     var where=layout==='desktop'?'below the flight view':'on the left';
     c.text=tx(c.key==='start'?'startTouch':'brakeTouch',{where:where});
   }
@@ -4282,14 +4471,15 @@ var SCHEMA=[
   {t:'sel',k:'coachPos',l:'Coaching text position',o:[['top','Top of the flight view'],['bottom','Bottom of the flight view'],['panel','In the side panel']]}
  ],btn:{id:'resetLayout',l:'Reset layout to default'}},
  {id:'controls',label:'Controls',items:[
-  {t:'keylist'},
+  {t:'keylist',when:function(){ return !touchUI(); }},
+  {t:'note',l:'Keyboard options appear here when you use a keyboard.',when:function(){ return touchUI(); }},
   {t:'rng',k:'thrSens',l:'Thrust sensitivity',min:0.5,max:1.5,step:0.1,fmt:pctF,h:'How fast keys and buttons change thrust.'},
   {t:'rng',k:'pitchSens',l:'Pitch sensitivity',min:0.5,max:1.5,step:0.1,fmt:pctF},
-  {t:'tog',k:'invert',l:'Invert pitch keys',h:'Up key = nose down, like pushing a control yoke. The on-screen ▲ ▼ buttons and the slider are not inverted.'},
+  {t:'tog',k:'invert',when:function(){ return !touchUI(); },l:'Invert pitch keys',h:'Up key = nose down, like pushing a control yoke. The on-screen ▲ ▼ buttons and the slider are not inverted.'},
   {t:'sel',k:'touchSize',l:'On-screen button size',o:[['small','Small'],['medium','Medium'],['large','Large']]},
   {t:'more'},
   {t:'sel',k:'repeat',l:'Hold-to-repeat speed (on-screen buttons)',o:[['slow','Slow'],['normal','Normal'],['fast','Fast']]},
-  {t:'keys'}
+  {t:'keys',when:function(){ return !touchUI(); }}
  ]},
  {id:'access',label:'Sound & access',items:[
   {t:'tog',k:'stallSound',l:'Stall warning sound'},
@@ -4337,7 +4527,7 @@ function rowHTML(it){
   if(it.t==='grp') return '<div class="sgroup">'+esc(it.l)+'</div>';
   if(it.t==='note') return '<p class="note">'+esc(it.l)+'</p>';
   if(it.t==='lvl') return '<div class="srow"><span class="sl">Scenario<small>'+esc(LV.locName+' '+LV.num+' · '+LV.label)+(PR[levelKey]?'  '+starsOf(levelKey):'')+'. Pick another on the map.</small></span><button class="btn ghost small" type="button" id="s_map">🗺 Open the map</button></div>';
-  if(it.t==='slow') return '<label class="srow" for="'+sid('slow')+'"><span class="sl">Slow motion<small>Runs the flight at a quarter of the speed. Key: '+esc(keyFirst('slow'))+'.</small></span><input class="sw" type="checkbox" id="'+sid('slow')+'" data-slow="1"'+(slow?' checked':'')+'></label>';
+  if(it.t==='slow') return '<label class="srow" for="'+sid('slow')+'"><span class="sl">Slow motion<small>Runs the flight at a quarter of the speed. <span class="keyonly">Key: '+esc(keyFirst('slow'))+'.</span></small></span><input class="sw" type="checkbox" id="'+sid('slow')+'" data-slow="1"'+(slow?' checked':'')+'></label>';
   if(it.t==='keylist') return '<div class="sgroup">KEYBOARD SHORTCUTS</div><div class="keygrid">'+keyGridHTML()+'</div><p class="note">You can change every key under “More options”.</p>';
   if(it.t==='tog') return '<label class="srow" for="'+id+'"><span class="sl">'+esc(it.l)+rt+hp+'</span><input class="sw" type="checkbox" id="'+id+'" data-k="'+it.k+'"'+(getPath(it.k)?' checked':'')+'></label>';
   if(it.t==='sel') return '<label class="srow" for="'+id+'"><span class="sl">'+esc(it.l)+rt+hp+'</span><select id="'+id+'" data-k="'+it.k+'">'+it.o.map(function(o){return '<option value="'+o[0]+'"'+(getPath(it.k)===o[0]?' selected':'')+'>'+esc(o[1])+'</option>';}).join('')+'</select></label>';
@@ -4383,13 +4573,13 @@ function openSettings(tab){
   if(tab) sTab=tab;
   sPrevFocus=document.activeElement; settingsOpen=true; pressed={}; hold.thr=0; hold.pit=0;
   renderTabs(); renderBody(); updateRestartNote();
-  $('#settings').classList.add('show'); $('#sCard').scrollTop=0;
+  $('#settings').classList.add('show'); fxOpen($('#settings')); $('#sCard').scrollTop=0;
   var t=$('#tab_'+sTab); if(t) t.focus();
 }
 function closeSettings(){
   if(!settingsOpen) return; cancelCapture(true); markDirty();
-  settingsOpen=false; $('#settings').classList.remove('show');
-  if(pmOpen){ var fid=sPrevFocus&&sPrevFocus.id||''; renderPause(); sPrevFocus=(fid&&$('#'+fid,pmCard))||$('#pmGo'); }
+  settingsOpen=false; $('#settings').classList.remove('show'); fxClose($('#settings'));
+  if(pmOpen){ var fid=sPrevFocus&&sPrevFocus.id||''; renderPause(); sPrevFocus=(fid&&$('#'+fid,pmEl))||(pmqOpen?$('#pmqBack'):$('#pmGo')); }
   if(sPrevFocus&&sPrevFocus.focus&&document.body.contains(sPrevFocus)){try{sPrevFocus.focus();}catch(e){}}
 }
 function toggleSettings(){ if(settingsOpen) closeSettings(); else openSettings(); }
@@ -4444,7 +4634,7 @@ function settingInput(e){
     if(t.type==='range'){ var o=$('#'+t.id+'_o'); var it=SCHEMA.reduce(function(a,g){return a.concat(g.items);},QUICK).filter(function(x){return x.k===k;})[0]; if(o&&it) o.textContent=it.fmt(v); }
     saveSettings(); applySettings(); updateRestartNote();
 }
-pmCard.addEventListener('input',settingInput); pmCard.addEventListener('change',settingInput);
+pmEl.addEventListener('input',settingInput); pmEl.addEventListener('change',settingInput);
 (function bindSettings(){
   var body=$('#sBody');
   body.addEventListener('input',settingInput); body.addEventListener('change',settingInput);
@@ -4464,7 +4654,7 @@ pmCard.addEventListener('input',settingInput); pmCard.addEventListener('change',
       case 'resetProgress': confirmBtn(b,function(){ var keep=PG.pilot; PR={}; PG={ach:{},daily:{},endless:{best:0,runs:0},log:{},counts:{charts:0},ns:{},openAll:false,streakDays:[],lessons:{},pilot:keep,planes:{}}; saveProgress(); updateLevelLabel(); b.textContent='Progress cleared'; askPilotReset(b); }); break;
     }
   });
-  $('#sTabs').addEventListener('click',function(e){var b=e.target.closest('.tab'); if(!b) return; sTab=b.dataset.tab; renderTabs(); renderBody(); $('#tab_'+sTab).focus();});
+  $('#sTabs').addEventListener('click',function(e){var b=e.target.closest('.tab'); if(!b) return; sTab=b.dataset.tab; renderTabs(); renderBody(); fxSwap($('#sBody')); $('#tab_'+sTab).focus();});
   $('#sTabs').addEventListener('keydown',function(e){
     var ids=SCHEMA.map(function(g){return g.id;}), i=ids.indexOf(sTab), n=null;
     if(e.key==='ArrowRight') n=(i+1)%ids.length; else if(e.key==='ArrowLeft') n=(i+ids.length-1)%ids.length; else if(e.key==='Home') n=0; else if(e.key==='End') n=ids.length-1;
@@ -4475,15 +4665,29 @@ pmCard.addEventListener('input',settingInput); pmCard.addEventListener('change',
 })();
 
 /* ---------------- modal screens ---------------- */
+/* ---------------- one animation helper for every panel ----------------
+   fxOpen(el) shows it and adds .fx-in (CSS does the motion: data-fx = rise | slide | right | pop | fade | note);
+   fxClose(el, hide, done) removes .fx-in, waits for the closing motion, then hides it (hidden attribute, or only the
+   classes for .modal panels whose logic uses .show). Opening while closing just reverses. Transforms and opacity only;
+   Reduce motion keeps a very short fade. */
+var FX_MS=240;
+function fxOpen(el){ clearTimeout(el._fxT); el._fxT=0; if(el.dataset.fxHide!=='class') el.hidden=false; el.classList.add('fx-on'); el.classList.remove('fx-out'); void el.offsetWidth; el.classList.add('fx-in'); }
+function fxClose(el,hide,done){
+  clearTimeout(el._fxT);
+  if(!el.classList.contains('fx-on')){ if(hide) hide(); if(done) done(); return; }
+  el.classList.remove('fx-in'); el.classList.add('fx-out');
+  el._fxT=setTimeout(function(){ el._fxT=0; el.classList.remove('fx-on','fx-out'); if(el.dataset.fxHide!=='class') el.hidden=true; if(hide) hide(); if(done) done(); },ST.reduceMotion?80:FX_MS);
+}
+function fxSwap(el){ if(!el||ST.reduceMotion) return; el.classList.remove('xf'); void el.offsetWidth; el.classList.add('xf'); }   /* tab content: a short cross-fade */
 var modal=$('#modal'), card=$('#card');
 var mapOpen=false;
-function openModal(html,keep){
+function openModal(html,keep,fx){
   mapOpen=false; hangarOpen=false;
   if(!keep) mode='modal';
   overlay=keep?'intro':''; introOpen=false; endOpen=false; pressed={}; hold.thr=0; hold.pit=0; cancelReplay();
-  card.innerHTML=html; modal.classList.add('show'); card.scrollTop=0;
+  card.innerHTML=html; modal.dataset.fx=fx||'rise'; modal.classList.add('show'); fxOpen(modal); card.scrollTop=0;
 }
-function closeModal(){mapOpen=false;hangarOpen=false;licOpen=false;modal.classList.remove('show');overlay='';introOpen=false;endOpen=false;cancelReplay();markDirty();}
+function closeModal(){mapOpen=false;hangarOpen=false;licOpen=false;modal.classList.remove('show');fxClose(modal);overlay='';introOpen=false;endOpen=false;cancelReplay();markDirty();}
 function xBtn(id,label){return '<button class="xbtn" id="'+id+'" type="button" aria-label="'+label+'" title="'+label+'">✕</button>';}
 
 function showKeys(){ openSettings('controls'); }
@@ -4499,7 +4703,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 function matchHTML(){
   var order=shuffle(Object.keys(FORCES));
   return '<h3>PUT THE FORCES IN THE RIGHT PLACES</h3>'+
-    '<p>Pick a force label below, then tap the arrow where it belongs.'+(IS_TOUCH?'':' (You can also drag it.)')+'</p>'+
+    '<p>Pick a force label below, then tap the arrow where it belongs.'+(touchUI()?'':' (You can also drag it.)')+'</p>'+
     '<div class="pgrid">'+
       '<button class="slot up" data-dir="up" type="button" aria-label="Arrow pointing up">↑</button>'+
       '<button class="slot back" data-dir="back" type="button" aria-label="Arrow pointing backward">←</button>'+
@@ -4570,42 +4774,55 @@ function planeStats(p){
 function statWord(v){ return v===0?'none':v<.8?'less than the Trainer':v>1.2?'more than the Trainer':'about the same'; }
 function hangarScn(){ return SBY[levelKey]||null; }
 function paintReqText(r){ return r.stars?'★ '+r.stars+' needed':'Achievement: '+(ACHBY[r.ach]?ACHBY[r.ach].n:r.ach); }
+/* ---- horizontal rows (Hangar): swipe, mouse wheel, trackpad, ← → between items, small ‹ › buttons on desktop ---- */
+function hrowHTML(label,inner,role){
+  return '<div class="hrow"><button type="button" class="hsb" data-d="-1" tabindex="-1" aria-hidden="true">‹</button>'+
+    '<div class="hrail" role="'+(role||'radiogroup')+'" aria-label="'+esc(label)+'">'+inner+'</div>'+
+    '<button type="button" class="hsb" data-d="1" tabindex="-1" aria-hidden="true">›</button></div>';
+}
+function bindHrows(root){
+  [].forEach.call(root.querySelectorAll('.hrow'),function(row){
+    var rail=row.querySelector('.hrail');
+    [].forEach.call(row.querySelectorAll('.hsb'),function(b){ b.onclick=function(){ rail.scrollBy({left:+b.dataset.d*rail.clientWidth*.8,behavior:ST.reduceMotion?'auto':'smooth'}); }; });
+    rail.addEventListener('wheel',function(e){ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&rail.scrollWidth>rail.clientWidth+2){ rail.scrollLeft+=e.deltaY; e.preventDefault(); } },{passive:false});
+    rail.onkeydown=function(e){ var d={ArrowRight:1,ArrowLeft:-1}[e.key]; if(!d) return;
+      var bs=[].slice.call(rail.querySelectorAll('button')), i=bs.indexOf(document.activeElement); if(i<0) return;
+      e.preventDefault(); e.stopPropagation(); var n=bs[Math.max(0,Math.min(bs.length-1,i+d))]; n.focus({preventScroll:true}); n.scrollIntoView({inline:'nearest',block:'nearest'}); };
+    var on=rail.querySelector('.on'); if(on){ var r=on.offsetLeft-rail.offsetLeft; if(r<rail.scrollLeft||r+on.offsetWidth>rail.scrollLeft+rail.clientWidth) rail.scrollLeft=r-rail.clientWidth/2+on.offsetWidth/2; }
+    function arrows(){ var a=row.querySelectorAll('.hsb'); a[0].disabled=rail.scrollLeft<=1; a[1].disabled=rail.scrollLeft+rail.clientWidth>=rail.scrollWidth-1; }
+    rail.addEventListener('scroll',arrows,{passive:true}); arrows();
+  });
+}
+/* ---- Plane tab: a big preview of the plane you look at, its bars, then the planes and the paints as rows ---- */
+var hgView=null;
 function hangarPlaneHTML(){
-  var sc=hangarScn(), sel=HG.plane;
-  var head=sc?'<p class="mapnote">For <b>'+esc(sc.num+' · '+sc.label)+'</b>: suggested plane <b>'+esc(PBY[sc.craft].name)+'</b>. Stars count only with the suggested plane; any other plane flies a practice flight.</p>':
-    '<p class="mapnote">Pick the plane you fly. Each scenario suggests a plane; stars count only with that one.</p>';
-  var cards=PLANES.map(function(p){
-    var issue=sc?planeIssue(p,sc):'', on=p.id===sel, pid=paintOf(p.id);
-    var bars=planeStats(p).map(function(st){
-      var w=Math.round(clamp(st.v/2,0,1)*100), num=st.v===0?'0':'×'+st.v.toFixed(st.v<10?1:0);
-      return '<div class="hbar" role="img" aria-label="'+esc(st.n+': '+num+', '+statWord(st.v)+(st.t?'. '+st.t:''))+'"><span class="hn">'+st.n+'</span><span class="ht" aria-hidden="true"><i style="width:'+w+'%"></i><u></u></span><span class="hv" aria-hidden="true">'+num+'</span>'+(st.t?'<small aria-hidden="true">'+esc(st.t)+'</small>':'')+'</div>';
-    }).join('');
-    var paints='';
-    if(on){
-      paints='<div class="paints" role="radiogroup" aria-label="Paint for the '+esc(p.name)+'">'+p.paints.map(function(id){
-        var pt=PAINTS[id], ok=paintOpen(id), ch=id===pid;
-        return '<button type="button" class="paint'+(ch?' on':'')+(ok?'':' locked')+'" role="radio" aria-checked="'+ch+'" data-paint="'+id+'"'+(ok?'':' aria-disabled="true"')+' aria-label="'+esc(pt.name+(ok?'':', locked: '+paintReqText(pt.req)))+'">'+
-          '<svg viewBox="0 0 40 24" aria-hidden="true"><rect x="2" y="2" width="36" height="20" rx="5" fill="'+pt.body+'" stroke="#1D2B44" stroke-width="2.5"/><rect x="2" y="11" width="36" height="5" fill="'+pt.stripe+'"/></svg>'+
-          '<span>'+esc(pt.name)+'</span>'+(ok?'':'<small>🔒 '+esc(paintReqText(pt.req))+'</small>')+'</button>';
-      }).join('')+'</div>';
-    }
-    return '<section class="pcard'+(on?' on':'')+(issue?' blocked':'')+'" aria-label="'+esc(p.name)+(on?', selected':'')+'">'+
-      planeImg(p.id,pid,'pic',p.name+' in '+PAINTS[pid].name+' paint')+
-      '<h3>'+esc(p.name)+(p.id===(sc&&sc.craft)?' <span class="sug">suggested</span>':'')+'</h3><p class="pline">'+esc(p.line)+'</p><p class="pteach"><b>Teaches:</b> '+esc(p.teach)+'</p>'+
-      '<div class="hbars">'+bars+'</div>'+
-      (issue?'<p class="pblock">🚫 '+esc(issue)+(sc?' ('+esc(sc.num)+')':'')+'</p>':'')+
-      '<button type="button" class="btn'+(on?'':' ghost')+' small pchoose" data-plane="'+p.id+'" aria-pressed="'+on+'"'+(issue?' disabled':'')+'>'+(on?'✓ Selected':'Fly the '+esc(p.name))+'</button>'+paints+
-    '</section>';
+  var sc=hangarScn(), sel=HG.plane, v=PBY[hgView]?hgView:sel, p=PBY[v], issue=sc?planeIssue(p,sc):'', pid=paintOf(v);
+  var bars=planeStats(p).map(function(st){
+    var w=Math.round(clamp(st.v/2,0,1)*100), num=st.v===0?'0':'×'+st.v.toFixed(st.v<10?1:0);
+    return '<div class="hbar" role="img" aria-label="'+esc(st.n+': '+num+', '+statWord(st.v)+(st.t?'. '+st.t:''))+'" title="'+esc(st.t||statWord(st.v))+'"><span class="hn">'+st.n+'</span><span class="ht" aria-hidden="true"><i style="width:'+w+'%"></i><u></u></span><span class="hv" aria-hidden="true">'+num+'</span></div>';
   }).join('');
-  var practice=sc&&sel!==sc.craft&&!planeIssue(PBY[sel],sc)?'<p class="dailyline">✈ Practice flight with the '+esc(PBY[sel].name)+': stars only with the suggested plane ('+esc(PBY[sc.craft].name)+').</p>':'';
-  return head+practice+'<div class="pcards">'+cards+'</div>';
+  var top='<div class="hgtop"><div class="hgpic">'+planeImg(v,pid,'pic',p.name+' in '+PAINTS[pid].name+' paint')+'</div><div class="hginfo">'+
+    '<h3>'+esc(p.name)+(sc&&v===sc.craft?' <span class="sug">suggested</span>':'')+(v===sel?' <span class="sug">✓ flying</span>':'')+'</h3><p class="pline">'+esc(p.line)+'</p>'+
+    '<div class="hbars">'+bars+'</div>'+(issue?'<p class="pblock">🚫 '+esc(issue)+(sc?' ('+esc(sc.num)+')':'')+'</p>':'')+'</div></div>';
+  var planes=hrowHTML('Planes',PLANES.map(function(q){ var is=sc?planeIssue(q,sc):'', on=q.id===v;
+    return '<button type="button" class="hcard'+(on?' on':'')+(q.id===sel?' sel':'')+(is?' locked':'')+'" role="radio" aria-checked="'+(q.id===sel)+'" data-plane="'+q.id+'" aria-label="'+esc(q.name+(q.id===sel?', flying':'')+(is?', cannot fly this scenario: '+is:''))+'" title="'+esc(is||q.line)+'">'+
+      planeImg(q.id,paintOf(q.id),'',q.name)+'<span>'+(is?'🔒 ':'')+esc(q.name)+'</span></button>'; }).join(''));
+  var paints=hrowHTML('Paint for the '+p.name,p.paints.map(function(id){ var pt=PAINTS[id], ok=paintOpen(id), ch=id===pid;
+    return '<button type="button" class="paint'+(ch?' on':'')+(ok?'':' locked')+'" role="radio" aria-checked="'+ch+'" data-paint="'+id+'"'+(ok?'':' aria-disabled="true"')+' aria-label="'+esc(pt.name+(ok?'':', locked: '+paintReqText(pt.req)))+'" title="'+esc(pt.name+(ok?'':' · 🔒 '+paintReqText(pt.req)))+'">'+
+      '<svg viewBox="0 0 40 24" aria-hidden="true"><rect x="2" y="2" width="36" height="20" rx="5" fill="'+pt.body+'" stroke="#1D2B44" stroke-width="2.5"/><rect x="2" y="11" width="36" height="5" fill="'+pt.stripe+'"/></svg><span>'+(ok?'':'🔒 ')+esc(pt.name)+'</span></button>'; }).join(''));
+  var note=sc&&sel!==sc.craft&&!planeIssue(PBY[sel],sc)?'<p class="hgnote">Practice flight with the '+esc(PBY[sel].name)+': stars only with the '+esc(PBY[sc.craft].name)+'.</p>':
+    sc?'<p class="hgnote">For '+esc(sc.num+' · '+sc.label)+': stars count only with the suggested plane ('+esc(PBY[sc.craft].name)+').</p>':'';
+  return top+planes+paints+note;
 }
 function bindHangarPlane(){
-  [].forEach.call(card.querySelectorAll('.pchoose'),function(b){ b.onclick=function(){
-    HG.plane=b.dataset.plane; saveHangar(); srSay(PBY[HG.plane].name+' selected.'); renderHangar('.pchoose[data-plane="'+HG.plane+'"]'); }; });
+  [].forEach.call(card.querySelectorAll('.hcard'),function(b){ b.onclick=function(){
+    var id=b.dataset.plane, sc=hangarScn(), is=sc?planeIssue(PBY[id],sc):''; hgView=id;
+    if(!is){ HG.plane=id; saveHangar(); srSay(PBY[id].name+' selected.'); } else srSay(PBY[id].name+' cannot fly this scenario: '+is);
+    renderHangar('.hcard[data-plane="'+id+'"]'); }; });
   [].forEach.call(card.querySelectorAll('.paint'),function(b){ b.onclick=function(){
     if(b.getAttribute('aria-disabled')==='true'){ srSay('Locked: '+paintReqText(PAINTS[b.dataset.paint].req)); return; }
-    HG.paint[HG.plane]=b.dataset.paint; saveHangar(); renderHangar('.paint[data-paint="'+b.dataset.paint+'"]'); }; });
+    var v=PBY[hgView]?hgView:HG.plane; HG.paint[v]=b.dataset.paint; saveHangar(); renderHangar('.paint[data-paint="'+b.dataset.paint+'"]'); }; });
+  bindHrows(card);
 }
 /* the Pilot tab: a big live preview, then the option groups. Every choice is a named button (screen readers and tooltips);
    locked items say what opens them. Changes are saved at once (cosmetic only). */
@@ -4613,31 +4830,32 @@ var pilotExpr='happy';
 function pilotRaw(){ return normPilot(PG.pilot); }
 function pOpt(group,key,val,label,inner,on,req,cls){
   var ok=reqOpen(req), name=group+': '+label+(ok?'':', locked: '+reqText(req));
-  return '<button type="button" class="popt'+(cls?' '+cls:'')+(on?' on':'')+(ok?'':' locked')+'" role="radio" aria-checked="'+on+'" data-k="'+key+'" data-v="'+esc(String(val))+'"'+(ok?'':' aria-disabled="true"')+' aria-label="'+esc(name)+'" title="'+esc(name)+'">'+inner+
-    (cls==='sw'?'':'<span>'+esc(label)+'</span>')+(ok?'':'<small>🔒 '+esc(reqText(req))+'</small>')+'</button>';
+  return '<button type="button" class="popt'+(cls?' '+cls:'')+(on?' on':'')+(ok?'':' locked')+'" role="radio" aria-checked="'+on+'" data-k="'+key+'" data-v="'+esc(String(val))+'"'+(ok?'':' aria-disabled="true"')+' aria-label="'+esc(name)+'" title="'+esc(group+': '+label+(ok?'':' · 🔒 '+reqText(req)))+'">'+inner+
+    (cls==='sw'?'':'<span>'+esc(label)+'</span>')+(ok?'':'<b class="plock" aria-hidden="true">🔒</b>')+'</button>';
 }
-function pGroup(label,html){ return '<div class="pgroup" role="radiogroup" aria-label="'+esc(label)+'">'+html+'</div>'; }
+function pGroup(label,html,role){ return hrowHTML(label,html,role); }
 function pSw(col){ return '<i style="background:'+col+'" aria-hidden="true"></i>'; }
+var PGROUPS=[['skin','Skin'],['hair','Hair'],['face','Face'],['head','Headgear'],['jacket','Jacket']], pilotGroup='skin';
 function hangarPilotHTML(){
-  var P=pilotRaw(), shown=pilot();
+  var P=pilotRaw(), shown=pilot(), g=pilotGroup;
   function pics(key,list,label){ return pGroup(label,list.map(function(o){ var q=clone(P); q[key]=o[0]; if(key==='hair') q.head='none';   /* each choice shows the pilot wearing it */
     return pOpt(label,key,o[0],o[1],pilotImg(q,'neutral',44,false,'',''),P[key]===o[0],o[2],'pic'); }).join('')); }
   function words(key,list,label){ return pGroup(label,list.map(function(o){ return pOpt(label,key,o[0],o[1],'',P[key]===o[0],null,'word'); }).join('')); }
   function cols(key,list,label){ return pGroup(label,list.map(function(o,i){ return pOpt(label,key,i,o[1],pSw(o[0]),P[key]===i,o[2],'sw'); }).join('')); }
-  var extras='<div class="pgroup">'+PEXTRA.map(function(e){ return '<button type="button" class="popt word ptog'+(P[e[0]]?' on':'')+'" aria-pressed="'+P[e[0]]+'" data-t="'+e[0]+'">'+esc(e[1])+'</button>'; }).join('')+'</div>';
-  var bok=reqOpen(PBADGE[2]), badge='<div class="pgroup"><button type="button" class="popt word ptog'+(P.badge?' on':'')+(bok?'':' locked')+'" aria-pressed="'+P.badge+'" data-t="badge"'+(bok?'':' aria-disabled="true"')+' aria-label="'+esc(PBADGE[1]+(bok?'':', locked: '+reqText(PBADGE[2])))+'">🏅 '+esc(PBADGE[1])+(bok?'':'<small>🔒 '+esc(reqText(PBADGE[2]))+'</small>')+'</button></div>';
+  function tog(e){ return '<button type="button" class="popt word ptog'+(P[e[0]]?' on':'')+'" aria-pressed="'+P[e[0]]+'" data-t="'+e[0]+'">'+esc(e[1])+'</button>'; }
+  var bok=reqOpen(PBADGE[2]), badge='<button type="button" class="popt word ptog'+(P.badge?' on':'')+(bok?'':' locked')+'" aria-pressed="'+P.badge+'" data-t="badge"'+(bok?'':' aria-disabled="true"')+' aria-label="'+esc(PBADGE[1]+(bok?'':', locked: '+reqText(PBADGE[2])))+'" title="'+esc(PBADGE[1]+(bok?'':' · 🔒 '+reqText(PBADGE[2])))+'">🏅 '+esc(PBADGE[1])+(bok?'':' 🔒')+'</button>';
+  var body={skin:cols('skin',PSKIN,'Skin tone'),hair:pics('hair',PHAIR,'Hair style')+cols('hairCol',PHAIRCOL,'Hair colour'),
+    face:pGroup('Face',[['eyes',PEYES,'Eyes'],['brows',PBROWS,'Eyebrows'],['mouth',PMOUTH,'Mouth']].map(function(f){   /* one row, labelled parts */
+        return '<span class="psub" role="radiogroup" aria-label="'+f[2]+'"><b aria-hidden="true">'+f[2]+'</b>'+f[1].map(function(o){ return pOpt(f[2],f[0],o[0],o[1],'',P[f[0]]===o[0],null,'word'); }).join('')+'</span>'; }).join('')+
+      '<span class="psub" role="group" aria-label="Extras"><b aria-hidden="true">Extras</b>'+PEXTRA.map(tog).join('')+'</span>','group'),
+    head:pics('head',PHEAD,'Headgear'),jacket:pGroup('Jacket colour',PJACKET.map(function(o,i){ return pOpt('Jacket colour','jacket',i,o[1],pSw(o[0]),P.jacket===i,o[2],'sw'); }).join('')+badge)}[g];
   var ex=pGroup('Try a face',PEXPR.map(function(e){ return '<button type="button" class="popt word pex'+(pilotExpr===e[0]?' on':'')+'" role="radio" aria-checked="'+(pilotExpr===e[0])+'" data-e="'+e[0]+'">'+esc(e[1])+'</button>'; }).join(''));
-  return '<p class="mapnote">Your pilot flies every plane and shows up on the briefing, the results and your licence card. Only for fun: it never changes how a plane flies or the stars.</p>'+
-    '<div class="pilotwrap"><div class="pprev">'+pilotImg(shown,pilotExpr,180,true,'pbig',RANKS[rankIdx()][0]+' '+shown.name+', looking '+findOpt(PEXPR,pilotExpr)[1].toLowerCase())+ex+
-      '<label class="pname">Name <input id="pname" type="text" maxlength="16" autocomplete="off" spellcheck="false" value="'+esc(P.name)+'" aria-describedby="pnamehelp"></label><small id="pnamehelp">Up to 16 letters, numbers and spaces. Kept only in this browser.</small>'+
-      '<div class="row"><button type="button" class="btn ghost small" id="prand">🎲 Random</button><button type="button" class="btn ghost small" id="preset">↺ Reset</button><button type="button" class="btn ghost small" id="plic">🪪 Licence card</button></div></div>'+
-    '<div class="popts">'+
-      '<fieldset><legend>Skin</legend>'+cols('skin',PSKIN,'Skin tone')+'</fieldset>'+
-      '<fieldset><legend>Hair</legend>'+pics('hair',PHAIR,'Hair style')+cols('hairCol',PHAIRCOL,'Hair colour')+'</fieldset>'+
-      '<fieldset><legend>Face</legend>'+words('eyes',PEYES,'Eyes')+words('brows',PBROWS,'Eyebrows')+words('mouth',PMOUTH,'Mouth')+extras+'</fieldset>'+
-      '<fieldset><legend>Headgear</legend>'+pics('head',PHEAD,'Headgear')+'</fieldset>'+
-      '<fieldset><legend>Jacket</legend>'+cols('jacket',PJACKET,'Jacket colour')+badge+'</fieldset>'+
-    '</div></div>';
+  return '<div class="hgtop"><div class="hgpic">'+pilotImg(shown,pilotExpr,150,true,'pbig',RANKS[rankIdx()][0]+' '+shown.name+', looking '+findOpt(PEXPR,pilotExpr)[1].toLowerCase())+'</div><div class="hginfo">'+
+      '<div class="pnamerow"><label class="pname">Name <input id="pname" type="text" maxlength="16" autocomplete="off" spellcheck="false" value="'+esc(P.name)+'" aria-describedby="pnamehelp"></label>'+
+      '<button type="button" class="ibtn" id="prand" aria-label="Random pilot" title="Random pilot">🎲</button><button type="button" class="ibtn" id="preset" aria-label="Reset the look" title="Reset the look">↺</button><button type="button" class="ibtn" id="plic" aria-label="Pilot licence card" title="Pilot licence card">🪪</button></div>'+
+      '<small id="pnamehelp">Up to 16 letters, numbers and spaces. Kept only in this browser. Only for fun: never changes the flying.</small>'+ex+'</div></div>'+
+    '<div class="tabs ptabs" role="tablist" aria-label="Pilot options">'+PGROUPS.map(function(x){ return '<button type="button" class="tab" role="tab" id="pg_'+x[0]+'" aria-selected="'+(x[0]===g)+'" tabindex="'+(x[0]===g?0:-1)+'" aria-controls="pgbody" data-pg="'+x[0]+'">'+esc(x[1])+'</button>'; }).join('')+'</div>'+
+    '<div id="pgbody" role="tabpanel" aria-labelledby="pg_'+g+'">'+body+'</div>';
 }
 function pilotRandom(){
   function pick(l){ var ok=l.filter(function(o){ return reqOpen(o[2]); }); return ok[Math.floor(Math.random()*ok.length)]; }
@@ -4659,11 +4877,11 @@ function bindHangarPilot(){
     if(b.getAttribute('aria-disabled')==='true'){ srSay(b.getAttribute('aria-label')); return; }
     var p=pilotRaw(), t=b.dataset.t; p[t]=!p[t]; put(p,'.ptog[data-t="'+t+'"]'); }; });
   [].forEach.call(card.querySelectorAll('.pex'),function(b){ b.onclick=function(){ pilotExpr=b.dataset.e; renderHangar('.pex[data-e="'+pilotExpr+'"]'); }; });
-  /* arrow keys move along a row of choices */
-  [].forEach.call(card.querySelectorAll('.pgroup[role=radiogroup]'),function(gr){ gr.onkeydown=function(e){
-    var d={ArrowRight:1,ArrowDown:1,ArrowLeft:-1,ArrowUp:-1}[e.key]; if(!d) return;
-    var bs=[].slice.call(gr.querySelectorAll('button')), i=bs.indexOf(document.activeElement); if(i<0) return;
-    e.preventDefault(); e.stopPropagation(); bs[(i+d+bs.length)%bs.length].focus(); }; });
+  bindHrows(card);
+  var pt=card.querySelector('.ptabs');                                /* the option groups: one row of tabs (arrow keys move) */
+  [].forEach.call(pt.querySelectorAll('.tab'),function(b){ b.onclick=function(){ pilotGroup=b.dataset.pg; renderHangar('#pg_'+pilotGroup); }; });
+  pt.onkeydown=function(e){ var d={ArrowRight:1,ArrowLeft:-1}[e.key]; if(!d) return; e.preventDefault(); e.stopPropagation();
+    var ids=PGROUPS.map(function(x){return x[0];}); pilotGroup=ids[(ids.indexOf(pilotGroup)+d+ids.length)%ids.length]; renderHangar('#pg_'+pilotGroup); };
   var inp=$('#pname');
   inp.oninput=function(){ var c=cleanName(inp.value); if(c!==inp.value){ var at=inp.selectionStart-(inp.value.length-c.length); inp.value=c; try{ inp.setSelectionRange(at,at); }catch(e){} } };
   inp.onchange=function(){ var p=pilotRaw(); p.name=inp.value; put(p,'#pname','Name saved: '+pilotRaw().name+'.'); };
@@ -4698,19 +4916,22 @@ function showLicence(from){
 }
 var licOpen=false;
 function licDone(){ var f=licFrom; licOpen=false; licFrom=null; if(f==='map') showMap(); else if(f&&f.hangar!==undefined){ hangarTab='pilot'; showHangar(f.hangar); } else closeIntro(); }
+var HG_TAB='';
 function showHangar(from){
+  hgView=null;
   hangarFrom=from||null; hangarOpen=true; renderHangar();
 }
 function renderHangar(focusSel){
   var t=HANGAR_TABS.filter(function(x){return x.id===hangarTab;})[0]||HANGAR_TABS[0];
   var flying=introFrom||(mode==='fly'&&overlay===''), back=hangarFrom&&hangarFrom.brief?'← Back to the briefing':hangarFrom==='map'||hangarFrom==='menu'?'← Back':(mode==='fly'||introFrom)?'Back to flight':'Done';
   var again=(mode==='fly'||introFrom)&&S&&S.plane!==flightPlaneId(LV)?'<button class="btn" id="hgfly" type="button">✈ Restart with the '+esc(PBY[flightPlaneId(LV)].name)+'</button>':'';
-  var html=xBtn('xclose','Close the hangar (Esc)')+'<h2><span>HANGAR</span></h2>'+
+  var html=xBtn('xclose','Close the hangar (Esc)')+'<div class="hangar"><h2><span>HANGAR</span></h2>'+
     '<div class="tabs" role="tablist" aria-label="Hangar">'+HANGAR_TABS.map(function(x){ return '<button type="button" class="tab" role="tab" id="htab_'+x.id+'" aria-controls="hbody" aria-selected="'+(x.id===t.id)+'" tabindex="'+(x.id===t.id?0:-1)+'" data-tab="'+x.id+'">'+esc(x.label)+'</button>'; }).join('')+'</div>'+
     '<div id="hbody" role="tabpanel" aria-labelledby="htab_'+t.id+'">'+t.html()+'</div>'+
-    '<div class="row"><button class="btn ghost" id="hgback" type="button">'+back+'</button>'+again+'</div>';
+    '<div class="row hgfoot"><button class="btn ghost" id="hgback" type="button">'+back+'</button>'+again+'</div></div>';
   var scroll=card.scrollTop, was=hangarOpen;
-  if(!modal.classList.contains('show')||!was||!$('#hbody')) openOverlay(html); else { card.innerHTML=html; }
+  var tabChanged=HG_TAB!==hangarTab+'|'+pilotGroup; HG_TAB=hangarTab+'|'+pilotGroup;
+  if(!modal.classList.contains('show')||!was||!$('#hbody')) openOverlay(html,'slide'); else { card.innerHTML=html; if(tabChanged) fxSwap($('#hbody')); }
   hangarOpen=true; if(focusSel) card.scrollTop=scroll;
   t.bind();
   [].forEach.call(card.querySelectorAll('.tab[data-tab]'),function(b){ b.onclick=function(){ hangarTab=b.dataset.tab; renderHangar('#htab_'+hangarTab); }; });
@@ -4718,7 +4939,7 @@ function renderHangar(focusSel){
   if($('#hgfly')) $('#hgfly').onclick=function(){ hangarOpen=false; startFlight(); };
   var tl=card.querySelector('.tabs'); tl.onkeydown=function(e){ var d={ArrowRight:1,ArrowLeft:-1}[e.key]; if(!d) return; e.preventDefault();   /* arrow keys switch tabs */
     var i=HANGAR_TABS.indexOf(t); hangarTab=HANGAR_TABS[(i+d+HANGAR_TABS.length)%HANGAR_TABS.length].id; renderHangar('#htab_'+hangarTab); };
-  var f=focusSel?card.querySelector(focusSel):card.querySelector('.pchoose[aria-pressed="true"]')||card.querySelector('.popt.on[data-k]')||$('#hgback'); if(f) try{ f.focus({preventScroll:!!focusSel}); }catch(e){}
+  var f=focusSel?card.querySelector(focusSel):card.querySelector('.hcard.on')||card.querySelector('.popt.on[data-k]')||$('#hgback'); if(f) try{ f.focus({preventScroll:!!focusSel}); }catch(e){}
 }
 /* from the briefing: the Hangar for that scenario, then back to the briefing */
 function showHangarFor(id,fromMap){ var prev=levelKey; setLevel(id,true); showHangar({brief:id,map:fromMap}); }
@@ -4774,7 +4995,7 @@ function showScreen(id,arg,opt){
   scrCur={id:id,arg:arg}; screenOpen=true; pressed={}; hold.thr=0; hold.pit=0;
   var anim=!ST.reduceMotion&&!opt.same;
   scrBox.innerHTML='<div class="scrin'+(anim?(opt.back?' anim back':' anim'):'')+'">'+SCREENS[id].html(arg)+'</div>';
-  scrBox.setAttribute('aria-label',scrTitle(id,arg)); scrEl.className='screens s-'+id; scrEl.hidden=false;
+  scrBox.setAttribute('aria-label',scrTitle(id,arg)); scrEl.className=('screens s-'+id+' '+['fx-on','fx-in','fx-out'].filter(function(c){ return scrEl.classList.contains(c); }).join(' ')).trim(); fxOpen(scrEl);
   if(!opt.same) scrBox.scrollTop=0;
   SCREENS[id].bind(arg);
   var b=$('#scrback'); if(b) b.onclick=screenBack;
@@ -4790,7 +5011,7 @@ function screenBack(){
 }
 function closeScreens(){
   if(!screenOpen) return;
-  screenOpen=false; scrEl.hidden=true; scrBox.innerHTML=''; scrCur=null; SCR_STACK=[]; scrFromFlight=false; menuBgStop();
+  screenOpen=false; fxClose(scrEl,function(){ if(!screenOpen) scrBox.innerHTML=''; }); scrCur=null; SCR_STACK=[]; scrFromFlight=false; menuBgStop();
   updatePauseUI(); markDirty();
 }
 function redrawScreen(){ if(screenOpen) showScreen(scrCur.id,scrCur.arg,{same:true,focus:scrRet}); }
@@ -4818,9 +5039,10 @@ function mainHTML(){
     (c?'<button type="button" class="btn ghost mmcont" id="mmcont">Continue: '+esc(SBY[c].num+' · '+SBY[c].label)+'</button>':'')+
     '<div class="mmrow"><button type="button" class="btn ghost" id="mmpilot">🧑‍✈️ Pilot</button><button type="button" class="btn ghost" id="mmplane">✈ Plane</button>'+
       '<button type="button" class="btn ghost'+(first?' newhere':'')+'" id="mmlearn"'+(first?' aria-describedby="newtip"':'')+'>📖 How to play</button>'+
+      '<button type="button" class="btn ghost" id="mmach" aria-label="Achievements: '+achCount()+' of '+ACH.length+'">🏆 '+achCount()+'/'+ACH.length+'</button>'+
       '<button type="button" class="btn ghost" id="mmset">⚙ Settings</button>'+(HOST&&HOST.quit?'<button type="button" class="btn ghost" id="mmquit">⏻ Quit game</button>':'')+'</div>'+
     (first?'<p class="newtip" id="newtip">↑ New here? Start here!</p>':'')+'</div></div>'+
-    (ST.reduceMotion||mpHintSeen()?'':'<p class="mmhint" id="mmhint" aria-hidden="true">'+(IS_TOUCH?'Drag the sky to fly':'Drag the sky (or use ↑ ↓) to fly')+'</p>')+'</div>';
+    (ST.reduceMotion||mpHintSeen()?'':'<p class="mmhint" id="mmhint" aria-hidden="true">'+(touchUI()?'Drag the sky to fly':'Drag the sky (or use ↑ ↓) to fly')+'</p>')+'</div>';
 }
 function bindMain(){
   $('#mmplay').onclick=function(){ showScreen('levels'); };
@@ -4829,6 +5051,7 @@ function bindMain(){
   $('#mmplane').onclick=function(){ hangarTab='plane'; showHangar('menu'); };
   $('#mmlearn').onclick=function(){ showScreen('learn'); };
   $('#mmset').onclick=function(){ openSettings('basics'); };
+  $('#mmach').onclick=showAch;
   $('#mmlic').onclick=function(){ showLicence('menu'); };
   if($('#mmquit')) $('#mmquit').onclick=function(){ HOST.quit(); };
 }
@@ -5093,31 +5316,50 @@ function bindLevels(){
 }
 
 /* ---- one location: its scenarios as cards with condition icons ---- */
-function scnIcons(s){
+/* condition tags: a coloured pill per condition, always with an icon and a word (never colour alone). Colours per theme in CSS (.tag-<k>) */
+var TAGS={
+  wind:{i:'🌬',w:'Wind',d:'A headwind blows against you: slower over the ground, a shorter landing.'},
+  gusts:{i:'〰',w:'Gusts',d:'Bumpy air pushes the plane around. Small corrections keep it steady.'},
+  shear:{i:'↯',w:'Shear',d:'Wind shear: the wind suddenly changes near the ground.'},
+  night:{i:'🌙',w:'Night',d:'Dark: follow the runway lights and the glide-path lights.'},
+  dusk:{i:'🌅',w:'Dusk',d:'Evening light: lower sun, darker ground.'},
+  heavy:{i:'⚖',w:'Heavy',d:'A heavy plane needs more speed to fly and more runway to stop.'},
+  fail:{i:'⚠',w:'Engine out',d:'The engine stops on the way: you have to glide.'},
+  fuel:{i:'⛽',w:'Little fuel',d:'Only a little fuel: use thrust carefully.'},
+  deck:{i:'⚓',w:'Carrier',d:'Land on a moving ship: a short deck.'},
+  plane:{i:'✈',w:'Plane',d:'This scenario needs a different plane than the Trainer.'}
+};
+function scnTags(s){
   var a=[];
-  if(s.wind) a.push(['🌬','Headwind '+spdStrKt(s.wind)]);
-  if(s.shear) a.push(['↯','Wind shear']);
-  if(s.turb) a.push(['〰',s.turb>=.6?'Strong gusts':'Gusts']);
-  if(s.tod==='night') a.push(['🌙','Night']); else if(s.tod==='dusk') a.push(['🌅','Dusk']);
-  if(s.weight>100) a.push(['⚖','Heavy ('+s.weight+'%)']);
-  if(s.fail) a.push(['⚠','Engine failure']);
-  if(s.fuel) a.push(['⛽','Little fuel']);
-  if(s.deck) a.push(['⚓','Carrier deck']);
-  return a;
+  if(s.wind) a.push(['wind',lvlE()?'Wind':'Wind '+spdStrKt(s.wind)]);
+  if(s.turb) a.push(['gusts',s.turb>=.6?'Strong gusts':'Gusts']);
+  if(s.shear) a.push(['shear','Shear']);
+  if(s.tod==='night') a.push(['night','Night']); else if(s.tod==='dusk') a.push(['dusk','Dusk']);
+  if(s.weight>100) a.push(['heavy',lvlE()?'Heavy':'Heavy '+s.weight+'%']);
+  if(s.fail) a.push(['fail','Engine out']);
+  if(s.fuel) a.push(['fuel','Little fuel']);
+  if(s.deck) a.push(['deck','Carrier']);
+  if(s.craft&&s.craft!=='trainer') a.push(['plane',PBY[s.craft].name]);
+  return a.map(function(x){ return {k:x[0],i:TAGS[x[0]].i,w:x[1],d:TAGS[x[0]].d}; });
+}
+function tagHTML(t,focus){ return '<span class="tag tag-'+t.k+'"'+(focus?' tabindex="0"':'')+' title="'+esc(t.d)+'"><span aria-hidden="true">'+t.i+'</span> '+esc(t.w)+'</span>'; }
+function iconKeyHTML(){
+  return '<details class="ikey"><summary aria-label="Icon key: what the tags mean">ⓘ Icon key</summary><div class="ikeybox" role="note"><ul>'+
+    Object.keys(TAGS).map(function(k){ return '<li>'+tagHTML({k:k,i:TAGS[k].i,w:TAGS[k].w,d:TAGS[k].d})+'<span>'+esc(TAGS[k].d)+'</span></li>'; }).join('')+'</ul></div></details>';
 }
 function scnCardHTML(s){
-  var o=scnOpen(s), pr=PR[s.id], flown=pr&&pr.flights, ic=scnIcons(s), pv=scnPrev(s), pl=PBY[s.craft];
+  var o=scnOpen(s), pr=PR[s.id], flown=pr&&pr.flights, tg=scnTags(s), pv=scnPrev(s), pl=PBY[s.craft];
   var st=!o?'🔒 Earn 1 star on '+pv.num+' first':flown?'<span class="cst">'+stars3Str(pr.st||0)+'</span>':'not flown yet';
-  var lab=s.num+' '+s.label+'. '+(!o?'Locked: earn at least 1 star on '+pv.num+' '+pv.label+' first':flown?(pr.st||0)+' of 3 stars':'Not flown yet')+'. '+(ic.length?ic.map(function(x){return x[1];}).join(', ')+'. ':'')+'Suggested plane: '+pl.name+'.';
+  var lab=s.num+' '+s.label+'. '+(!o?'Locked: earn at least 1 star on '+pv.num+' '+pv.label+' first':flown?(pr.st||0)+' of 3 stars':'Not flown yet')+'. '+(tg.length?'Conditions: '+tg.map(function(x){return x.w;}).join(', ')+'.':'');
   return '<button type="button" class="scard'+(o?'':' locked')+(flown&&pr.st===3?' gold':'')+(s.id===levelKey?' cur':'')+'" data-id="'+s.id+'"'+(o?'':' aria-disabled="true"')+' aria-label="'+esc(lab)+'">'+
     '<span class="snum">'+s.num+'</span><span class="sname">'+esc(s.label)+'</span><span class="sst">'+st+'</span>'+
-    '<span class="sicons" aria-hidden="true">'+ic.map(function(x){ return '<i title="'+esc(x[1])+'">'+x[0]+'</i>'; }).join('')+'<i class="splane" title="'+esc('Suggested plane: '+pl.name)+'">✈ '+esc(pl.name)+'</i></span></button>';
+    '<span class="sicons" aria-hidden="true">'+tg.map(function(t){ return tagHTML(t); }).join('')+'</span></button>';
 }
 function locHTML(id){
   var l=LOCBY[id], list=SCN.filter(function(s){ return s.loc===id; });
   return backHTML()+'<div class="lochead">'+sceneSVG(id)+'<div><h2 class="scrh"><span>'+esc(l.name.toUpperCase())+'</span></h2><p>'+esc(l.tag)+' · ★ '+locStars(l)+' / '+locMax(l)+'</p></div></div>'+
     '<div class="scards">'+list.map(scnCardHTML).join('')+'</div>'+
-    '<p class="mapnote">Each scenario opens when you have at least 1 star on the one before it. Icons: 🌬 wind · 〰 gusts · ↯ wind shear · 🌙 night · ⚖ heavy · ⚠ engine failure · ⛽ little fuel · ⚓ carrier · ✈ suggested plane.</p>';
+    '<div class="locfoot"><p class="mapnote">🔒 Earn 1 star on the scenario before to open the next.</p>'+iconKeyHTML()+'</div>';
 }
 function bindLoc(id){
   [].forEach.call(scrBox.querySelectorAll('.scard'),function(b){ b.onclick=function(){
@@ -5160,10 +5402,10 @@ function learnBody(t){
     '<li>New to this? Try the <b>Lessons</b> tab, and keep <b>Advanced info</b> off. Turn it on (Quick settings, or press '+esc(keyFirst('advanced'))+') for the lift-vs-pitch chart and the flight charts after landing.</li></ul>';
   if(t==='warmup') return matchHTML();
   if(t==='lessons') return '<p>Short guided flights with the Trainer. No stars, and you can skip a step or stop any time. ✓ = done.</p>'+lessonsHTML()+(lvlP()?LESSONS.map(function(L){ return lessonPhysics(L).replace('<b>The physics</b>','<b>'+esc(L.n+' · '+L.label)+': the physics</b>'); }).join(''):'');
-  if(t==='controls') return '<h3>KEYBOARD</h3><div class="keygrid">'+keyGridHTML()+'</div>'+
-    '<h3>TOUCH SCREENS</h3><ul><li>Hold <b>−</b> / <b>+</b> for less or more thrust, <b>IDLE</b> and <b>FULL</b> jump straight there.</li><li>Hold <b>▼</b> / <b>▲</b> to lower or raise the nose.</li>'+
+  if(t==='controls') return '<div class="keyonly"><h3>KEYBOARD</h3><div class="keygrid">'+keyGridHTML()+'</div></div>'+
+    '<div class="touchonly"><h3>TOUCH SCREENS</h3><ul><li>Hold <b>−</b> / <b>+</b> for less or more thrust, <b>IDLE</b> and <b>FULL</b> jump straight there.</li><li>Hold <b>▼</b> / <b>▲</b> to lower or raise the nose.</li>'+
     '<li><b>❚❚</b> (top right of the flight view) opens the pause menu. <b>☰</b> has the camera, the Hangar and Settings; tap the instruments for the flight details.</li></ul>'+
-    '<div class="row" style="justify-content:flex-start"><button type="button" class="btn ghost small" id="lkeys">⌨ Change keys (Settings)</button></div>';
+    '</div><div class="row keyonly" style="justify-content:flex-start"><button type="button" class="btn ghost small" id="lkeys">⌨ Change keys (Settings)</button></div>';
   if(t==='landing'&&lvlE()) return '<ul><li>When the <b>landing lights</b> appear next to the runway, start going down.</li><li><b>2 white and 2 red</b> lights: you are on the right path. More white: too high. More red: too low.</li>'+
     '<li>Use only a little engine on the way down. Land in the <b>marked part</b> of the runway.</li><li>Just before the wheels touch, lift the nose a tiny bit. This is the <b>flare</b>: it makes the landing soft.</li>'+
     '<li>Then turn the engine off and stop before the runway ends.</li></ul><h3>THE FIVE STAR CHECKS</h3><ol class="checks"><li>Land softly</li><li>Land in the right spot</li><li>Nose up a little when you land</li><li>Stop on the runway</li><li>No stall</li></ol><p>All five: three stars. One missed: two stars.</p>';
@@ -5186,7 +5428,7 @@ function learnBody(t){
 function bindLearn(){
   var tl=$('#ltabs');
   function go(t,focus){ MENU.learn=t; saveMenu(); [].forEach.call(tl.querySelectorAll('.tab'),function(b){ var on=b.dataset.lt===t; b.setAttribute('aria-selected',on); b.tabIndex=on?0:-1; });
-    var body=$('#lbody'); body.innerHTML=learnBody(t); body.setAttribute('aria-labelledby','lt_'+t); bindLearnBody(t); if(focus) $('#lt_'+t).focus(); }
+    var body=$('#lbody'); body.innerHTML=learnBody(t); fxSwap(body); body.setAttribute('aria-labelledby','lt_'+t); bindLearnBody(t); if(focus) $('#lt_'+t).focus(); }
   [].forEach.call(tl.querySelectorAll('.tab'),function(b){ b.onclick=function(){ go(b.dataset.lt,true); }; });
   tl.onkeydown=function(e){ var ids=LEARN_TABS.map(function(x){return x[0];}), i=ids.indexOf(learnTab()), n=null;
     if(e.key==='ArrowRight') n=(i+1)%ids.length; else if(e.key==='ArrowLeft') n=(i+ids.length-1)%ids.length; else if(e.key==='Home') n=0; else if(e.key==='End') n=ids.length-1;
@@ -5202,10 +5444,10 @@ function bindLearnBody(t){
 }
 /* ---------------- map screen + briefing card ---------------- */
 var TODICON={day:'☀',dusk:'🌅',night:'🌙'}, TODNAME={day:'Day',dusk:'Dusk',night:'Night'};
-function openOverlay(html){
+function openOverlay(html,fx){
   var keep=(mode==='fly'&&!overlay&&!settingsOpen);               /* opened during a flight: the flight waits underneath */
   closeSheet(true); closeMenu();
-  openModal(html,keep); introOpen=true; introPage=0; introFrom=keep;
+  openModal(html,keep,fx); introOpen=true; introPage=0; introFrom=keep;
 }
 function dotLabel(s){
   var st=PR[s.id]?PR[s.id].st||0:0;
@@ -5238,24 +5480,37 @@ function condLine(){
   p.push('Runway '+altStrFt(Math.round(LV.land.len*FTPERU/50)*50));
   return p.join(' · ');
 }
+/* the conditions of a scenario as rows (icon, name, value) at the player's explanation level; LV is the scenario */
+function briefConds(s){
+  var e=lvlE(), r=[];
+  r.push([TODICON[s.tod]||'☀','Time of day',e?({day:'Daytime',dusk:'Evening',night:'Night'}[s.tod]||'Daytime'):TODNAME[s.tod]]);
+  r.push(['🌬','Wind',s.wind?(e?(s.wind>15?'Very windy':'Windy'):'Headwind '+spdStrKt(s.wind)):(e?'No wind':'None')]);
+  if(s.shear) r.push(['↯','Wind shear',e?'The wind changes near the ground':'Flips below '+altStrFt(s.shear.alt)]);
+  r.push(['〰','Air',s.turb>=.6?(e?'Very bumpy':'Strong gusts'):s.turb>=.3?(e?'Bumpy':'Gusts'):s.turb>0?(e?'A little bumpy':'Light gusts'):(e?'Smooth':'Smooth air')]);
+  r.push(['⚖','Weight',s.weight>100?(e?'Heavy plane':s.weight+'% of normal'):(e?'Normal':'Normal (100%)')]);
+  if(s.fuel) r.push(['⛽','Fuel',e?'Only a little':s.fuel+' s at full thrust']);
+  if(s.fail) r.push(['⚠','Engine',e?'It stops on the way down':'Fails on the approach']);
+  if(!e) r.push(['🛬','Runway',altStrFt(Math.round(s.land.len*FTPERU/50)*50)]);
+  return r;
+}
 function showBriefing(id,fromMap){
   var s=SBY[id]; if(!s) return;
   var prev=LV, html; LV=s;                                        /* the helpers above read the scenario in LV; restored right after */
-  var pr=PR[id];
-  try{ var checks=s.stars.map(function(k){return '<li>'+esc(checkLine(k))+'</li>';}).join('');
+  var pr=PR[id], P=pilot();
+  try{ var checks=s.stars.map(function(k){return '<li>'+esc(checkLine(k))+'</li>';}).join(''), tg=scnTags(s);
   html=xBtn('xclose','Close (Esc)')+
-    '<h2><span>'+esc(s.num+' · '+s.label)+'</span></h2>'+
-    '<p class="brsub">'+esc(s.locName)+' · '+esc(condLine())+'</p>'+
-    '<div class="brpilot">'+pilotImg(pilot(),'happy',64,true,'','')+'<p>Captain '+esc(pilot().name)+', ready for take-off?</p></div>'+
-    '<div class="brief">'+
-      '<p><b>Your goal.</b> '+esc(sTxt(s,'goalLine'))+'</p>'+
-      '<p><b>You will learn.</b> '+esc(s.teach)+'</p>'+
-      (s.appr?'<p><b>Start.</b> In the air, already on the approach. No climb.</p>':'')+briefPlaneHTML(s)+
-      '<p><b>Three stars need all five checks:</b></p><ul class="crit">'+checks+'</ul>'+
-      (s.tip?'<p class="brtip"><b>Tip.</b> '+esc(sTxt(s,'tip'))+'</p>':'')+
-      (pr&&pr.flights?'<p class="bestline">Your best: <b>'+stars3Str(pr.st||0)+'</b> · '+pr.flights+(pr.flights>1?' flights':' flight')+'</p>':'')+
+    '<div class="brhead"><h2><span>'+esc(s.num+' · '+s.label)+'</span></h2>'+
+      '<p class="brsub">'+esc(s.locName)+' · '+(pr&&pr.flights?'<span aria-label="'+(pr.st||0)+' of 3 stars">'+stars3Str(pr.st||0)+'</span> · '+pr.flights+(pr.flights>1?' flights':' flight'):'not flown yet')+'</p>'+
+      (tg.length?'<div class="brtags">'+tg.map(function(t){ return tagHTML(t,true); }).join('')+'</div>':'')+'</div>'+
+    '<div class="brgrid">'+
+      '<section class="brsec"><h3>Your goal</h3><ol class="brsteps">'+stepLabels().map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ol>'+
+        '<p class="brsmall">'+esc(sTxt(s,'goalLine'))+(s.appr?' You start in the air, on the approach.':'')+'</p></section>'+
+      '<section class="brsec"><h3>Conditions</h3><ul class="brconds">'+briefConds(s).map(function(c){ return '<li><span aria-hidden="true">'+c[0]+'</span><b>'+esc(c[1])+'</b><span>'+esc(c[2])+'</span></li>'; }).join('')+'</ul></section>'+
+      '<section class="brsec"><h3>You will learn</h3><p>'+esc(s.teach)+'</p>'+(s.tip?'<p class="brsmall"><b>Tip.</b> '+esc(sTxt(s,'tip'))+'</p>':'')+
+        '<details class="brchecks"><summary>Three stars: all five checks</summary><ul class="crit">'+checks+'</ul></details></section>'+
+      '<section class="brsec"><h3>Plane</h3>'+briefPlaneHTML(s)+'</section>'+
     '</div>'+
-    '<div class="row"><button class="btn ghost" id="brback" type="button">← '+esc(s.locName)+'</button><button class="btn" id="brfly" type="button">✈ Fly this scenario</button></div>';
+    '<div class="row brbtns"><button class="btn ghost" id="brback" type="button">← '+esc(s.locName)+'</button><span class="brcapt">'+pilotImg(P,'happy',36,false,'','')+'Captain '+esc(P.name)+', ready?</span><button class="btn brgo" id="brfly" type="button">✈ Fly this scenario</button></div>';
   } finally { LV=prev; }
   openOverlay(html);
   $('#xclose').onclick=closeIntro;
@@ -5339,7 +5594,7 @@ var ACH=[
 var ACHBY={}; ACH.forEach(function(a){ ACHBY[a.id]=a; });
 function achD(a){ return (lvlE()&&a.de)||(lvlP()&&a.dp)||a.d; }   /* the description at the player's explanation level */
 function achCount(){ return ACH.filter(function(a){ return PG.ach[a.id]; }).length; }
-function grant(id,list){ if(PG.ach[id]) return; PG.ach[id]=dateKey(); if(list) list.push(ACHBY[id]); }
+function grant(id,list){ if(PG.ach[id]) return; PG.ach[id]=dateKey(); if(list) list.push(ACHBY[id]); noteAch(ACHBY[id]); }   /* every new achievement gets a notification */
 function checkAch(c){
   var got=[];
   if(c&&c.won&&!c.practice){
@@ -5414,25 +5669,65 @@ function modesHTML(){
   var d=dailyDone()?PG.daily:null, s=dailyScenario(), st=dailyStreak();
   var dsub=d?(d.st===null||d.st===undefined?'Today’s try was used. Come back tomorrow.':shareLine(d)):s.locName+' · '+s.label+' · one try a day';
   return '<div class="modes"><button type="button" class="mode" id="m_daily"'+(d?' aria-disabled="true"':'')+'><b>📅 Daily approach</b><span>'+esc(dsub)+'</span>'+(st?'<em>'+st+(st>1?' days':' day')+' in a row</em>':'')+'</button>'+
-    '<button type="button" class="mode" id="m_endless"><b>♾ Endless landings</b><span>Land again and again. Best: '+PG.endless.best+'</span></button>'+
-    '<button type="button" class="mode" id="m_ach"><b>🏅 Achievements</b><span>'+achCount()+' of '+ACH.length+'</span></button></div>';
+    '<button type="button" class="mode" id="m_endless"><b>♾ Endless landings</b><span>Land again and again. Best: '+PG.endless.best+'</span></button>'+'</div>';
 }
 function bindModes(){
-  var d=$('#m_daily'), e=$('#m_endless'), a=$('#m_ach');
+  var d=$('#m_daily'), e=$('#m_endless');
   if(d) d.onclick=function(){
     if(dailyDone()){ scrToast(PG.daily.st===null||PG.daily.st===undefined?'Today’s try was used. A new approach opens tomorrow.':'Done for today. A new approach opens tomorrow.'); return; }
     confirmBtn(d,startDaily);
   };
   if(e) e.onclick=function(){ startEndless(); };
-  if(a) a.onclick=showAch;
 }
-function showAch(){
+function showAch(hl){                                                  /* hl: an achievement id to highlight (from a notification) */
   var groups=['Progress','Skill','Teaching','Coming back'];
   var html=xBtn('xclose','Close (Esc)')+'<h2><span>ACHIEVEMENTS</span> <span class="tot">'+achCount()+' / '+ACH.length+'</span></h2><div class="achgrid">'+
-    groups.map(function(g){ return '<section><h3>'+g+'</h3><ul>'+ACH.filter(function(a){return a.g===g;}).map(function(a){ var on=PG.ach[a.id]; return '<li class="'+(on?'on':'')+'"><span aria-hidden="true">'+(on?'🏅':'○')+'</span><div><b>'+esc(a.n)+'</b><small>'+esc(achD(a))+(on?' (got it '+esc(dateShort(on))+')':'')+'</small></div></li>'; }).join('')+'</ul></section>'; }).join('')+'</div>'+
+    groups.map(function(g){ return '<section><h3>'+g+'</h3><ul>'+ACH.filter(function(a){return a.g===g;}).map(function(a){ var on=PG.ach[a.id]; return '<li id="ach_'+a.id+'" tabindex="-1" class="'+(on?'on':'')+(a.id===hl?' hl':'')+'"><span aria-hidden="true">'+(on?'🏅':'○')+'</span><div><b>'+esc(a.n)+'</b><small>'+esc(achD(a))+(on?' (got it '+esc(dateShort(on))+')':'')+'</small></div></li>'; }).join('')+'</ul></section>'; }).join('')+'</div>'+
     '<div class="row"><button class="btn" id="achback" type="button">← Back</button></div>';
-  openOverlay(html);
-  $('#xclose').onclick=closeIntro; $('#achback').onclick=closeIntro; $('#achback').focus({preventScroll:true});
+  openOverlay(html,'slide');
+  $('#xclose').onclick=closeIntro; $('#achback').onclick=closeIntro;
+  var h=hl&&$('#ach_'+hl); if(h){ h.scrollIntoView({block:'center'}); h.focus({preventScroll:true}); } else $('#achback').focus({preventScroll:true});
+}
+/* ---------------- notifications: achievements, rank-ups and unlocks ----------------
+   One card at the top centre, one at a time (NOTE_Q): it slides down, stays about 4 s (hover pauses it), then slides up.
+   Clicking opens the achievements list (that one highlighted); × closes it early. Announced through the live region.
+   During a flight it is smaller and sits below the phone HUD; it never pauses the game or takes keyboard focus. */
+var NOTE_Q=[], noteCur=null, noteEl=$('#note');
+function notify(n){ NOTE_Q.push(n); if(!noteCur) noteNext(); }
+function noteNext(){
+  noteCur=NOTE_Q.shift(); if(!noteCur){ return; }
+  var n=noteCur, fly=mode==='fly';
+  noteEl.className='note'+(fly?' small':'')+(n.ach?' link':'');
+  noteEl.innerHTML='<span class="nicon" aria-hidden="true">'+n.icon+'</span><span class="ntext"><small>'+esc(n.label)+'</small><b>'+esc(n.title)+'</b>'+(n.line?'<span>'+esc(n.line)+'</span>':'')+'</span>'+
+    '<button type="button" class="nx" aria-label="Close the notification" title="Close">✕</button>';
+  var top=8; if(fly&&MOBILE){ var hd=$('#hud'); if(hd&&hd.getBoundingClientRect().height) top=hd.getBoundingClientRect().bottom+6; }   /* below the phone HUD */
+  noteEl.style.top=top+'px';
+  fxOpen(noteEl); sfxUnlock(n.kind); srSay(n.label+': '+n.title+(n.line?'. '+n.line:''));
+  n.left=4200; n.t0=performance.now(); n.timer=setTimeout(noteHide,n.left);
+}
+function noteHide(){ if(!noteCur) return; clearTimeout(noteCur.timer); noteCur=null; fxClose(noteEl,function(){ noteEl.innerHTML=''; },function(){ setTimeout(noteNext,250); }); }
+noteEl.addEventListener('mouseenter',function(){ if(noteCur){ clearTimeout(noteCur.timer); noteCur.left-=performance.now()-noteCur.t0; } });
+noteEl.addEventListener('mouseleave',function(){ if(noteCur){ noteCur.t0=performance.now(); noteCur.timer=setTimeout(noteHide,Math.max(1200,noteCur.left)); } });
+noteEl.addEventListener('click',function(e){
+  if(e.target.closest('.nx')){ noteHide(); return; }
+  var n=noteCur; if(!n) return; noteHide();
+  if(n.ach&&!settingsOpen) showAch(n.ach);
+});
+/* a short rising chime, generated like the other sounds (follows the effects volume and mute) */
+function sfxUnlock(kind){ var f=kind==='rank'?[523,659,784,1047]:kind==='unlock'?[587,740,880]:[659,880,1175];
+  f.forEach(function(x,i){ tone(x,0.22,'sfx','triangle',0.16,i*0.09); }); tone(f[f.length-1]*2,0.35,'sfx','sine',0.05,f.length*0.09); }
+function noteAch(a){ notify({kind:'ach',label:'NEW ACHIEVEMENT',icon:'🏅',title:a.n,line:achD(a),ach:a.id}); }
+/* what is open now (for "new paint / pilot item" notes after a flight) */
+function unlockSnap(){
+  var o={}; Object.keys(PAINTS).forEach(function(id){ if(PAINTS[id].req&&paintOpen(id)) o['p:'+id]=PAINTS[id].name+' paint'; });
+  PHEAD.concat(PJACKET.map(function(j,i){ return ['jacket'+i,j[1]+' jacket',j[2]]; })).concat([PBADGE]).forEach(function(x){ if(x[2]&&reqOpen(x[2])) o['i:'+x[0]]=x[1]; });
+  return o;
+}
+function noteUnlocks(before,c){
+  var now=unlockSnap();
+  (c.unlocked||[]).forEach(function(l){ notify({kind:'unlock',label:'NEW LOCATION',icon:'🗺',title:l.name,line:l.tag+'. Open it from the level select.'}); });
+  if(c.rankUp) notify({kind:'rank',label:'PROMOTED',icon:'🎖',title:RANKS[c.rankUp][0],line:pilot().name+' has '+totalStars()+' stars.'});
+  Object.keys(now).forEach(function(k){ if(!before[k]) notify({kind:'unlock',label:k.charAt(0)==='p'?'NEW PLANE COLOUR':'NEW PILOT ITEM',icon:k.charAt(0)==='p'?'🎨':'🧢',title:now[k],line:'Find it in the Hangar.'}); });
 }
 /* ---------------- end-of-flight analysis + charts ---------------- */
 function analyseFlight(){
@@ -5608,7 +5903,7 @@ function logAttempt(won,c){
 function showEnd(won){
   endTimer=0; if(mode!==(won?'won':'crashed')) return;   /* only for the run that just ended */
   if(RUN&&RUN.kind==='lesson'&&lessonFailed(won)) return;  /* lessons: no stars, no log, their own card */
-  var c={won:won}, real=!!SBY[levelKey]&&!RUN&&S.plane===LV.craft, before=openLocIds(), rk0=rankIdx();
+  var c={won:won}, real=!!SBY[levelKey]&&!RUN&&S.plane===LV.craft, before=openLocIds(), rk0=rankIdx(), snap=unlockSnap();
   PG.planes[S.plane]=(PG.planes[S.plane]||0)+1;                       /* flights per plane: the licence card's favourite plane */
   c.practice=!!SBY[levelKey]&&!RUN&&S.plane!==LV.craft;              /* another plane than the suggested one: a practice flight */
   if(won){
@@ -5627,6 +5922,7 @@ function showEnd(won){
   logAttempt(won,c);
   if(typeof afterRun==='function') afterRun(c);       /* achievements, daily and endless results */
   c.rankUp=rankIdx()>rk0?rankIdx():0;                                 /* a new rank: celebrated on the results */
+  noteUnlocks(snap,c);                                                /* and new locations, ranks, paints, pilot items as notifications */
   saveProgress(); updateLevelLabel();
   endCtx=c; renderEnd(1);
 }
@@ -5855,7 +6151,7 @@ function startReplay(){
   if(replaying||!canReplay()) return;
   var rg=replayRange();
   replaying={i0:rg.i0,i1:rg.i1,td:rg.td,pos:rg.i0,hold:0,held:false,fpm:(S.recTd!==null&&S.rec[(rg.td%REC_CAP)*REC_W+8]<0)?-S.rec[(rg.td%REC_CAP)*REC_W+8]*FPM:(S.crashFpm||0)};
-  modal.classList.remove('show'); endOpen=false; CAM.instant=true; markDirty();
+  modal.classList.remove('show'); fxClose(modal); endOpen=false; CAM.instant=true; markDirty();
   window.addEventListener('keydown',replayKey,true);
   cvs.addEventListener('pointerdown',replayStop);
   var m=$('#srLive'); if(m){ m.textContent=''; setTimeout(function(){ m.textContent='Replay of the touchdown at quarter speed. Press any key to stop.'; },30); }
@@ -5934,7 +6230,7 @@ var TOURKEY='flightSchoolTour', tourOpen=false, tourI=0, tourList=[];
 function tourSeen(){ try{return localStorage.getItem(TOURKEY)==='1';}catch(e){return false;} }
 function shown(el){ return !!el&&el.getClientRects().length>0&&el.getBoundingClientRect().width>0; }
 function tourDefs(){
-  var t=IS_TOUCH;
+  var t=touchUI();
   return [
     {sel:MOBILE?'.tgrp.f3':'.controls .ctl.f3',t:'THRUST: the engine',
      x:'Thrust speeds the plane up, and a plane needs speed to make lift. '+(t?'Hold + to speed up and − to slow down.':'Press '+keyFirst('thrustUp')+' to speed up and '+keyFirst('thrustDown')+' to slow down.')},
@@ -6207,6 +6503,9 @@ applyLayout(true);
 applySettings();
 setLevel(levelKey);
 updatePanel();
+rootEl.setAttribute('data-input',INPUT.mode);
+window.addEventListener('keydown',function(e){ if(!e.isTrusted||['Shift','Control','Alt','Meta','CapsLock','Unidentified'].indexOf(e.key)>-1) return; INPUT.lastKey=performance.now(); setInputMode('keys'); },true);
+window.addEventListener('pointerdown',function(e){ if(e.pointerType==='touch'&&performance.now()-INPUT.lastKey>20000) setInputMode('touch'); },true);
 showScreen('main'); if(!levelOffer()) pilotOffer();                                     /* every visit starts at the main menu */
 requestAnimationFrame(loop);
 })();
